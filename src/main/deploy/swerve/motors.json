@@ -1,0 +1,38 @@
+{
+    "front-left": {
+        "driveMotorChannel": 2,
+        "turningMotorChannel": 3,
+        "encoderChannel": 0,
+        "encoderOffset": {
+            "falcon": 0.671,
+            "kraken": 0.6342
+        }
+    },
+    "front-right": {
+        "driveMotorChannel": 4,
+        "turningMotorChannel": 5,
+        "encoderChannel": 1,
+        "encoderOffset": {
+            "falcon": 0.479,
+            "kraken": 0.8387
+        }
+    },
+    "back-left": {
+        "driveMotorChannel": 8,
+        "turningMotorChannel": 9,
+        "encoderChannel": 2,
+        "encoderOffset": {
+            "falcon": 0.073,
+            "kraken": 0.4063
+        }
+    },
+    "back-right": {
+        "driveMotorChannel": 6,
+        "turningMotorChannel": 7,
+        "encoderChannel": 3,
+        "encoderOffset": {
+            "falcon": 0.428,
+            "kraken": 0.694
+        }
+    }
+}

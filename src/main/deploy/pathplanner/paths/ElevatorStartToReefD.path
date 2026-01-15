@@ -1,0 +1,71 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.46675,
+        "y": 1.3649016
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.6899408350671217,
+        "y": 2.324467560053244
+      },
+      "isLocked": false,
+      "linkedName": "ElevatorStartRight"
+    },
+    {
+      "anchor": {
+        "x": 3.7507802888452626,
+        "y": 2.0287728510481724
+      },
+      "prevControl": {
+        "x": 2.883976752268753,
+        "y": 1.2953454936204931
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "ReefD"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.2597510373443993,
+      "rotationDegrees": 55.70699022074194
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "ElevatorL4",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ElevatorL4"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 2.8,
+    "maxAcceleration": 3.3,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 59.99999999999996
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0.0,
+    "rotation": 117.7
+  },
+  "useDefaultConstraints": false
+}

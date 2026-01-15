@@ -1,0 +1,71 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.075103220848883,
+        "y": 2.795053784548657
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.533353220848882,
+        "y": 2.044303784548658
+      },
+      "isLocked": false,
+      "linkedName": "ReefEF"
+    },
+    {
+      "anchor": {
+        "x": 6.317999999999568,
+        "y": 2.8062500000031334
+      },
+      "prevControl": {
+        "x": 6.015750000000001,
+        "y": 2.5625
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "AlgaeDrop"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.16289104638619264,
+      "rotationDegrees": 119.99999999999999
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "ProcessorScore",
+      "waypointRelativePos": 0.5656500802568185,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "ProcessorScore"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 5.45,
+    "maxAcceleration": 8.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -96.92344891481052
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 120.00000000000001
+  },
+  "useDefaultConstraints": true
+}

@@ -1,0 +1,82 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.844596,
+        "y": 3.9152667694000005
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.1054764258471055,
+        "y": 3.958480952671817
+      },
+      "isLocked": false,
+      "linkedName": "ReefGH"
+    },
+    {
+      "anchor": {
+        "x": 6.44475,
+        "y": 3.9079999999999995
+      },
+      "prevControl": {
+        "x": 6.23392887893038,
+        "y": 4.0423668668643735
+      },
+      "nextControl": {
+        "x": 6.656387924450206,
+        "y": 3.7731125434027906
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.09,
+        "y": 0.452
+      },
+      "prevControl": {
+        "x": 6.141030547327907,
+        "y": 1.1186560050474843
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Processor"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "AlgaeL2End",
+      "waypointRelativePos": 0.5657568238213456,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "AlgaeL2End"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 5.45,
+    "maxAcceleration": 8.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -90.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}

@@ -1,0 +1,1422 @@
+{
+  "version": 1.0,
+  "grid_size": 32,
+  "tabs": [
+    {
+      "name": "Autonomous",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Vision Connect",
+            "x": 1280.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 320.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Left",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Left/LimelightConnected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Center",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Center/LimelightConnected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "L1",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/L1/Connected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Source",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/Source/Connected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              }
+            ]
+          },
+          {
+            "title": "Num Tags",
+            "x": 1408.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 320.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Left",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Left/NumTags",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Center",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Center/NumTags",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "L1",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/L1/NumTags",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Source",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/Source/NumTags",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "Field",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 1024.0,
+            "height": 512.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/Field",
+              "period": 0.06,
+              "field_game": "Reefscape",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295
+            }
+          },
+          {
+            "title": "Starting Location",
+            "x": 1024.0,
+            "y": 128.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Split Button Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Starting Location",
+              "period": 0.06
+            }
+          },
+          {
+            "title": "Auto Code",
+            "x": 1024.0,
+            "y": 0.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Code",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "NAV",
+            "x": 1216.0,
+            "y": 544.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Overview/Nav Sensor",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Ground Intake",
+            "x": 512.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/orangevision_Port_1181_Input_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "Coral Shooter Back",
+            "x": 256.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1184_Output_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "Coral Shooter Front",
+            "x": 0.0,
+            "y": 512.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1186_Output_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "BTM",
+            "x": 1216.0,
+            "y": 352.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Elevator/BottomEndStopPressed",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "TOP",
+            "x": 1216.0,
+            "y": 256.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Elevator/TopEndStopPressed",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Reset",
+            "x": 1024.0,
+            "y": 256.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/ResetLocationButton",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "Limelight Rotation",
+            "x": 1024.0,
+            "y": 384.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/LimelightRotation",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "ForceMT1",
+            "x": 896.0,
+            "y": 512.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/ForceMT1",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "ALG",
+            "x": 1216.0,
+            "y": 448.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ElevatorHead/HasAlgae",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "GamePiece",
+            "x": 1280.0,
+            "y": 576.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ElevatorHead/GamePiece",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Trust Limelight Center",
+            "x": 1024.0,
+            "y": 576.0,
+            "width": 192.0,
+            "height": 64.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/TrustLimelightCenter",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "Trust Limelight Left",
+            "x": 1024.0,
+            "y": 512.0,
+            "width": 192.0,
+            "height": 64.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/TrustLimelightLeft",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "UseISPE",
+            "x": 1024.0,
+            "y": 640.0,
+            "width": 192.0,
+            "height": 64.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/UseISPE",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "EncoderReset",
+            "x": 768.0,
+            "y": 512.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/EncoderReset",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "Alerts",
+            "x": 768.0,
+            "y": 640.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Alerts",
+            "properties": {
+              "topic": "/SmartDashboard/Alerts",
+              "period": 0.06
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Overview",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Vision",
+            "x": 1408.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 320.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Left",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Left/HasVision",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Center",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Center/HasVision",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "L1",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/L1/HasVision",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Source",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/Source/HasVision",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "Driver Orientation",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Split Button Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Driver Orientation",
+              "period": 0.06
+            }
+          },
+          {
+            "title": "Drive Mode",
+            "x": 384.0,
+            "y": 384.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Split Button Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Drive Mode",
+              "period": 0.06
+            }
+          },
+          {
+            "title": "Ground Intake",
+            "x": 896.0,
+            "y": 0.0,
+            "width": 448.0,
+            "height": 384.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/orangevision_Port_1181_Input_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "Coral Shooter Back",
+            "x": 448.0,
+            "y": 0.0,
+            "width": 448.0,
+            "height": 384.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1184_Output_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "Field",
+            "x": 768.0,
+            "y": 384.0,
+            "width": 384.0,
+            "height": 256.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/Field",
+              "period": 0.06,
+              "field_game": "Reefscape",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295
+            }
+          },
+          {
+            "title": "Coral Shooter Front",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 448.0,
+            "height": 384.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1186_Output_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "Level Switch",
+            "x": 1152.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Overview/LevelSwitch",
+              "period": 0.06,
+              "data_type": "string"
+            }
+          },
+          {
+            "title": "TOP",
+            "x": 1344.0,
+            "y": 0.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Elevator/TopEndStopPressed",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "BTM",
+            "x": 1344.0,
+            "y": 96.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Elevator/BottomEndStopPressed",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "ALG",
+            "x": 1344.0,
+            "y": 192.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ElevatorHead/HasAlgae",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "NAV",
+            "x": 1344.0,
+            "y": 288.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Overview/Nav Sensor",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "GamePiece",
+            "x": 1408.0,
+            "y": 320.0,
+            "width": 128.0,
+            "height": 96.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ElevatorHead/GamePiece",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Climb",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Coral Shooter Front",
+            "x": 1120.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 352.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1186_Output_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "Coral Shooter Back",
+            "x": 1120.0,
+            "y": 352.0,
+            "width": 384.0,
+            "height": 352.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1184_Output_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "Ground Intake",
+            "x": 704.0,
+            "y": 0.0,
+            "width": 416.0,
+            "height": 384.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/orangevision_Port_1181_Input_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 40,
+              "fps": 30
+            }
+          },
+          {
+            "title": "Climber",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 704.0,
+            "height": 512.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/photonvision_Port_1182_Output_MJPEG_Server",
+              "period": 0.06,
+              "rotation_turns": 0,
+              "compression": 50,
+              "fps": 30
+            }
+          },
+          {
+            "title": "TOP",
+            "x": 704.0,
+            "y": 384.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Elevator/TopEndStopPressed",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "BTM",
+            "x": 768.0,
+            "y": 384.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Elevator/BottomEndStopPressed",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "ALG",
+            "x": 832.0,
+            "y": 384.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ElevatorHead/HasAlgae",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "NAV",
+            "x": 896.0,
+            "y": 384.0,
+            "width": 64.0,
+            "height": 96.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Overview/Nav Sensor",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "GamePiece",
+            "x": 960.0,
+            "y": 384.0,
+            "width": 160.0,
+            "height": 96.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ElevatorHead/GamePiece",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vision",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "Left",
+            "x": 1024.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 320.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Confidence",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Left/Confidence",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "HasVision",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Left/HasVision",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "LimelightConnected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Left/LimelightConnected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "NumTags",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Left/NumTags",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Center",
+            "x": 1152.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 320.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Confidence",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Center/Confidence",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "HasVision",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Center/HasVision",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "LimelightConnected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Center/LimelightConnected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "NumTags",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/Limelight/Center/NumTags",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "L1",
+            "x": 1024.0,
+            "y": 320.0,
+            "width": 128.0,
+            "height": 320.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Confidence",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/L1/Confidence",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Connected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/L1/Connected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "HasVision",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/L1/HasVision",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "NumTags",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/L1/NumTags",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          },
+          {
+            "title": "Source",
+            "x": 1152.0,
+            "y": 320.0,
+            "width": 128.0,
+            "height": 320.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Confidence",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/Source/Confidence",
+                  "period": 0.06,
+                  "data_type": "double",
+                  "show_submit_button": false
+                }
+              },
+              {
+                "title": "Connected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/Source/Connected",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "HasVision",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/Source/HasVision",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "NumTags",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/PhotonCamera/Source/NumTags",
+                  "period": 0.06,
+                  "data_type": "int",
+                  "show_submit_button": false
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "Field",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 1024.0,
+            "height": 512.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/Field",
+              "period": 0.06,
+              "field_game": "Reefscape",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Test",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Encoder 0",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Encoder 0",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Encoder 1",
+            "x": 128.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Encoder 1",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Encoder 2",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Encoder 2",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Encoder 3",
+            "x": 384.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Encoder 3",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "CurrentHeight",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Elevator/CurrentHeight",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "ArmAngle",
+            "x": 640.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/ElevatorArm/ArmAngle",
+              "period": 0.06,
+              "data_type": "double",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "HumanPlayerStrategy",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 416.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/HumanPlayerStrategy",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "limelight-center-processed",
+            "x": 544.0,
+            "y": 128.0,
+            "width": 544.0,
+            "height": 416.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-center-processed",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "limelight-left-processed",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 544.0,
+            "height": 416.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-left-processed",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tab 6",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "UseOPI",
+            "x": 416.0,
+            "y": 160.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/UseOPI",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "UseVision",
+            "x": 544.0,
+            "y": 160.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Autonomous/UseVision",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "Additional Reef Offset Left",
+            "x": 864.0,
+            "y": 160.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/Additional Reef Offset Left",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": -0.04,
+              "max_value": 0.04,
+              "divisions": 10,
+              "update_continuously": false
+            }
+          },
+          {
+            "title": "Additional Reef Offset Right",
+            "x": 864.0,
+            "y": 288.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/Additional Reef Offset Right",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": -0.04,
+              "max_value": 0.04,
+              "divisions": 10,
+              "update_continuously": false
+            }
+          },
+          {
+            "title": "Additional Reef Offset Back",
+            "x": 864.0,
+            "y": 416.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "/SmartDashboard/Additional Reef Offset Back",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": -0.04,
+              "max_value": 0.04,
+              "divisions": 10,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "UnstuckifyCoral",
+            "x": 640.0,
+            "y": 320.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/ElevatorHead/UnstuckifyCoral",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

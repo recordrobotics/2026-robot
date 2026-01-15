@@ -1,0 +1,12 @@
+{
+  "name": "2025 WPILib",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "postCreateCommand": "cd /opt && wget 'https://github.com/wpilibsuite/vscode-wpilib/releases/download/v2025.3.2/vscode-wpilib-2025.3.2.vsix'",
+  "features": {
+  },
+  "customizations": {
+      "vscode": {
+        "extensions": ["/opt/vscode-wpilib-2025.3.2.vsix","vscjava.vscode-java-pack","vscjava.vscode-gradle"]
+      }
+    }
+}

@@ -1,0 +1,111 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.8553556491877035,
+        "y": 3.4587149766987575
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.51539648481133,
+        "y": 3.8775052516551587
+      },
+      "isLocked": false,
+      "linkedName": "NeutralShoot"
+    },
+    {
+      "anchor": {
+        "x": 2.431468714335936,
+        "y": 5.2570496868056615
+      },
+      "prevControl": {
+        "x": 2.8367895417574998,
+        "y": 5.133553497200654
+      },
+      "nextControl": {
+        "x": 1.8008198296957072,
+        "y": 5.4492005188444805
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.2145134447567443,
+        "y": 5.567447184714523
+      },
+      "prevControl": {
+        "x": 1.2355474243123867,
+        "y": 5.288746955602258
+      },
+      "nextControl": {
+        "x": 1.1948056671117373,
+        "y": 5.828575238510867
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.1110476121204567,
+        "y": 6.971626341921283
+      },
+      "prevControl": {
+        "x": 1.1011937232979532,
+        "y": 6.582397733432392
+      },
+      "nextControl": {
+        "x": 1.130683068851999,
+        "y": 7.747226882817216
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.904455377816108,
+        "y": 6.084776347895962
+      },
+      "prevControl": {
+        "x": 2.5891309354959935,
+        "y": 6.567616900198637
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 2,
+      "rotationDegrees": -87.9249736385826
+    },
+    {
+      "waypointRelativePos": 3,
+      "rotationDegrees": -88.49256424122504
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.45,
+    "maxAcceleration": 8.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -31.64465903709265
+  },
+  "reversed": false,
+  "folder": "New Folder",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 35.81116392264126
+  },
+  "useDefaultConstraints": true
+}

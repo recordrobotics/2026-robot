@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 6.5845959999999994,
+        "y": 4.3772175
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.940186212655603,
+        "y": 4.251340472672912
+      },
+      "isLocked": false,
+      "linkedName": "ReefH"
+    },
+    {
+      "anchor": {
+        "x": 6.2204999999999995,
+        "y": 4.112749999999999
+      },
+      "prevControl": {
+        "x": 5.980652368253161,
+        "y": 4.18554966923276
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "AlgaeGHStart"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 5.45,
+    "maxAcceleration": 8.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}
