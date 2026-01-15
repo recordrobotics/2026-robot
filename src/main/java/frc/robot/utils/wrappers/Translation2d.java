@@ -7,7 +7,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Distance;
-import java.util.List;
+import java.util.Collection;
 
 @Immutable
 @SuppressWarnings("java:S2176")
@@ -190,7 +190,7 @@ public class Translation2d extends edu.wpi.first.math.geometry.Translation2d {
      * @return The nearest Translation2d from the list.
      */
     @Override
-    public Translation2d nearest(List<edu.wpi.first.math.geometry.Translation2d> translations) {
+    public Translation2d nearest(Collection<edu.wpi.first.math.geometry.Translation2d> translations) {
         return new Translation2d(super.nearest(translations));
     }
 

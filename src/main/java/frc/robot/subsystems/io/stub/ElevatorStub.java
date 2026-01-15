@@ -3,6 +3,7 @@ package frc.robot.subsystems.io.stub;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import frc.robot.subsystems.io.ElevatorIO;
 
 @SuppressWarnings("java:S1186") // Methods intentionally left blank
@@ -17,7 +18,7 @@ public class ElevatorStub implements ElevatorIO {
 
     @Override
     public Follower createFollower() {
-        return new Follower(0, false);
+        return new Follower(0, MotorAlignmentValue.Aligned);
     }
 
     @Override

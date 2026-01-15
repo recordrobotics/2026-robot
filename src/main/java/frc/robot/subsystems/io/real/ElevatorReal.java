@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ElevatorIO;
@@ -35,7 +36,7 @@ public class ElevatorReal implements ElevatorIO {
 
     @Override
     public Follower createFollower() {
-        return new Follower(RobotMap.Elevator.MOTOR_LEAD_ID, false);
+        return new Follower(RobotMap.Elevator.MOTOR_LEAD_ID, MotorAlignmentValue.Aligned);
     }
 
     @Override

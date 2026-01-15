@@ -9,7 +9,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Distance;
-import java.util.List;
+import java.util.Collection;
 
 @Immutable
 @SuppressWarnings({"java:S2176", "Immutable"})
@@ -206,7 +206,7 @@ public class Pose2d extends edu.wpi.first.math.geometry.Pose2d {
      * @return The nearest Pose2d from the list.
      */
     @Override
-    public Pose2d nearest(List<edu.wpi.first.math.geometry.Pose2d> poses) {
+    public Pose2d nearest(Collection<edu.wpi.first.math.geometry.Pose2d> poses) {
         return new Pose2d(super.nearest(poses));
     }
 

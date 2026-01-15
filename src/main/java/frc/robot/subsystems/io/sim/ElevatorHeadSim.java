@@ -10,7 +10,6 @@ import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
@@ -24,7 +23,6 @@ import frc.robot.RobotMap;
 import frc.robot.subsystems.ElevatorHead.CoralShooterStates;
 import frc.robot.subsystems.io.ElevatorHeadIO;
 import frc.robot.utils.SimpleMath;
-import frc.robot.utils.maplesim.IntakeFromGoalSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeAlgaeOnFly;
@@ -61,8 +59,6 @@ public class ElevatorHeadSim implements ElevatorHeadIO {
 
     private final AbstractDriveTrainSimulation drivetrainSim;
 
-    private final IntakeFromGoalSimulation intakeSimulation;
-
     public ElevatorHeadSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
         this.drivetrainSim = drivetrainSim;
@@ -76,8 +72,6 @@ public class ElevatorHeadSim implements ElevatorHeadIO {
 
         if (coralDetectorSim != null) coralDetector.setSimDevice(coralDetectorSim);
         else coralDetector.close();
-
-        intakeSimulation = new IntakeFromGoalSimulation("Algae", drivetrainSim, 1);
     }
 
     @Override
@@ -160,21 +154,6 @@ public class ElevatorHeadSim implements ElevatorHeadIO {
                 .getAlgaeGrabberTargetPoseTop()
                 .relativeTo(new Pose3d(RobotContainer.model.getRobot()));
 
-        intakeSimulation.drivetrainRelativePose =
-                new Transform3d(algaeTargetPose.getTranslation(), algaeTargetPose.getRotation());
-
-        if (intakeSimulation.getGamePiecesAmount() > 0) {
-            voltage /= ALGAE_VOLTAGE_DIVIDER;
-            if (!hadAlgae) {
-                RobotContainer.model
-                        .getRobotAlgae()
-                        .setPoseSupplier(RobotContainer.model.elevatorArm::getAlgaeGrabberTargetPoseTop);
-                hadAlgae = true;
-            }
-        } else {
-            hadAlgae = false;
-        }
-
         wheelSimModel.setInputVoltage(voltage);
         wheelSimModel.update(periodicDt);
 
@@ -186,12 +165,6 @@ public class ElevatorHeadSim implements ElevatorHeadIO {
                 periodicDt);
 
         velocityFilter.calculate(RobotContainer.elevatorHead.getVelocity());
-
-        if (velocityFilter.lastValue() < -INTAKE_ALGAE_VELOCITY_THRESHOLD) {
-            intakeSimulation.startIntake();
-        } else {
-            intakeSimulation.stopIntake();
-        }
 
         if (!isCoralDetectorTriggered()
                 && Math.abs(velocityFilter.lastValue()) > SHOOT_CORAL_VELOCITY_THRESHOLD
@@ -226,8 +199,7 @@ public class ElevatorHeadSim implements ElevatorHeadIO {
                             angle));
         }
 
-        if (velocityFilter.lastValue() > SHOOT_ALGAE_VELOCITY_THRESHOLD
-                && intakeSimulation.obtainGamePieceFromIntake()) {
+        if (velocityFilter.lastValue() > SHOOT_ALGAE_VELOCITY_THRESHOLD) {
             RobotContainer.model.getRobotAlgae().setPoseSupplier(() -> null);
 
             Angle angle = algaeTargetPose.getRotation().getMeasureY();
