@@ -272,12 +272,15 @@ public final class Constants {
                         (side == 0 ? -ADDITIONAL_REEF_SEGMENT_OFFSET_LEFT : ADDITIONAL_REEF_SEGMENT_OFFSET_RIGHT),
                         Rotation2d.kZero));
                 return switch (level) {
-                    case L1 -> newPose.transformBy(new Transform2d(
-                            -L1_REEF_OFFSET, CoralIntake.INTAKE_X_OFFSET.in(Meters), Rotation2d.kCW_90deg));
-                    case L2, L3 -> newPose.transformBy(
-                            new Transform2d(-L2L3_REEF_OFFSET, -SHOOTER_OFFSET.in(Meters), Rotation2d.kZero));
-                    case L4 -> newPose.transformBy(
-                            new Transform2d(-L4_REEF_OFFSET, -SHOOTER_OFFSET.in(Meters), Rotation2d.kZero));
+                    case L1 ->
+                        newPose.transformBy(new Transform2d(
+                                -L1_REEF_OFFSET, CoralIntake.INTAKE_X_OFFSET.in(Meters), Rotation2d.kCW_90deg));
+                    case L2, L3 ->
+                        newPose.transformBy(
+                                new Transform2d(-L2L3_REEF_OFFSET, -SHOOTER_OFFSET.in(Meters), Rotation2d.kZero));
+                    case L4 ->
+                        newPose.transformBy(
+                                new Transform2d(-L4_REEF_OFFSET, -SHOOTER_OFFSET.in(Meters), Rotation2d.kZero));
                     default -> throw new IllegalArgumentException("Invalid Coral Level: " + level);
                 };
             }
