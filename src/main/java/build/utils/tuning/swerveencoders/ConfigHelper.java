@@ -19,7 +19,7 @@ public final class ConfigHelper {
         JsonNode obj = FileUtils.readJson(configFile);
         Set<Integer> encoderChannels = new HashSet<>();
 
-        obj.fields().forEachRemaining(entry -> {
+        obj.properties().iterator().forEachRemaining(entry -> {
             JsonNode moduleConfig = entry.getValue();
             if (moduleConfig.has(ENCODER_CHANNEL)) {
                 encoderChannels.add(moduleConfig.get(ENCODER_CHANNEL).asInt());
@@ -33,7 +33,7 @@ public final class ConfigHelper {
             throws FileNotFoundException {
         JsonNode obj = FileUtils.readJson(configFile);
 
-        obj.fields().forEachRemaining(entry -> {
+        obj.properties().iterator().forEachRemaining(entry -> {
             JsonNode moduleConfig = entry.getValue();
             if (moduleConfig.has(ENCODER_CHANNEL)) {
                 int channel = moduleConfig.get(ENCODER_CHANNEL).asInt();
