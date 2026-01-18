@@ -84,11 +84,6 @@ task(replayWatch, type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
-task(pathgenerator, type: JavaExec) {
-    mainClass = "build.utils.pathgenerator.Main"
-    classpath = sourceSets.main.runtimeClasspath
-}
-
 task(tuning, type: JavaExec) {
     mainClass = "build.utils.tuning.Main"
     classpath = sourceSets.main.runtimeClasspath
@@ -284,5 +279,3 @@ gversion {
     timeZone     = "America/New_York" // Use preferred time zone
     indent       = "  "
 }
-
-project.compileJava.finalizedBy(pathgenerator)

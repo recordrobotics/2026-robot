@@ -8,26 +8,12 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants;
-import frc.robot.Constants.ElevatorHeight;
-import frc.robot.Constants.Game.CoralLevel;
 import frc.robot.RobotContainer;
-import frc.robot.commands.CoralIntakeMoveL1;
-import frc.robot.commands.CoralIntakeShootL1;
-import frc.robot.commands.CoralShoot;
-import frc.robot.commands.ElevatorMove;
-import frc.robot.commands.ElevatorMoveThenAlgaeGrabEnd;
-import frc.robot.commands.ProcessorScore;
-import frc.robot.commands.ReefAlign;
-import frc.robot.commands.WaypointAlign;
-import frc.robot.commands.legacy.CoralIntakeFromSource;
-import frc.robot.commands.legacy.ElevatorMoveThenAlgaeGrab;
 import frc.robot.utils.libraries.Elastic.Notification.NotificationLevel;
 import frc.robot.utils.modifiers.AutoControlModifier;
 import java.util.Optional;
-import java.util.Set;
 import org.littletonrobotics.junction.Logger;
 
 public final class AutoPath {
@@ -48,54 +34,6 @@ public final class AutoPath {
 
         // Stop the robot's movement
         NamedCommands.registerCommand("Stop", new InstantCommand(() -> RobotContainer.drivetrain.kill()));
-
-        NamedCommands.registerCommand(
-                "AutoAlign",
-                Commands.defer(
-                        () -> CommandUtils.finishOnInterrupt(WaypointAlign.align(
-                                ReefAlign.generateWaypointsClosestWithOffset(CoralLevel.L4, false),
-                                0,
-                                1,
-                                true,
-                                new Double[] {2.0, 2.0},
-                                AutoControlModifier.getDefault(),
-                                AutoUtils::getCurrentDrivetrainKinematicState)),
-                        Set.of(RobotContainer.drivetrain)));
-        NamedCommands.registerCommand("ElevatorL4", new ElevatorMove(ElevatorHeight.L4));
-        NamedCommands.registerCommand("ElevatorL3", new ElevatorMove(ElevatorHeight.L3));
-        NamedCommands.registerCommand("ElevatorL2", new ElevatorMove(ElevatorHeight.L2));
-        NamedCommands.registerCommand("ElevatorDown", new ElevatorMove(ElevatorHeight.BOTTOM));
-        NamedCommands.registerCommand(
-                "AlgaeL2",
-                CommandUtils.finishOnInterrupt(ElevatorMoveThenAlgaeGrab.create(ElevatorHeight.LOW_REEF_ALGAE, false)
-                        .withTimeout(3.0)));
-        NamedCommands.registerCommand(
-                "AlgaeL2End",
-                CommandUtils.finishOnInterrupt(
-                        new ElevatorMoveThenAlgaeGrabEnd(ElevatorHeight.LOW_REEF_ALGAE, false).withTimeout(2.0)));
-
-        NamedCommands.registerCommand(
-                "AlgaeL3",
-                CommandUtils.finishOnInterrupt(ElevatorMoveThenAlgaeGrab.create(ElevatorHeight.HIGH_REEF_ALGAE, false)
-                        .withTimeout(3.0)));
-        NamedCommands.registerCommand(
-                "AlgaeL3End",
-                CommandUtils.finishOnInterrupt(
-                        new ElevatorMoveThenAlgaeGrabEnd(ElevatorHeight.HIGH_REEF_ALGAE, false).withTimeout(2.0)));
-
-        NamedCommands.registerCommand(
-                "ProcessorScore", CommandUtils.finishOnInterrupt(new ProcessorScore(false).withTimeout(2)));
-        NamedCommands.registerCommand(
-                "SourceIntake", CommandUtils.finishOnInterrupt(new CoralIntakeFromSource(false).withTimeout(4.5)));
-        NamedCommands.registerCommand(
-                "SourceIntakeStart", CommandUtils.finishOnInterrupt(new CoralIntakeFromSource(false).withTimeout(4)));
-        NamedCommands.registerCommand(
-                "SourceIntakeEnd", CommandUtils.finishOnInterrupt(new CoralIntakeFromSource(false).withTimeout(4)));
-        NamedCommands.registerCommand("CoralShoot", CommandUtils.finishOnInterrupt(new CoralShoot().withTimeout(2)));
-        NamedCommands.registerCommand(
-                "CoralL1ArmMove", CommandUtils.finishOnInterrupt(new CoralIntakeMoveL1().withTimeout(3)));
-        NamedCommands.registerCommand(
-                "CoralL1Shoot", CommandUtils.finishOnInterrupt(new CoralIntakeShootL1().withTimeout(3)));
 
         // Configures auto builder
         AutoBuilder.configure(

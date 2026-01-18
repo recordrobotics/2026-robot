@@ -12,11 +12,8 @@ import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants;
-import frc.robot.Constants.ElevatorHeight;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.CoralIntake.CoralIntakeState;
-import frc.robot.subsystems.ElevatorHead.CoralShooterStates;
 import frc.robot.tests.TestControlBridge;
 import frc.robot.utils.ConsoleLogger;
 import java.util.ArrayList;
@@ -451,27 +448,11 @@ public class TestRobot {
             }
         }
 
-        try {
-            RobotContainer.elevatorHead.getSimIO().clearPreload();
-        } catch (Exception e) {
-            ConsoleLogger.logError(e);
-        }
-
-        try {
-            RobotContainer.coralIntake.getSimIO().removeCoral();
-        } catch (Exception e) {
-            ConsoleLogger.logError(e);
-        }
-
         RobotContainer.model.getRobotCoral().setPoseSupplier(() -> null);
         RobotContainer.model.getRobotAlgae().setPoseSupplier(() -> null);
 
         RobotContainer.resetEncoders();
         CommandScheduler.getInstance().cancelAll();
-        RobotContainer.elevator.set(Constants.Elevator.STARTING_HEIGHT);
-        RobotContainer.elevatorArm.set(ElevatorHeight.BOTTOM.getArmAngle());
-        RobotContainer.elevatorHead.set(CoralShooterStates.OFF);
-        RobotContainer.coralIntake.set(CoralIntakeState.UP);
     }
 
     /**

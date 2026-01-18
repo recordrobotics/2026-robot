@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Second;
 
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -13,11 +12,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.Constants.Game.IGamePosition;
-import frc.robot.Constants.Game.SourcePosition;
 import frc.robot.RobotContainer;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.modifiers.DrivetrainControl;
@@ -45,20 +40,9 @@ public class JoystickXboxSimple implements AbstractControl {
     private Transform2d acceleration = new Transform2d();
     private Transform2d jerk = new Transform2d();
 
-    private ReefLevelSwitchValue reefswitch = ReefLevelSwitchValue.L4;
-
     public JoystickXboxSimple(int joystickPort, int xboxPort) {
         joystick = new Joystick(joystickPort);
         xboxController = new XboxController(xboxPort);
-
-        new Trigger(() -> xboxController.getAButtonPressed())
-                .onTrue(new InstantCommand(() -> reefswitch = ReefLevelSwitchValue.L1).ignoringDisable(true));
-        new Trigger(() -> xboxController.getXButtonPressed())
-                .onTrue(new InstantCommand(() -> reefswitch = ReefLevelSwitchValue.L2).ignoringDisable(true));
-        new Trigger(() -> xboxController.getBButtonPressed())
-                .onTrue(new InstantCommand(() -> reefswitch = ReefLevelSwitchValue.L3).ignoringDisable(true));
-        new Trigger(() -> xboxController.getYButtonPressed())
-                .onTrue(new InstantCommand(() -> reefswitch = ReefLevelSwitchValue.L4).ignoringDisable(true));
     }
 
     @Override
@@ -134,25 +118,6 @@ public class JoystickXboxSimple implements AbstractControl {
 
     public boolean isAutoAlignNearTriggered() {
         return false;
-    }
-
-    @Override
-    public boolean isElevatorRelativeDriveTriggered() {
-        return joystick.getRawButton(8)
-                || (isAutoScoreTriggered()
-                        && getReefLevelSwitchValue() != ReefLevelSwitchValue.L1); // elevator relative when auto score
-    }
-
-    @Override
-    public boolean isCoralIntakeRelativeDriveTriggered() {
-        return joystick.getRawButton(10)
-                || (isAutoScoreTriggered()
-                        && getReefLevelSwitchValue() == ReefLevelSwitchValue.L1); // coral relative when auto score
-    }
-
-    @Override
-    public boolean isClimbRelativeDriveTriggered() {
-        return joystick.getRawButton(12);
     }
 
     public Pair<Double, Double> getXYRaw() {
@@ -235,122 +200,5 @@ public class JoystickXboxSimple implements AbstractControl {
     @Override
     public void vibrate(RumbleType type, double value) {
         xboxController.setRumble(type, value);
-    }
-
-    @Override
-    public boolean isAutoScoreTriggered() {
-        return joystick.getRawButton(1);
-    }
-
-    @Override
-    public boolean isElevatorL2Triggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isElevatorL3Triggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isElevatorL4Triggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isCoralShootTriggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isCoralGroundIntakeTriggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isCoralGroundIntakeSimpleTriggered() {
-        return joystick.getRawButton(2);
-    }
-
-    @Override
-    public boolean isReefAlgaeSimpleTriggered() {
-        return joystick.getRawButton(3);
-    }
-
-    @Override
-    public boolean isCoralSourceIntakeTriggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isElevatorAlgaeLowTriggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isElevatorAlgaeHighTriggered() {
-        return false;
-    }
-
-    @Override
-    public ReefLevelSwitchValue getReefLevelSwitchValue() {
-        return reefswitch;
-    }
-
-    @Override
-    public boolean isManualOverrideTriggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isGroundAlgaeTriggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isScoreAlgaeTriggered() {
-        return false;
-    }
-
-    @Override
-    public boolean isCoralIntakeScoreL1Triggered() {
-        return false;
-    }
-
-    @Override
-    public LinearVelocity getManualElevatorVelocity() {
-        double axis = SimpleMath.povToVector(joystick.getPOV()).getY();
-        return MANUAL_ELEVATOR_VELOCITY_MAX.times(axis);
-    }
-
-    @Override
-    public AngularVelocity getManualElevatorArmVelocity() {
-        double axis = SimpleMath.povToVector(joystick.getPOV()).getX();
-        return MANUAL_ELEVATOR_ARM_VELOCITY_MAX.times(axis);
-    }
-
-    @Override
-    public boolean isClimbTriggered() {
-        return joystick.getRawButton(7);
-    }
-
-    @Override
-    public boolean isClimbBurstTriggered() {
-        return joystick.getRawButton(9);
-    }
-
-    @Override
-    public boolean isCoralSourceIntakeAutoTriggered() {
-        Pose2d robot = RobotContainer.poseSensorFusion.getEstimatedPosition();
-        SourcePosition closestSource = IGamePosition.closestTo(robot, SourcePosition.values());
-
-        return closestSource.getPose().getTranslation().getDistance(robot.getTranslation()) < AUTO_SOURCE_MAX_DISTANCE
-                && Math.abs(closestSource
-                                .getPose()
-                                .getRotation()
-                                .minus(robot.getRotation())
-                                .getMeasure()
-                                .abs(Degrees))
-                        < AUTO_SOURCE_MAX_ANGLE_DIFF;
     }
 }

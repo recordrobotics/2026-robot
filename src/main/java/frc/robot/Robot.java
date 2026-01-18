@@ -10,10 +10,8 @@ import edu.wpi.first.net.WebServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.KillSpecified;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.utils.AutoLogLevelManager;
 import frc.robot.utils.ConsoleLogger;
@@ -207,10 +205,6 @@ public final class Robot extends LoggedRobot {
             ConsoleLogger.logError("CommandScheduler exception", e);
         }
 
-        SmartDashboard.putString(
-                "Overview/LevelSwitch",
-                DashboardUI.Overview.getControl().getReefLevelSwitchValue().toString());
-
         try {
             DashboardUI.update();
         } catch (Exception e) {
@@ -294,8 +288,6 @@ public final class Robot extends LoggedRobot {
             autonomousCommand.cancel();
         }
 
-        new KillSpecified(RobotContainer.elevatorHead, RobotContainer.coralIntake).schedule();
-
         RobotContainer.teleopInit();
         hasRun = true;
 
@@ -304,10 +296,7 @@ public final class Robot extends LoggedRobot {
 
     /** This function is called periodically during operator control. */
     @Override
-    public void teleopPeriodic() {
-        Logger.recordOutput(
-                "Control/ReefLevelSwitch", DashboardUI.Overview.getControl().getReefLevelSwitchValue());
-    }
+    public void teleopPeriodic() {}
 
     @Override
     public void testInit() {
