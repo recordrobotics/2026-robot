@@ -1,14 +1,8 @@
 package frc.robot.control;
 
-import static edu.wpi.first.units.Units.Centimeters;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Second;
-
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -22,14 +16,6 @@ public class JoystickXboxSimple implements AbstractControl {
 
     private static final double HALF_SPEED_DIRECTIONAL_DIVIDER = 3;
     private static final double HALF_SPEED_SPIN_DIVIDER = 2;
-
-    private static final LinearVelocity MANUAL_ELEVATOR_VELOCITY_MAX =
-            Centimeters.of(50).per(Second);
-    private static final AngularVelocity MANUAL_ELEVATOR_ARM_VELOCITY_MAX =
-            Degrees.of(180).per(Second);
-
-    private static final double AUTO_SOURCE_MAX_DISTANCE = 2.3; // meters
-    private static final double AUTO_SOURCE_MAX_ANGLE_DIFF = 80; // degrees
 
     private Joystick joystick;
     private XboxController xboxController;
