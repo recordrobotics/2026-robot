@@ -1,7 +1,5 @@
 package frc.robot.tests;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
