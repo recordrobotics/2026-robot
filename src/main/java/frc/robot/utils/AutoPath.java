@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.utils.libraries.Elastic.Notification.NotificationLevel;
+import frc.robot.utils.libraries.Elastic.NotificationLevel;
 import frc.robot.utils.modifiers.AutoControlModifier;
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;

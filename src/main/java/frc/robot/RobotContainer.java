@@ -29,7 +29,7 @@ import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
-import frc.robot.utils.libraries.Elastic.Notification.NotificationLevel;
+import frc.robot.utils.libraries.Elastic.NotificationLevel;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.simulation.VisionSystemSim;
 

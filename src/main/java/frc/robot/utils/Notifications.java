@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
-import frc.robot.utils.libraries.Elastic.Notification.NotificationLevel;
+import frc.robot.utils.libraries.Elastic.NotificationLevel;
 import java.util.ArrayList;
 import java.util.List;
 
