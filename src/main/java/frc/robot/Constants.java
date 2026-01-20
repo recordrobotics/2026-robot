@@ -226,11 +226,6 @@ public final class Constants {
                                 .scrollAtAbsoluteSpeed(SCROLL_SPEED.times(5), LED_SPACING)
                                 .blend(LEDPattern.solid(Color.kBlue));
 
-        public static final Supplier<LEDPattern> ALLIANCE_COLOR_FANCY_WITH_CLIMB =
-                () -> RobotContainer.climber.getCurrentState() != ClimberState.PARK
-                        ? CLIMB_PATTERN
-                        : ALLIANCE_COLOR_FANCY.get();
-
         public static final Supplier<LEDPattern> sourcePattern =
                 () -> LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kRed, Color.kBlack)
                         .scrollAtAbsoluteSpeed(SCROLL_SPEED, LED_SPACING);

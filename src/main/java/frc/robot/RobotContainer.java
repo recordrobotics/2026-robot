@@ -22,7 +22,6 @@ import frc.robot.subsystems.*;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
-import frc.robot.utils.HumanPlayerSimulation;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.RuckigWarmup;
@@ -75,7 +74,6 @@ public final class RobotContainer {
     public static RobotModel model;
     public static CoralDetection coralDetection;
     public static VisionSystemSim visionSim;
-    public static HumanPlayerSimulation humanPlayerSimulation;
 
     private static Alert noEncoderResetAlert;
 
@@ -142,7 +140,6 @@ public final class RobotContainer {
             lights = new Lights();
             pdp = new PowerDistributionPanel();
             coralDetection = new CoralDetection();
-            humanPlayerSimulation = new HumanPlayerSimulation();
         }
 
         model = new RobotModel();

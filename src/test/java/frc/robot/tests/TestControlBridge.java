@@ -3,14 +3,10 @@ package frc.robot.tests;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.robot.Constants;
-import frc.robot.Constants.Game.IGamePosition;
 import frc.robot.RobotContainer;
 import frc.robot.control.AbstractControl;
 import frc.robot.dashboard.DashboardUI;
@@ -65,29 +61,10 @@ public class TestControlBridge implements AbstractControl {
             }
         }
 
-        Pair<Double, Double> xy;
-        if (isCoralIntakeRelativeDriveTriggered()
-                || isElevatorRelativeDriveTriggered()
-                || isClimbRelativeDriveTriggered()) {
-            xy = getXYRaw();
-        } else {
-            xy = getXYOriented();
-        }
+        Pair<Double, Double> xy = getXYOriented();
 
         double x = xy.getFirst() * getDirectionalSpeedLevel();
         double y = xy.getSecond() * getDirectionalSpeedLevel();
-
-        if (isCoralIntakeRelativeDriveTriggered()) {
-            y = -y;
-        } else if (isElevatorRelativeDriveTriggered()) {
-            double temp = y;
-            y = -x;
-            x = -temp;
-        } else if (isClimbRelativeDriveTriggered()) {
-            double temp = y;
-            y = x;
-            x = temp;
-        }
 
         velocity = new Transform2d(x, y, new Rotation2d(getSpin() * getSpinSpeedLevel()));
         acceleration = new Transform2d(
@@ -110,17 +87,11 @@ public class TestControlBridge implements AbstractControl {
 
     @Override
     public DrivetrainControl getDrivetrainControl() {
-        if (isElevatorRelativeDriveTriggered()
-                || isCoralIntakeRelativeDriveTriggered()
-                || isClimbRelativeDriveTriggered()) {
-            return DrivetrainControl.createRobotRelative(velocity, acceleration, jerk);
-        } else {
-            return DrivetrainControl.createFieldRelative(
-                    velocity,
-                    acceleration,
-                    jerk,
-                    RobotContainer.poseSensorFusion.getEstimatedPosition().getRotation());
-        }
+        return DrivetrainControl.createFieldRelative(
+                velocity,
+                acceleration,
+                jerk,
+                RobotContainer.poseSensorFusion.getEstimatedPosition().getRotation());
     }
 
     @Override
@@ -129,7 +100,6 @@ public class TestControlBridge implements AbstractControl {
         // Returns the raw driver input as a Transform2d
         return new Transform2d(xy.getFirst(), xy.getSecond(), Rotation2d.fromRadians(getSpin()));
     }
-
 
     public Pair<Double, Double> getXYRaw() {
         double x = SimpleMath.applyThresholdAndSensitivity(
@@ -158,7 +128,7 @@ public class TestControlBridge implements AbstractControl {
     }
 
     public boolean isHalfSpeedTriggered() {
-        return isAutoScoreTriggered(); // half speed auto enabled when scoring
+        return false; // half speed auto enabled when scoring
     }
 
     public Double getDirectionalSpeedLevel() {

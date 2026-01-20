@@ -29,8 +29,6 @@ public final class AutonomousLayout extends AbstractLayout {
 
         EnumSet.allOf(FieldStartingLocation.class)
                 .forEach(v -> fieldStartingLocationChooser.addOption(v.toString(), v));
-        fieldStartingLocationChooser.addDefaultOption(
-                FieldStartingLocation.BARGE_CENTER.toString(), FieldStartingLocation.BARGE_CENTER);
 
         SmartDashboard.putBoolean("Autonomous/ResetLocationButton", false);
         SmartDashboard.putBoolean("Autonomous/LimelightRotation", false);
@@ -88,9 +86,7 @@ public final class AutonomousLayout extends AbstractLayout {
     }
 
     public FieldStartingLocation getStartingLocation() {
-        return fieldStartingLocationChooser.get() == null
-                ? FieldStartingLocation.BARGE_CENTER
-                : fieldStartingLocationChooser.get();
+        return fieldStartingLocationChooser.get();
     }
 
     public boolean isResetLocationPressed() {

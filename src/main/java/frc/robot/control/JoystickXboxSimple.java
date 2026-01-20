@@ -47,29 +47,10 @@ public class JoystickXboxSimple implements AbstractControl {
 
     @Override
     public void update() {
-        Pair<Double, Double> xy;
-        if (isCoralIntakeRelativeDriveTriggered()
-                || isElevatorRelativeDriveTriggered()
-                || isClimbRelativeDriveTriggered()) {
-            xy = getXYRaw();
-        } else {
-            xy = getXYOriented();
-        }
+        Pair<Double, Double> xy = getXYOriented();
 
         double x = xy.getFirst() * getDirectionalSpeedLevel();
         double y = xy.getSecond() * getDirectionalSpeedLevel();
-
-        if (isCoralIntakeRelativeDriveTriggered()) {
-            y = -y;
-        } else if (isElevatorRelativeDriveTriggered()) {
-            double temp = y;
-            y = -x;
-            x = -temp;
-        } else if (isClimbRelativeDriveTriggered()) {
-            double temp = y;
-            y = x;
-            x = temp;
-        }
 
         velocity = new Transform2d(x, y, new Rotation2d(getSpin() * getSpinSpeedLevel()));
         acceleration = new Transform2d(
@@ -92,17 +73,11 @@ public class JoystickXboxSimple implements AbstractControl {
 
     @Override
     public DrivetrainControl getDrivetrainControl() {
-        if (isElevatorRelativeDriveTriggered()
-                || isCoralIntakeRelativeDriveTriggered()
-                || isClimbRelativeDriveTriggered()) {
-            return DrivetrainControl.createRobotRelative(velocity, acceleration, jerk);
-        } else {
-            return DrivetrainControl.createFieldRelative(
-                    velocity,
-                    acceleration,
-                    jerk,
-                    RobotContainer.poseSensorFusion.getEstimatedPosition().getRotation());
-        }
+        return DrivetrainControl.createFieldRelative(
+                velocity,
+                acceleration,
+                jerk,
+                RobotContainer.poseSensorFusion.getEstimatedPosition().getRotation());
     }
 
     @Override
@@ -147,7 +122,7 @@ public class JoystickXboxSimple implements AbstractControl {
     }
 
     public boolean isHalfSpeedTriggered() {
-        return isAutoScoreTriggered(); // half speed auto enabled when scoring
+        return false; // half speed auto enabled when scoring
     }
 
     public Double getDirectionalSpeedLevel() {
