@@ -2,8 +2,8 @@
 
 # -- Project information
 
-project = "2025 Control"
-copyright = "2025, Record Robotics"
+project = "2026 Robot"
+copyright = "2026, Record Robotics"
 author = "Record Robotics"
 
 release = "1.0"
@@ -33,7 +33,7 @@ templates_path = ["_templates"]
 html_theme = "sphinx_book_theme"
 
 html_theme_options = {
-    "repository_url": "https://github.com/recordrobotics/2025_Control",
+    "repository_url": "https://github.com/recordrobotics/2026-robot",
     "use_repository_button": True,
     "home_page_in_toc": True,
     "path_to_docs": "docs/source/",
@@ -43,7 +43,7 @@ html_theme_options = {
     "use_fullscreen_button": False,
 }
 
-html_title = "2025 Control"
+html_title = "2026 Robot"
 
 # -- Options for EPUB output
 epub_show_urls = "footnote"
