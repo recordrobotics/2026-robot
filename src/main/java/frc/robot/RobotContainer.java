@@ -108,6 +108,7 @@ public final class RobotContainer {
 
                 if (Constants.RobotState.VISION_SIMULATION_MODE
                         == Constants.RobotState.VisionSimulationMode.PHOTON_SIM_INACCURATE) {
+                    // simulate misalignment of field elements, assume tags are perfectly placed on field elements
                     AprilTagFieldLayout noisyTagLayout = SimpleMath.addNoiseToAprilTagFieldLayout(
                             Constants.Game.APRILTAG_LAYOUT,
                             NON_REEF_TAG_IDS,
