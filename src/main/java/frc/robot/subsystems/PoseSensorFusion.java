@@ -442,9 +442,9 @@ public class PoseSensorFusion extends ManagedSubsystemBase {
     }
 
     /**
-     * Resets the pose to face elevator away from driverstation, while keeping translation the same
+     * Aligns the robot's rotation to face the robot in the same direction as the driver station
      */
-    public void resetDriverPose() {
+    public void alignRotationWithDriverStation() {
         Pose2d current = getEstimatedPosition();
         setToPose(new Pose2d(
                 current.getTranslation(),

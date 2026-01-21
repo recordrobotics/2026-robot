@@ -206,7 +206,7 @@ public final class RobotContainer {
 
         // Reset pose trigger
         new Trigger(() -> DashboardUI.Overview.getControl().isPoseResetTriggered())
-                .onTrue(new InstantCommand(poseSensorFusion::resetDriverPose));
+                .onTrue(new InstantCommand(poseSensorFusion::alignRotationWithDriverStation));
         new Trigger(() -> DashboardUI.Overview.getControl().isLimelightResetTriggered())
                 .onTrue(new InstantCommand(poseSensorFusion::resetToVision));
         new Trigger(DashboardUI.Autonomous::isResetLocationPressed)
