@@ -59,9 +59,10 @@ public final class RobotContainer {
     public static final double FMS_AUTO_RESET_ENCODERS_MIN_TIME = 13;
 
     /**
-     * The time remaining in the match after which the endgame starts and it is time to climb
+     * The time remaining in the match after which we should go to climb
+     * the FMS plays a sound at 30 seconds, we don't need that much time
      */
-    public static final double ENDGAME_CLIMB_TIME = 30.0; // seconds
+    public static final double XBOX_RUMBLE_ENDGAME_TIME = 15.0; // seconds
 
     public static final int[] NON_REEF_TAG_IDS = new int[] {1, 2, 3, 4, 5, 12, 13, 14, 15, 16};
     public static final double PHOTON_SIM_NOISY_STDDEV_POS = 0.2;
@@ -200,7 +201,7 @@ public final class RobotContainer {
                         new KillSpecified(drivetrain).alongWith(new InstantCommand(() -> CommandScheduler.getInstance()
                                 .cancelAll())));
 
-        new Trigger(() -> DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE) <= ENDGAME_CLIMB_TIME)
+        new Trigger(() -> DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE) <= XBOX_RUMBLE_ENDGAME_TIME)
                 .onTrue(new VibrateXbox(RumbleType.kBothRumble, 1.0).withTimeout(2.0));
 
         // Reset pose trigger
