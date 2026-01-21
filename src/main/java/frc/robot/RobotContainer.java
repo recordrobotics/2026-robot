@@ -48,9 +48,6 @@ public final class RobotContainer {
 
     public static final double INVALID_COMMAND_VIBRATE_TIME = 0.1;
 
-    public static final double ELEVATOR_LOCK_REEF_DISTANCE = 0.2;
-    public static final double ELEVATOR_LOCK_REEF_ANGLE_DIFF = 80; /* degrees */
-
     public static final double AUTO_ALIGN_FIRST_WAYPOINT_TIMEOUT = 2.0;
     public static final double AUTO_ALIGN_SECOND_WAYPOINT_TIMEOUT = 1.0;
 

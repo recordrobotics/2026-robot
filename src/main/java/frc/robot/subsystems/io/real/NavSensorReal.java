@@ -5,7 +5,6 @@ import com.studica.frc.AHRS.NavXComType;
 import frc.robot.subsystems.io.NavSensorIO;
 
 public class NavSensorReal implements NavSensorIO {
-
     private final AHRS nav = new AHRS(NavXComType.kUSB1);
 
     @Override
