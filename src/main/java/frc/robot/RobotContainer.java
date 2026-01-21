@@ -61,7 +61,7 @@ public final class RobotContainer {
      */
     public static final double XBOX_RUMBLE_ENDGAME_TIME = 15.0; // seconds
 
-    public static final int[] NON_REEF_TAG_IDS = new int[] {1, 2, 3, 4, 5, 12, 13, 14, 15, 16};
+    public static final int[] NON_HUB_TAG_IDS = new int[] {1, 12, 13, 14, 15, 16, 7, 6, 17, 28, 29, 30, 31, 32, 23, 22};
     public static final double PHOTON_SIM_NOISY_STDDEV_POS = 0.2;
     public static final double PHOTON_SIM_NOISY_STDDEV_ROT = 0.1;
 
@@ -111,7 +111,7 @@ public final class RobotContainer {
                     // simulate misalignment of field elements, assume tags are perfectly placed on field elements
                     AprilTagFieldLayout noisyTagLayout = SimpleMath.addNoiseToAprilTagFieldLayout(
                             Constants.Game.APRILTAG_LAYOUT,
-                            NON_REEF_TAG_IDS,
+                            NON_HUB_TAG_IDS,
                             PHOTON_SIM_NOISY_STDDEV_POS,
                             PHOTON_SIM_NOISY_STDDEV_POS,
                             0,
