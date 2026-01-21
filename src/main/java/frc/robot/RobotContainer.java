@@ -69,7 +69,6 @@ public final class RobotContainer {
 
     public static Drivetrain drivetrain;
     public static PoseSensorFusion poseSensorFusion;
-    public static Lights lights;
     public static PowerDistributionPanel pdp;
     public static RobotModel model;
     public static CoralDetection coralDetection;
@@ -103,7 +102,6 @@ public final class RobotContainer {
 
         if (Constants.RobotState.getMode() == Mode.REAL) {
             poseSensorFusion = new PoseSensorFusion();
-            lights = new Lights();
             pdp = new PowerDistributionPanel();
             coralDetection = new CoralDetection();
         } else {
@@ -137,7 +135,6 @@ public final class RobotContainer {
             }
 
             poseSensorFusion = new PoseSensorFusion();
-            lights = new Lights();
             pdp = new PowerDistributionPanel();
             coralDetection = new CoralDetection();
         }

@@ -13,7 +13,6 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -21,12 +20,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.LEDPattern;
-import edu.wpi.first.wpilibj.LEDPattern.GradientType;
-import edu.wpi.first.wpilibj.LEDReader;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.subsystems.CoralDetection;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.DriverStationUtils;
@@ -40,10 +34,7 @@ import frc.robot.utils.wrappers.ImmutableCurrent;
 import frc.robot.utils.wrappers.Pose2d;
 import frc.robot.utils.wrappers.Translation2d;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
-import java.util.function.Supplier;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -121,15 +112,6 @@ public final class Constants {
         public static final double ROTATIONAL_TOLERANCE = Math.toRadians(1); // Radians
         public static final double ROTATIONAL_VELOCITY_TOLERANCE = Math.toRadians(5); // Radians/s
 
-        public static final double MAX_REEF_ALIGN_DISTANCE = 2.5; // Meters
-
-        public static final double INTAKE_END_MOVE_DISTANCE_L1 = 0.5;
-        public static final double INTAKE_START_MOVE_DISTANCE_L1 = 0.65;
-        public static final double ELEVATOR_END_MOVE_DISTANCE_L4 = 0.3;
-        public static final double ELEVATOR_START_MOVE_DISTANCE_L4 = 1.5;
-        public static final double ELEVATOR_END_MOVE_DISTANCE = 0.3;
-        public static final double ELEVATOR_START_MOVE_DISTANCE = 1.5;
-
         public static final double ADDITIONAL_OFFSET = 0.02;
 
         private Align() {}
@@ -180,130 +162,6 @@ public final class Constants {
         public static final double GROUND_ASSIST_TRANSLATION_P = 5.0;
 
         private Assists() {}
-    }
-
-    public static final class Lights {
-
-        public static final int LENGTH = 150;
-
-        public static final Dimensionless MULTIPLIER = Percent.of(100);
-
-        public static final Time PULSATE_FREQUENCY = Seconds.of(0.4);
-        public static final Time FLASH_FREQUENCY = Seconds.of(0.2);
-
-        public static final double SUCCESS_FLASH_TIME = 1; // seconds
-
-        public static final LinearVelocity SCROLL_SPEED = MetersPerSecond.of(0.3);
-        public static final Distance LED_SPACING = Meters.of(1.0 / 30.0); // 30 LEDs per meter
-
-        public static final LEDPattern PULSATING_ORANGE = LEDPattern.solid(Color.kOrange)
-                .breathe(Constants.Lights.PULSATE_FREQUENCY)
-                .blend(LEDPattern.solid(Color.kOrange));
-
-        public static final LEDPattern PULSATING_GREEN = LEDPattern.solid(Color.kGreen)
-                .breathe(Constants.Lights.PULSATE_FREQUENCY)
-                .blend(LEDPattern.solid(Color.kGreen));
-
-        public static final LEDPattern FLASHING_GREEN =
-                LEDPattern.solid(Color.kGreen).blink(Constants.Lights.FLASH_FREQUENCY);
-
-        public static final LEDPattern CLIMB_PATTERN =
-                sparkle(Hertz.of(25), Percent.of(5).per(Second));
-
-        public static final Supplier<LEDPattern> ALLIANCE_COLOR =
-                () -> DriverStationUtils.getCurrentAlliance() == Alliance.Red
-                        ? LEDPattern.solid(Color.kRed).blend(LEDPattern.solid(Color.kBlack))
-                        : LEDPattern.solid(Color.kBlue).blend(LEDPattern.solid(Color.kBlack));
-
-        public static final Supplier<LEDPattern> ALLIANCE_COLOR_FANCY =
-                () -> DriverStationUtils.getCurrentAlliance() == Alliance.Red
-                        ? LEDPattern.gradient(GradientType.kContinuous, Color.kDarkOrange, Color.kPurple)
-                                .mask(LEDPattern.progressMaskLayer(() -> 0.3))
-                                .scrollAtAbsoluteSpeed(SCROLL_SPEED.times(5), LED_SPACING)
-                                .blend(LEDPattern.solid(Color.kRed))
-                        : LEDPattern.gradient(GradientType.kContinuous, Color.kViolet, Color.kPurple)
-                                .mask(LEDPattern.progressMaskLayer(() -> 0.3))
-                                .scrollAtAbsoluteSpeed(SCROLL_SPEED.times(5), LED_SPACING)
-                                .blend(LEDPattern.solid(Color.kBlue));
-
-        public static final Supplier<LEDPattern> sourcePattern =
-                () -> LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kRed, Color.kBlack)
-                        .scrollAtAbsoluteSpeed(SCROLL_SPEED, LED_SPACING);
-        public static final Supplier<LEDPattern> reefScorePattern =
-                () -> LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kBlue, Color.kBlack)
-                        .scrollAtAbsoluteSpeed(SCROLL_SPEED, LED_SPACING);
-        public static final Supplier<LEDPattern> algaeScorePattern =
-                () -> LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kPurple, Color.kBlack)
-                        .scrollAtAbsoluteSpeed(SCROLL_SPEED, LED_SPACING);
-        public static final Supplier<LEDPattern> cagePattern =
-                () -> LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kOrange, Color.kBlack)
-                        .scrollAtAbsoluteSpeed(SCROLL_SPEED, LED_SPACING);
-        public static final Supplier<LEDPattern> removeAlgaePattern =
-                () -> LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kYellow, Color.kBlack)
-                        .scrollAtAbsoluteSpeed(SCROLL_SPEED, LED_SPACING);
-        public static final Supplier<LEDPattern> coralScorePattern =
-                () -> LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kAqua, Color.kBlack)
-                        .scrollAtAbsoluteSpeed(SCROLL_SPEED, LED_SPACING);
-        public static final Supplier<LEDPattern> hybridPattern =
-                () -> LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kGreen, Color.kBlack)
-                        .scrollAtAbsoluteSpeed(SCROLL_SPEED, LED_SPACING);
-
-        @SuppressWarnings("java:S6411") // LEDReader as Key is inefficient but acceptable
-        private static HashMap<LEDReader, Long> lastSparkles = new HashMap<>();
-
-        private static final Random rand = new Random();
-
-        private Lights() {}
-
-        @SuppressWarnings("java:S109")
-        private static LEDPattern sparkle(Frequency frequency, Frequency fadeFrequency) {
-            final double periodMicros = frequency.asPeriod().in(Microseconds);
-            final double fadePeriodSeconds = fadeFrequency.asPeriod().in(Seconds);
-            final double multiplier = MathUtil.clamp(1.0 / fadePeriodSeconds, 0, 1);
-
-            return (reader, writer) -> {
-                long now = RobotController.getTime();
-
-                long lastSparkle = lastSparkles.getOrDefault(reader, 0l);
-
-                if (now - lastSparkle > periodMicros) {
-                    lastSparkle = now;
-                    lastSparkles.put(reader, lastSparkle);
-
-                    int led = rand.nextInt(reader.getLength());
-                    writer.setLED(led, Color.kWhite);
-                }
-
-                int baseR, baseG, baseB;
-
-                if (DriverStationUtils.getCurrentAlliance() == Alliance.Red) {
-                    baseR = 140;
-                    baseG = 0;
-                    baseB = 0;
-                } else {
-                    baseR = 0;
-                    baseG = 0;
-                    baseB = 140;
-                }
-
-                for (int led = 0; led < reader.getLength(); led++) {
-                    int blendedRGB = Color.lerpRGB(
-                            reader.getRed(led),
-                            reader.getGreen(led),
-                            reader.getBlue(led),
-                            baseR,
-                            baseG,
-                            baseB,
-                            multiplier);
-
-                    writer.setRGB(
-                            led,
-                            Color.unpackRGB(blendedRGB, Color.RGBChannel.kRed),
-                            Color.unpackRGB(blendedRGB, Color.RGBChannel.kGreen),
-                            Color.unpackRGB(blendedRGB, Color.RGBChannel.kBlue));
-                }
-            };
-        }
     }
 
     public static final class Control {

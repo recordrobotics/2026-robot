@@ -32,12 +32,6 @@ public final class RobotMap {
         private ElevatorArm() {}
     }
 
-    public static final class Lights {
-        public static final int LED_ID = 0;
-
-        private Lights() {}
-    }
-
     public static final class Climber {
         public static final int MOTOR_ID = 17;
         public static final int RATCHET_SERVO_ID = 1;
