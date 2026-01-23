@@ -313,12 +313,12 @@ public final class Constants {
                 new PIDConstants(1.5, 0.0, 0.0) // Rotation PID constants
                 );
 
+        public static final DriveMotorType driveMotorType = DriveMotorType.KRAKEN;
+        public static final TurnMotorType turnMotorType = TurnMotorType.KRAKEN;
+
         private Swerve() {}
 
         // Module Creation
-
-        public static DriveMotorType driveMotorType = DriveMotorType.KRAKEN;
-        public static TurnMotorType turnMotorType = TurnMotorType.KRAKEN;
 
         public static ModuleConstants getFrontLeftConstants() throws InvalidConfigException {
             return ModuleConstants.fromConfig(MotorLocation.FRONT_LEFT, driveMotorType, turnMotorType);
