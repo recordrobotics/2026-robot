@@ -317,20 +317,23 @@ public final class Constants {
 
         // Module Creation
 
+        public static DriveMotorType driveMotorType = DriveMotorType.KRAKEN;
+        public static TurnMotorType turnMotorType = TurnMotorType.KRAKEN;
+
         public static ModuleConstants getFrontLeftConstants() throws InvalidConfigException {
-            return ModuleConstants.fromConfig(MotorLocation.FRONT_LEFT, DriveMotorType.KRAKEN, TurnMotorType.KRAKEN);
+            return ModuleConstants.fromConfig(MotorLocation.FRONT_LEFT, driveMotorType, turnMotorType);
         }
 
         public static ModuleConstants getFrontRightConstants() throws InvalidConfigException {
-            return ModuleConstants.fromConfig(MotorLocation.FRONT_RIGHT, DriveMotorType.KRAKEN, TurnMotorType.KRAKEN);
+            return ModuleConstants.fromConfig(MotorLocation.FRONT_RIGHT, driveMotorType, turnMotorType);
         }
 
         public static ModuleConstants getBackLeftConstants() throws InvalidConfigException {
-            return ModuleConstants.fromConfig(MotorLocation.BACK_LEFT, DriveMotorType.KRAKEN, TurnMotorType.KRAKEN);
+            return ModuleConstants.fromConfig(MotorLocation.BACK_LEFT, driveMotorType, turnMotorType);
         }
 
         public static ModuleConstants getBackRightConstants() throws InvalidConfigException {
-            return ModuleConstants.fromConfig(MotorLocation.BACK_RIGHT, DriveMotorType.KRAKEN, TurnMotorType.KRAKEN);
+            return ModuleConstants.fromConfig(MotorLocation.BACK_RIGHT, driveMotorType, turnMotorType);
         }
     }
 
