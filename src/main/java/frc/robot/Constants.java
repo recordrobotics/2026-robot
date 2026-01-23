@@ -251,16 +251,16 @@ public final class Constants {
         public static final ImmutableCurrent KRAKEN_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
         public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(52));
 
-        public static final double FALCON_DRIVE_KS = 0.12373;
-        public static final double FALCON_DRIVE_KV = 2.5609;
-        public static final double FALCON_DRIVE_KA = 0.10075;
-        public static final double FALCON_DRIVE_KP = 0.1;
+        public static final double FALCON_DRIVE_KS = 0.13192;
+        public static final double FALCON_DRIVE_KV = 2.7547;
+        public static final double FALCON_DRIVE_KA = 0.24758;
+        public static final double FALCON_DRIVE_KP = 4.6957;
 
-        public static final double FALCON_TURN_KV = 1.7518;
-        public static final double FALCON_TURN_KA = 0.015791;
-        public static final double FALCON_TURN_KS = 0.08889;
-        public static final double FALCON_TURN_KP = 1.2;
-        public static final double FALCON_TURN_KD = 0.2;
+        public static final double FALCON_TURN_KV = 1.7214;
+        public static final double FALCON_TURN_KA = 0.049311;
+        public static final double FALCON_TURN_KS = 0.13609;
+        public static final double FALCON_TURN_KP = 67.02;
+        public static final double FALCON_TURN_KD = 3.2831;
 
         public static final double KRAKEN_DRIVE_KS = 0.13192;
         public static final double KRAKEN_DRIVE_KV = 2.7547;
