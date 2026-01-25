@@ -13,6 +13,7 @@ import frc.robot.commands.auto.IAutoRoutine;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.libraries.Elastic;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -86,7 +87,7 @@ public final class AutonomousLayout extends AbstractLayout {
     }
 
     public FieldStartingLocation getStartingLocation() {
-        return fieldStartingLocationChooser.get();
+        return Objects.requireNonNullElse(fieldStartingLocationChooser.get(), FieldStartingLocation.DEFAULT);
     }
 
     public boolean isResetLocationPressed() {

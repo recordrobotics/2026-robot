@@ -83,7 +83,7 @@ public final class Constants {
     }
 
     public enum FieldStartingLocation {
-        ;
+        DEFAULT(new Pose2d(1,1,Rotation2d.kZero)); // TODO remove
 
         private final Pose2d transformRed;
         private final Pose2d transformBlue;
