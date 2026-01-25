@@ -19,6 +19,8 @@ import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.io.real.IntakeReal;
+import frc.robot.subsystems.io.sim.IntakeSim;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
@@ -68,6 +70,7 @@ public final class RobotContainer {
     public static Drivetrain drivetrain;
     public static PoseSensorFusion poseSensorFusion;
     public static PowerDistributionPanel pdp;
+    public static Intake intake;
     public static RobotModel model;
     public static CoralDetection coralDetection;
     public static VisionSystemSim visionSim;
@@ -101,6 +104,7 @@ public final class RobotContainer {
         if (Constants.RobotState.getMode() == Mode.REAL) {
             poseSensorFusion = new PoseSensorFusion();
             pdp = new PowerDistributionPanel();
+            intake = new Intake(new IntakeReal(ROBOT_PERIODIC));
             coralDetection = new CoralDetection();
         } else {
             if (Constants.RobotState.VISION_SIMULATION_MODE.isPhotonSim()) {
@@ -135,6 +139,7 @@ public final class RobotContainer {
 
             poseSensorFusion = new PoseSensorFusion();
             pdp = new PowerDistributionPanel();
+            intake = new Intake(new IntakeSim(ROBOT_PERIODIC, drivetrain.getSwerveDriveSimulation()));
             coralDetection = new CoralDetection();
         }
 
@@ -195,9 +200,9 @@ public final class RobotContainer {
 
         // Command to kill robot
         new Trigger(() -> DashboardUI.Overview.getControl().isKillTriggered())
-                .whileTrue(
-                        new KillSpecified(drivetrain).alongWith(new InstantCommand(() -> CommandScheduler.getInstance()
-                                .cancelAll())));
+                .whileTrue(new KillSpecified(drivetrain, intake)
+                        .alongWith(new InstantCommand(
+                                () -> CommandScheduler.getInstance().cancelAll())));
 
         new Trigger(() -> DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE) <= XBOX_RUMBLE_ENDGAME_TIME)
                 .onTrue(new VibrateXbox(RumbleType.kBothRumble, 1.0).withTimeout(2.0));
@@ -245,6 +250,8 @@ public final class RobotContainer {
     }
 
     public static void resetEncoders() {
+        intake.resetEncoders();
+
         noEncoderResetAlert.set(false);
         Elastic.sendNotification(
                 new Notification(NotificationLevel.INFO, "Encoders reset!", "Successfully reset arm encoders."));
@@ -254,6 +261,7 @@ public final class RobotContainer {
     public static void close() throws Exception {
         drivetrain.close();
         poseSensorFusion.close();
+        intake.close();
         pdp.close();
     }
 }

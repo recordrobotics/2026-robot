@@ -13,6 +13,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -83,7 +84,7 @@ public final class Constants {
     }
 
     public enum FieldStartingLocation {
-        DEFAULT(new Pose2d(1,1,Rotation2d.kZero)); // TODO remove
+        DEFAULT(new Pose2d(1, 1, Rotation2d.kZero)); // TODO remove
 
         private final Pose2d transformRed;
         private final Pose2d transformBlue;
@@ -342,6 +343,50 @@ public final class Constants {
         public static final Time SOURCE_TIMEOUT = Seconds.of(0.8);
 
         private Auto() {}
+    }
+
+    public static final class Intake {
+        public static final int ROBOT_MAX_CAPACITY = 50; // TODO make correct
+
+        public static final Current ARM_SUPPLY_CURRENT_LIMIT = Amps.of(10);
+        public static final Current ARM_STATOR_CURRENT_LIMIT = Amps.of(60);
+        public static final Current WHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(10);
+        public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(60);
+
+        public static final double WHEEL_KP = 0.037121;
+        public static final double WHEEL_KD = 0.0;
+        public static final double WHEEL_KS = 0.1709;
+        public static final double WHEEL_KV = 0.61705;
+        public static final double WHEEL_KA = 0.039556;
+
+        public static final double MAX_ARM_VELOCITY = 8;
+        public static final double MAX_ARM_ACCELERATION = 22;
+
+        public static final double INTAKE_SPEED = 8;
+
+        public static final double ARM_KP = 68.721;
+        public static final double ARM_KD = 8.7176;
+        public static final double ARM_KG = 0.47407;
+        public static final double ARM_KS = 0.41583;
+        public static final double ARM_KV = 5.3;
+        public static final double ARM_KA = 0.1;
+
+        public static final double MAX_ARM_JERK = 1600;
+        public static final double ARM_MMEXPO_KV = 1.931;
+        public static final double ARM_MMEXPO_KA = 1.1;
+
+        public static final double ARM_UP_POSITION = Units.degreesToRadians(80.19);
+        public static final double ARM_INTAKE_POSITION = Units.degreesToRadians(77.08);
+
+        public static final double ARM_GEAR_RATIO = 56.8889;
+
+        public static final double WHEEL_GEAR_RATIO = 10;
+
+        public static final Pose2d ROOT_MECHANISM_POSE = new Pose2d(0, 0.4, Rotation2d.fromDegrees(0));
+        public static final double LENGTH = 0.385;
+        public static final double ANGLE_OFFSET = 0;
+
+        private Intake() {}
     }
 
     public final class RobotState {
