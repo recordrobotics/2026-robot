@@ -18,6 +18,7 @@ import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SysIdManager;
 import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -131,7 +132,8 @@ public final class Robot extends LoggedRobot {
 
     private static void configureSimulation() {
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
-            // Any simulation-specific configuration
+            // we can go over the bump, so disable ramp colliders
+            SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
         }
     }
 
