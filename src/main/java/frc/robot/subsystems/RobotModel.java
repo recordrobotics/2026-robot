@@ -15,6 +15,7 @@ import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.field.FieldIntersection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.SimulatedArena;
@@ -88,29 +89,14 @@ public final class RobotModel extends ManagedSubsystemBase {
     }
 
     @AutoLogLevel(level = Level.SIM)
-    public Pose3d[] getCoralPositions() {
+    public Pose3d[] getFuelPositions() {
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
-            List<Pose3d> coralPoses = SimulatedArena.getInstance().getGamePiecesPosesByType("Coral");
-            Pose3d robotCoralPose = robotCoral.poseSupplier.get();
-            if (robotCoralPose != null) {
-                coralPoses.add(robotCoralPose);
+            List<Pose3d> fuelPoses = SimulatedArena.getInstance().getGamePiecesPosesByType("Fuel");
+            List<Pose3d> robotFuelPoses = Collections.emptyList(); // TODO get from hopper and intake
+            if (robotFuelPoses != null) {
+                fuelPoses.addAll(robotFuelPoses);
             }
-            return coralPoses.toArray(new Pose3d[0]);
-        } else {
-            return new Pose3d[0];
-        }
-    }
-
-    @AutoLogLevel(level = Level.SIM)
-    @SuppressWarnings("java:S2325") // rest of the getters are non-static
-    public Pose3d[] getAlgaePositions() {
-        if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
-            List<Pose3d> algaePoses = SimulatedArena.getInstance().getGamePiecesPosesByType("Algae");
-            Pose3d robotAlgaePose = robotAlgae.poseSupplier.get();
-            if (robotAlgaePose != null) {
-                algaePoses.add(robotAlgaePose);
-            }
-            return algaePoses.toArray(new Pose3d[0]);
+            return fuelPoses.toArray(new Pose3d[0]);
         } else {
             return new Pose3d[0];
         }
