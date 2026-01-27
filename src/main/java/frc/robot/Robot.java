@@ -198,7 +198,9 @@ public final class Robot extends LoggedRobot {
 
         // End and start reversed to make sure we get latest data before command scheduler
         RobotContainer.poseSensorFusion.endCalculation();
+        RobotContainer.fieldStateTracker.endCalculation();
         RobotContainer.poseSensorFusion.startCalculation();
+        RobotContainer.fieldStateTracker.startCalculation();
 
         RobotContainer.robotPeriodic();
 
@@ -257,7 +259,7 @@ public final class Robot extends LoggedRobot {
 
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
-            autonomousCommand.schedule();
+            CommandScheduler.getInstance().schedule(autonomousCommand);
         }
 
         DashboardUI.Autonomous.switchTo();
@@ -291,7 +293,9 @@ public final class Robot extends LoggedRobot {
 
     /** This function is called periodically during operator control. */
     @Override
-    public void teleopPeriodic() {}
+    public void teleopPeriodic() {
+        /* nothing to do */
+    }
 
     @Override
     public void testInit() {
