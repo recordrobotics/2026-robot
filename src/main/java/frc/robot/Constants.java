@@ -22,7 +22,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.robot.subsystems.CoralDetection;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.ModuleConstants;
@@ -118,12 +117,18 @@ public final class Constants {
         private Align() {}
     }
 
-    public static final class PhotonVision {
+    public static final class Vision {
 
-        public static final String PHOTON_L1_NAME = "photon-l1";
-        public static final String PHOTON_SOURCE_NAME = "photon-source";
-        public static final String PHOTON_CORAL_INTAKE = "coral-intake";
+        public static final String L1_NAME = "photon-l1";
+        public static final String SOURCE_NAME = "photon-source";
+        public static final String CORAL_INTAKE_NAME = "coral-intake";
+        public static final String LEFT_NAME = "limelight-left";
+        public static final String CENTER_NAME = "limelight-center";
 
+        public static final Transform3d ROBOT_TO_CAMERA_LEFT = new Transform3d(
+                new Translation3d(0.311558, 0.330204, 0.246383), new Rotation3d(0, Units.degreesToRadians(-21), 0));
+        public static final Transform3d ROBOT_TO_CAMERA_CENTER = new Transform3d(
+                new Translation3d(0.219412, -0.050800, 0.156247), new Rotation3d(0, Units.degreesToRadians(-27), 0));
         public static final Transform3d ROBOT_TO_CAMERA_L1 = new Transform3d(
                 new Translation3d(-0.031750, 0.373120, 0.196097),
                 new Rotation3d(0, Units.degreesToRadians(-12.894), Units.degreesToRadians(90)));
@@ -139,20 +144,53 @@ public final class Constants {
 
         public static final int CORAL_ID = 1;
 
-        private PhotonVision() {}
-    }
+        public enum VisionSimulationMode {
+            /**
+             * Uses PhotonVision simulation with accurate april tag placement on the field
+             */
+            PHOTON_SIM_ACCURATE(true),
+            /**
+             * Uses PhotonVision simulation with simulated inaccurate april tag placement on the field
+             */
+            PHOTON_SIM_INACCURATE(true),
+            /**
+             * Uses the maplesim actual robot pose as a vision measurement
+             */
+            MAPLE_CLEAN(false),
+            /**
+             * Uses the maplesim actual robot pose with noise added as a vision measurement
+             */
+            MAPLE_NOISE(false);
 
-    public static final class Limelight {
+            final boolean isPhotonSim;
 
-        public static final String LIMELIGHT_LEFT_NAME = "limelight-left";
-        public static final String LIMELIGHT_CENTER_NAME = "limelight-center";
+            VisionSimulationMode(boolean isPhotonSim) {
+                this.isPhotonSim = isPhotonSim;
+            }
 
-        public static final Transform3d ROBOT_TO_CAMERA_LEFT = new Transform3d(
-                new Translation3d(0.311558, 0.330204, 0.246383), new Rotation3d(0, Units.degreesToRadians(-21), 0));
-        public static final Transform3d ROBOT_TO_CAMERA_CENTER = new Transform3d(
-                new Translation3d(0.219412, -0.050800, 0.156247), new Rotation3d(0, Units.degreesToRadians(-27), 0));
+            public boolean isPhotonSim() {
+                return isPhotonSim;
+            }
+        }
 
-        private Limelight() {}
+        public enum ObjectDetectionSimulationMode {
+            /**
+             * Use external photonvision camera connected to the same network as simulation
+             */
+            PHOTONVISION,
+            /**
+             * Use maple sim with realistic object detection simulation
+             * This includes noise, false positives, false negatives, field of view limitations, and other realistic factors.
+             */
+            MAPLE_SIM;
+        }
+
+        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.PHOTON_SIM_INACCURATE;
+
+        public static final ObjectDetectionSimulationMode OBJECT_DETECTION_SIMULATION_MODE =
+                ObjectDetectionSimulationMode.MAPLE_SIM;
+
+        private Vision() {}
     }
 
     public static final class Assists {
@@ -406,12 +444,6 @@ public final class Constants {
 
         public static final AutoLogLevel.Level AUTO_LOG_LEVEL = getAutoLogLevel();
 
-        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.PHOTON_SIM_INACCURATE;
-
-        // change to use an external photonvision client for coral detection simulation
-        public static final CoralDetection.CoralDetectionSimulationMode CORAL_DETECTION_SIMULATION_MODE =
-                CoralDetection.CoralDetectionSimulationMode.MAPLE_SIM;
-
         /**
          * <p>
          * Enable NT and Advantage Scope for unit tests.
@@ -446,35 +478,6 @@ public final class Constants {
                 return SysIdManager.getProvider().isEnabled() ? AutoLogLevel.Level.SYSID : AutoLogLevel.Level.REAL;
             } else {
                 return AutoLogLevel.Level.SIM;
-            }
-        }
-
-        public enum VisionSimulationMode {
-            /**
-             * Uses PhotonVision simulation with accurate april tag placement on the field
-             */
-            PHOTON_SIM_ACCURATE(true),
-            /**
-             * Uses PhotonVision simulation with simulated inaccurate april tag placement on the field
-             */
-            PHOTON_SIM_INACCURATE(true),
-            /**
-             * Uses the maplesim actual robot pose as a vision measurement
-             */
-            MAPLE_CLEAN(false),
-            /**
-             * Uses the maplesim actual robot pose with noise added as a vision measurement
-             */
-            MAPLE_NOISE(false);
-
-            final boolean isPhotonSim;
-
-            VisionSimulationMode(boolean isPhotonSim) {
-                this.isPhotonSim = isPhotonSim;
-            }
-
-            public boolean isPhotonSim() {
-                return isPhotonSim;
             }
         }
 

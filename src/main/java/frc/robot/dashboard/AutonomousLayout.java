@@ -32,9 +32,8 @@ public final class AutonomousLayout extends AbstractLayout {
                 .forEach(v -> fieldStartingLocationChooser.addOption(v.toString(), v));
 
         SmartDashboard.putBoolean("Autonomous/ResetLocationButton", false);
-        SmartDashboard.putBoolean("Autonomous/LimelightRotation", false);
         SmartDashboard.putBoolean("Autonomous/EncoderReset", false);
-        SmartDashboard.putBoolean("Autonomous/ForceMT1", false);
+        SmartDashboard.putBoolean("Autonomous/ValidGyro", false);
     }
 
     /**
@@ -94,15 +93,11 @@ public final class AutonomousLayout extends AbstractLayout {
         return SmartDashboard.getBoolean("Autonomous/ResetLocationButton", false);
     }
 
-    public boolean isLimelightRotationPressed() {
-        return SmartDashboard.getBoolean("Autonomous/LimelightRotation", false);
-    }
-
     public boolean isEncoderResetPressed() {
         return SmartDashboard.getBoolean("Autonomous/EncoderReset", false);
     }
 
-    public boolean isForceMT1Pressed() {
-        return SmartDashboard.getBoolean("Autonomous/ForceMT1", false);
+    public boolean isGyroValid() {
+        return SmartDashboard.getBoolean("Autonomous/ValidGyro", false);
     }
 }
