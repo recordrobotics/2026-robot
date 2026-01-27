@@ -119,17 +119,21 @@ public final class SimpleMath {
         return Math.abs(value - target) <= tolerance;
     }
 
+    public static double gaussianNoise(double mean, double stdDev) {
+        return rand.nextGaussian(mean, stdDev);
+    }
+
     public static Pose2d poseNoise(Pose2d pose, double stdDev, double stdDevRot) {
-        double x = pose.getX() + rand.nextGaussian(0, stdDev);
-        double y = pose.getY() + rand.nextGaussian(0, stdDev);
-        double rot = pose.getRotation().getRadians() + rand.nextGaussian(0, stdDevRot);
+        double x = pose.getX() + gaussianNoise(0, stdDev);
+        double y = pose.getY() + gaussianNoise(0, stdDev);
+        double rot = pose.getRotation().getRadians() + gaussianNoise(0, stdDevRot);
 
         return new Pose2d(new Translation2d(x, y), new Rotation2d(rot));
     }
 
     public static Rotation3d gaussianRotation3d(double stdDevX, double stdDevY, double stdDevZ) {
-        Vector<N3> noise = VecBuilder.fill(
-                rand.nextGaussian(0, stdDevX), rand.nextGaussian(0, stdDevY), rand.nextGaussian(0, stdDevZ));
+        Vector<N3> noise =
+                VecBuilder.fill(gaussianNoise(0, stdDevX), gaussianNoise(0, stdDevY), gaussianNoise(0, stdDevZ));
         return new Rotation3d(noise);
     }
 
@@ -141,9 +145,9 @@ public final class SimpleMath {
             double stdDevRotX,
             double stdDevRotY,
             double stdDevRotZ) {
-        double x = rand.nextGaussian(0, stdDevX);
-        double y = rand.nextGaussian(0, stdDevY);
-        double z = rand.nextGaussian(0, stdDevZ);
+        double x = gaussianNoise(0, stdDevX);
+        double y = gaussianNoise(0, stdDevY);
+        double z = gaussianNoise(0, stdDevZ);
 
         return new Pose3d(
                 pose.getTranslation().plus(new Translation3d(x, y, z)),

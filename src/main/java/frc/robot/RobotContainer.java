@@ -74,7 +74,7 @@ public final class RobotContainer {
     public static PowerDistributionPanel pdp;
     public static Intake intake;
     public static RobotModel model;
-    public static CoralDetection coralDetection;
+    public static FieldStateTracker fieldStateTracker;
     public static VisionSystemSim visionSim;
 
     private static Alert noEncoderResetAlert;
@@ -104,16 +104,13 @@ public final class RobotContainer {
         }
 
         if (Constants.RobotState.getMode() == Mode.REAL) {
-            poseSensorFusion = new PoseSensorFusion();
-            pdp = new PowerDistributionPanel();
             intake = new Intake(new IntakeReal(ROBOT_PERIODIC));
-            coralDetection = new CoralDetection();
         } else {
-            if (Constants.RobotState.VISION_SIMULATION_MODE.isPhotonSim()) {
+            if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
                 visionSim = new VisionSystemSim("main");
 
-                if (Constants.RobotState.VISION_SIMULATION_MODE
-                        == Constants.RobotState.VisionSimulationMode.PHOTON_SIM_INACCURATE) {
+                if (Constants.Vision.VISION_SIMULATION_MODE
+                        == Constants.Vision.VisionSimulationMode.PHOTON_SIM_INACCURATE) {
                     // simulate misalignment of field elements, assume tags are perfectly placed on field elements
                     AprilTagFieldLayout noisyTagLayout = SimpleMath.addNoiseToAprilTagFieldLayout(
                             Constants.Game.APRILTAG_LAYOUT,
@@ -139,11 +136,13 @@ public final class RobotContainer {
                 }
             }
 
-            poseSensorFusion = new PoseSensorFusion();
-            pdp = new PowerDistributionPanel();
             intake = new Intake(new IntakeSim(ROBOT_PERIODIC, drivetrain.getSwerveDriveSimulation()));
-            coralDetection = new CoralDetection();
         }
+
+        poseSensorFusion = new PoseSensorFusion(
+                DashboardUI.Autonomous.getStartingLocation().getPose());
+        pdp = new PowerDistributionPanel();
+        fieldStateTracker = new FieldStateTracker();
 
         model = new RobotModel();
 
@@ -215,12 +214,10 @@ public final class RobotContainer {
         // Reset pose trigger
         new Trigger(() -> DashboardUI.Overview.getControl().isPoseResetTriggered())
                 .onTrue(new InstantCommand(poseSensorFusion::alignRotationWithDriverStation));
-        new Trigger(() -> DashboardUI.Overview.getControl().isLimelightResetTriggered())
-                .onTrue(new InstantCommand(poseSensorFusion::resetToVision));
         new Trigger(DashboardUI.Autonomous::isResetLocationPressed)
-                .onTrue(new InstantCommand(poseSensorFusion::resetStartingPose).ignoringDisable(true));
-        new Trigger(DashboardUI.Autonomous::isLimelightRotationPressed)
-                .onTrue(new InstantCommand(poseSensorFusion::resetToVision).ignoringDisable(true));
+                .onTrue(new InstantCommand(() -> poseSensorFusion.setToPose(
+                                DashboardUI.Autonomous.getStartingLocation().getPose()))
+                        .ignoringDisable(true));
         new Trigger(DashboardUI.Autonomous::isEncoderResetPressed)
                 .onTrue(new InstantCommand(RobotContainer::resetEncoders).ignoringDisable(true));
     }
@@ -244,7 +241,7 @@ public final class RobotContainer {
 
     public static void simulationPeriodic() {
         updateSimulationBattery(drivetrain);
-        if (Constants.RobotState.VISION_SIMULATION_MODE.isPhotonSim()) {
+        if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
             visionSim.update(model.getRobot());
         }
     }
