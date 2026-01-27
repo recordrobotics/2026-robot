@@ -134,6 +134,7 @@ public final class Robot extends LoggedRobot {
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
             // we can go over the bump, so disable ramp colliders
             SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
+            ((Arena2026Rebuilt) SimulatedArena.getInstance()).setEfficiencyMode(false); // all the fuel
         }
     }
 
