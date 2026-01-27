@@ -29,7 +29,6 @@ import frc.robot.subsystems.io.real.SwerveModuleReal;
 import frc.robot.subsystems.io.sim.SwerveModuleSim;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
-import frc.robot.utils.DCMotors;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.ModuleConstants;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
@@ -94,7 +93,7 @@ public final class Drivetrain extends KillableSubsystem implements PoweredSubsys
             // Specify swerve module (for realistic swerve dynamics)
             .withSwerveModule(new SwerveModuleSimulationConfig(
                     DCMotor.getKrakenX60(1), // Drive motor is a Kraken X60
-                    DCMotors.getKrakenX44(1), // Steer motor is a Kraken X44
+                    DCMotor.getKrakenX44(1), // Steer motor is a Kraken X44
                     Constants.Swerve.KRAKEN_DRIVE_GEAR_RATIO, // Drive motor gear ratio.
                     Constants.Swerve.KRAKEN_TURN_GEAR_RATIO, // Steer motor gear ratio.
                     Volts.of(0.1),
@@ -292,7 +291,7 @@ public final class Drivetrain extends KillableSubsystem implements PoweredSubsys
 
     public void sysIdOnlyDriveMotorsSpin(Voltage volts) {
         frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(360 - 45.0)));
-        frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(180 + 90 - 45.0)));
+        frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(180 + 45.0)));
         backLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45.0)));
         backRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(90 + 45.0)));
 
