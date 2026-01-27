@@ -448,9 +448,6 @@ public class TestRobot {
             }
         }
 
-        RobotContainer.model.getRobotCoral().setPoseSupplier(() -> null);
-        RobotContainer.model.getRobotAlgae().setPoseSupplier(() -> null);
-
         RobotContainer.resetEncoders();
         CommandScheduler.getInstance().cancelAll();
     }

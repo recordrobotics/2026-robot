@@ -58,9 +58,6 @@ public final class RobotModel extends ManagedSubsystemBase {
     @AutoLogLevel(level = Level.REAL)
     public Pose3d[] mechanismPoses = new Pose3d[Intake.POSE_COUNT];
 
-    private final RobotGamePiece robotCoral = new RobotGamePiece(() -> null);
-    private final RobotGamePiece robotAlgae = new RobotGamePiece(() -> null);
-
     public RobotModel() {
         periodicManaged();
     }
@@ -110,14 +107,6 @@ public final class RobotModel extends ManagedSubsystemBase {
         } else {
             return Pose2d.kZero;
         }
-    }
-
-    public RobotGamePiece getRobotCoral() {
-        return robotCoral;
-    }
-
-    public RobotGamePiece getRobotAlgae() {
-        return robotAlgae;
     }
 
     public static class Intake implements RobotMechanism {
