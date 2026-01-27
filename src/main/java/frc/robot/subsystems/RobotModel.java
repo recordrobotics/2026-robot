@@ -27,16 +27,16 @@ import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 /** Represents the physical model of the robot, including mechanisms and their positions */
 public final class RobotModel extends ManagedSubsystemBase {
 
-    public interface RobotMechanism {
+    public interface RobotMechanismModel {
         int getPoseCount();
 
         void updatePoses(Pose3d[] poses, int i);
     }
 
-    public static class RobotGamePiece {
+    public static class RobotGamePieceModel {
         private Supplier<Pose3d> poseSupplier;
 
-        public RobotGamePiece(Supplier<Pose3d> poseSupplier) {
+        public RobotGamePieceModel(Supplier<Pose3d> poseSupplier) {
             this.poseSupplier = poseSupplier;
         }
 
@@ -53,10 +53,10 @@ public final class RobotModel extends ManagedSubsystemBase {
         }
     }
 
-    public final Intake intake = new Intake();
+    public final IntakeModel intakeModel = new IntakeModel();
 
     @AutoLogLevel(level = Level.REAL)
-    public Pose3d[] mechanismPoses = new Pose3d[Intake.POSE_COUNT];
+    public Pose3d[] mechanismPoses = new Pose3d[IntakeModel.POSE_COUNT];
 
     public RobotModel() {
         periodicManaged();
@@ -64,7 +64,7 @@ public final class RobotModel extends ManagedSubsystemBase {
 
     @Override
     public void periodicManaged() {
-        updatePoses(intake);
+        updatePoses(intakeModel);
 
         if (Constants.RobotState.AUTO_LOG_LEVEL.isAtOrLowerThan(Level.DEBUG_SIM)) {
             Logger.recordOutput("IGamePositions", IGamePosition.aggregatePositions());
@@ -72,28 +72,26 @@ public final class RobotModel extends ManagedSubsystemBase {
         }
     }
 
-    private void updatePoses(RobotMechanism... mechanisms) {
+    private void updatePoses(RobotMechanismModel... mechanismModels) {
         int i = 0;
-        for (RobotMechanism mechanism : mechanisms) {
+        for (RobotMechanismModel mechanismModel : mechanismModels) {
             if (i >= mechanismPoses.length) {
                 ConsoleLogger.logError("RobotModel.updatePoses: too many mechanisms");
                 break;
             }
 
-            mechanism.updatePoses(mechanismPoses, i);
-            i += mechanism.getPoseCount();
+            mechanismModel.updatePoses(mechanismPoses, i);
+            i += mechanismModel.getPoseCount();
         }
     }
 
     @AutoLogLevel(level = Level.SIM)
     public Pose3d[] getFuelPositions() {
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
-            List<Pose3d> fuelPoses = SimulatedArena.getInstance().getGamePiecesPosesByType("Fuel");
+            List<Pose3d> ArenaFuelPoses = SimulatedArena.getInstance().getGamePiecesPosesByType("Fuel");
             List<Pose3d> robotFuelPoses = Collections.emptyList(); // TODO get from hopper and intake
-            if (robotFuelPoses != null) {
-                fuelPoses.addAll(robotFuelPoses);
-            }
-            return fuelPoses.toArray(new Pose3d[0]);
+            ArenaFuelPoses.addAll(robotFuelPoses);
+            return ArenaFuelPoses.toArray(new Pose3d[0]);
         } else {
             return new Pose3d[0];
         }
@@ -109,7 +107,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         }
     }
 
-    public static class Intake implements RobotMechanism {
+    public static class IntakeModel implements RobotMechanismModel {
         public static final int POSE_COUNT = 1;
 
         private static final Translation3d SHAFT_ORIGIN = new Translation3d(0, 0.3337, 0.3598);

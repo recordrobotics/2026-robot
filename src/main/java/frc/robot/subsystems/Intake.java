@@ -24,7 +24,7 @@ public class Intake extends KillableSubsystem implements PoweredSubsystem {
 
     @Override
     public void periodic() {
-        RobotContainer.model.intake.update(getArmPositionRotations());
+        RobotContainer.model.intakeModel.update(getArmPositionRotations());
     }
 
     public double getArmPositionRotations() { // average of both motors
