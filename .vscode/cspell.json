@@ -9,6 +9,7 @@
         "AHRS",
         "apriltag",
         "blue",
+        "Coeffs",
         "Coterminal",
         "debouncer",
         "Debouncers",

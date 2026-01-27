@@ -198,7 +198,9 @@ public final class Robot extends LoggedRobot {
 
         // End and start reversed to make sure we get latest data before command scheduler
         RobotContainer.poseSensorFusion.endCalculation();
+        RobotContainer.fieldStateTracker.endCalculation();
         RobotContainer.poseSensorFusion.startCalculation();
+        RobotContainer.fieldStateTracker.startCalculation();
 
         RobotContainer.robotPeriodic();
 
