@@ -226,12 +226,12 @@ public class IntakeSim implements IntakeIO {
         armLeader.close();
     }
 
-    public void addCoral() {
-        intakeSimulation.addGamePieceToIntake();
+    public boolean addFuel() {
+        return intakeSimulation.addGamePieceToIntake();
     }
 
-    public void removeCoral() {
-        intakeSimulation.obtainGamePieceFromIntake();
+    public boolean removeFuel() {
+        return intakeSimulation.obtainGamePieceFromIntake();
     }
 
     @Override
