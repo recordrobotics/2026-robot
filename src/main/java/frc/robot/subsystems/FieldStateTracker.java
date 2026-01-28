@@ -10,12 +10,14 @@ import frc.robot.utils.camera.GenericCamera;
 import frc.robot.utils.camera.PhysicalCamera;
 import frc.robot.utils.camera.objectdetection.ObjectDetectionCamera;
 import frc.robot.utils.camera.objectdetection.ObjectDetectionClass;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import org.littletonrobotics.junction.Logger;
 
 public class FieldStateTracker extends ManagedSubsystemBase {
 
@@ -61,6 +63,8 @@ public class FieldStateTracker extends ManagedSubsystemBase {
      */
     private Future<?> calculationFuture = null;
 
+    private Set<Pose2d> fieldObjects = new HashSet<>();
+
     public void addObjectDetectionUpdate(
             Pose2d pose, ObjectDetectionClass detectionClass, double confidence, double timestamp) {
         deferredObjectDetections.add(new DeferredObjectDetection(pose, detectionClass, confidence, timestamp));
@@ -92,9 +96,12 @@ public class FieldStateTracker extends ManagedSubsystemBase {
             }
         }
 
+        fieldObjects.clear();
         while (!deferredObjectDetections.isEmpty()) {
             DeferredObjectDetection detection = deferredObjectDetections.pollFirst();
-            /* TODO: add to field state */
+            if (detection != null) {
+                fieldObjects.add(detection.pose());
+            }
         }
 
         logValues();
@@ -104,7 +111,7 @@ public class FieldStateTracker extends ManagedSubsystemBase {
      * Logs values to the logger
      */
     private void logValues() {
-        /* TODO: log field objects/robot */
+        Logger.recordOutput("FieldStateTracker/FieldObjects", fieldObjects.toArray(Pose2d[]::new));
 
         cameras.stream().forEach(GenericCamera::logValues);
     }
