@@ -137,7 +137,7 @@ public final class Constants {
                 new Rotation3d(0, Units.degreesToRadians(-18.951), Units.degreesToRadians(-90)));
         public static final Transform3d ROBOT_TO_CAMERA_GROUND_INTAKE = new Transform3d(
                 new Translation3d(Meters.of(0.142850), Meters.of(0.369435), Meters.of(0.526114)),
-                new Rotation3d(Degrees.of(0), Degrees.of(-20), Degrees.of(90.0 + 25.0)));
+                new Rotation3d(Degrees.of(0), Degrees.of(20), Degrees.of(90.0 + 25.0)));
 
         public static final Distance CORAL_ID_DISTANCE = Inches.of(8);
         public static final Time CORAL_TIMEOUT = Seconds.of(0.5);
