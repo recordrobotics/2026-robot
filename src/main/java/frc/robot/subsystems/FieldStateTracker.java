@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.google.common.collect.ImmutableSortedMap;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import frc.robot.Constants;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
@@ -12,7 +13,7 @@ import frc.robot.utils.camera.objectdetection.ObjectDetectionCamera;
 import frc.robot.utils.camera.objectdetection.ObjectDetectionClass;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,28 +32,28 @@ public class FieldStateTracker extends ManagedSubsystemBase {
             Cameras.createPhotonVisionObjectDetectionCamera(
                     Constants.Vision.SOURCE_NAME,
                     PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
-                    Constants.Vision.ROBOT_TO_CAMERA_SOURCE,
+                    Constants.Vision.ROBOT_TO_CAMERA_GROUND_INTAKE,
                     ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
                             .put(1, ObjectDetectionClass.BUMPER)
                             .put(2, ObjectDetectionClass.FUEL)
-                            .build()),
+                            .build())
             /*
              * Intake Right
              */
-            Cameras.createPhotonVisionObjectDetectionCamera(
-                    Constants.Vision.L1_NAME,
-                    PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
-                    Constants.Vision.ROBOT_TO_CAMERA_L1,
-                    ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
-                            .put(1, ObjectDetectionClass.BUMPER)
-                            .put(2, ObjectDetectionClass.FUEL)
-                            .build()));
+            // Cameras.createPhotonVisionObjectDetectionCamera(
+            //         Constants.Vision.L1_NAME,
+            //         PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
+            //         Constants.Vision.ROBOT_TO_CAMERA_L1,
+            //         ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
+            //                 .put(1, ObjectDetectionClass.BUMPER)
+            //                 .put(2, ObjectDetectionClass.FUEL)
+            //                 .build())
+            );
 
     /**
      * The deferred pose estimations to be added at the end of the calculation phase
      */
-    private ConcurrentSkipListSet<DeferredObjectDetection> deferredObjectDetections =
-            new ConcurrentSkipListSet<>((a, b) -> Double.compare(a.timestampSeconds, b.timestampSeconds));
+    private ConcurrentLinkedQueue<DeferredObjectDetection> deferredObjectDetections = new ConcurrentLinkedQueue<>();
 
     /**
      * Executor service for asynchronous calculations
@@ -98,7 +99,7 @@ public class FieldStateTracker extends ManagedSubsystemBase {
 
         fieldObjects.clear();
         while (!deferredObjectDetections.isEmpty()) {
-            DeferredObjectDetection detection = deferredObjectDetections.pollFirst();
+            DeferredObjectDetection detection = deferredObjectDetections.poll();
             if (detection != null) {
                 fieldObjects.add(detection.pose());
             }
@@ -111,7 +112,9 @@ public class FieldStateTracker extends ManagedSubsystemBase {
      * Logs values to the logger
      */
     private void logValues() {
-        Logger.recordOutput("FieldStateTracker/FieldObjects", fieldObjects.toArray(Pose2d[]::new));
+        Logger.recordOutput(
+                "FieldStateTracker/FieldObjects",
+                fieldObjects.stream().map(Pose3d::new).toArray(Pose3d[]::new));
 
         cameras.stream().forEach(GenericCamera::logValues);
     }
