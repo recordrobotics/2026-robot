@@ -8,6 +8,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
@@ -66,6 +67,6 @@ public final class AutoPath {
                 Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
         PathPlannerLogging.setLogTargetPoseCallback(
                 targetPose -> Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose));
-        PathfindingCommand.warmupCommand().schedule();
+        CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
     }
 }

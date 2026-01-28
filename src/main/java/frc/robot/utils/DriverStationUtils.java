@@ -2,6 +2,7 @@ package frc.robot.utils;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -28,24 +29,23 @@ public final class DriverStationUtils {
         if (DriverStation.isFMSAttached()) return;
 
         final double teleopInitMatchTime = DriverStation.getMatchTime();
-        Commands.waitUntil(() -> {
-                    double matchTime = DriverStation.getMatchTime();
+        CommandScheduler.getInstance().schedule(Commands.waitUntil(() -> {
+            double matchTime = DriverStation.getMatchTime();
 
-                    if (matchTime == -1) {
-                        // Match time not valid, can't be in practice mode
-                        return true;
-                    }
+            if (matchTime == -1) {
+                // Match time not valid, can't be in practice mode
+                return true;
+            }
 
-                    if (Math.abs(teleopInitMatchTime - matchTime) < 1e-4) return false; // Wait for update
+            if (Math.abs(teleopInitMatchTime - matchTime) < 1e-4) return false; // Wait for update
 
-                    // After update, make sure the match time goes down instead of up
-                    if (matchTime < teleopInitMatchTime) {
-                        inPracticeMode = true;
-                    }
+            // After update, make sure the match time goes down instead of up
+            if (matchTime < teleopInitMatchTime) {
+                inPracticeMode = true;
+            }
 
-                    return true;
-                })
-                .schedule();
+            return true;
+        }));
     }
 
     public static boolean isInPracticeMode() {

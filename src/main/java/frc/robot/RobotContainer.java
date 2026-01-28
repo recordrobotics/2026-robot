@@ -150,7 +150,7 @@ public final class RobotContainer {
         // Sets up auto path
         AutoPath.initialize();
         // Warmup Ruckig
-        RuckigWarmup.warmupCommand().schedule();
+        CommandScheduler.getInstance().schedule(RuckigWarmup.warmupCommand());
 
         DashboardUI.Autonomous.setupAutoChooser();
         PlannedAuto.setAutoSupplier(DashboardUI.Autonomous::getAutoChooser);
@@ -235,7 +235,9 @@ public final class RobotContainer {
         return PlannedAuto.getAutoCommand();
     }
 
-    public static void robotPeriodic() {}
+    public static void robotPeriodic() {
+        // nothing to do here, command scheduler handles everything
+    }
 
     public static void simulationPeriodic() {
         updateSimulationBattery(drivetrain);

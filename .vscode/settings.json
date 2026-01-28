@@ -266,5 +266,6 @@
   "command-runner.terminal.autoClear": true,
   "command-runner.commands": {
     "tuning swerve encoders": "./gradlew tuning --args \"swerveencoders ${input:kraken}\""
-  }
+  },
+  "java.compile.nullAnalysis.mode": "disabled"
 }
