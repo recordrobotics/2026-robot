@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotContainer;
 import frc.robot.utils.ContainerUtils;
 import frc.robot.utils.SimpleMath;
@@ -62,6 +63,9 @@ public class MapleSimCamera extends ObjectDetectionCamera {
         super(name, physicalCamera, robotToCamera, detectionClassMap);
         this.frameQueue = new TreeMap<>();
         this.detectionClassReverseMap = ContainerUtils.reverseMap(detectionClassMap);
+
+        SmartDashboard.putNumber(getPrefix() + "yaw", 0);
+        SmartDashboard.putNumber(getPrefix() + "pitch", 0);
     }
 
     /**
@@ -92,7 +96,7 @@ public class MapleSimCamera extends ObjectDetectionCamera {
     protected List<ObjectDetectionResult> makeDetections() {
         double currentTime = Timer.getTimestamp();
 
-        if (currentTime >= nextUpdateTime) {
+        if (true || currentTime >= nextUpdateTime) {
             performCapture();
         }
 
@@ -123,9 +127,9 @@ public class MapleSimCamera extends ObjectDetectionCamera {
                             .calculateSphereProjectedAreaPercentage(
                                     cameraToTarget.getTranslation(), target.getRotationDiscRadius());
 
-                    if (areaPercentage <= 0.0) {
-                        return Optional.empty();
-                    }
+                    // if (areaPercentage <= 0.0) {
+                    //     return Optional.empty();
+                    // }
 
                     ObjectDetectionClass detectionClass = SIMULATION_DETECTION_CLASS_MAP.get(target.getType());
                     if (detectionClass == null || !getDetectionClassMap().containsValue(detectionClass)) {
@@ -133,10 +137,10 @@ public class MapleSimCamera extends ObjectDetectionCamera {
                     }
 
                     double yawDegrees =
-                            Units.radiansToDegrees(Math.atan2(cameraToTarget.getX(), cameraToTarget.getZ()));
+                            Units.radiansToDegrees(Math.atan2(cameraToTarget.getY(), cameraToTarget.getX()));
 
                     double pitchDegrees =
-                            Units.radiansToDegrees(Math.atan2(cameraToTarget.getY(), cameraToTarget.getZ()));
+                            -Units.radiansToDegrees(Math.atan2(cameraToTarget.getZ(), cameraToTarget.getX()));
 
                     return Optional.of(new ObjectDetectionResult(
                             detectionClassReverseMap.get(detectionClass),
