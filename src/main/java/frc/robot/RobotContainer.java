@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.google.common.primitives.ImmutableIntArray;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Alert;
@@ -63,7 +64,8 @@ public final class RobotContainer {
      */
     public static final double XBOX_RUMBLE_ENDGAME_TIME = 15.0; // seconds
 
-    public static final int[] NON_HUB_TAG_IDS = new int[] {1, 12, 13, 14, 15, 16, 7, 6, 17, 28, 29, 30, 31, 32, 23, 22};
+    public static final ImmutableIntArray NON_HUB_TAG_IDS =
+            ImmutableIntArray.of(1, 12, 13, 14, 15, 16, 7, 6, 17, 28, 29, 30, 31, 32, 23, 22);
     public static final double PHOTON_SIM_NOISY_STDDEV_POS = 0.2;
     public static final double PHOTON_SIM_NOISY_STDDEV_ROT = 0.1;
 

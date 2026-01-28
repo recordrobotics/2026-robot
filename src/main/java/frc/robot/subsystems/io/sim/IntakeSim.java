@@ -86,6 +86,7 @@ public class IntakeSim implements IntakeIO {
         return intakeSimulation;
     }
 
+    @Override
     public Follower createArmFollower() {
         return new Follower(RobotMap.Intake.ARM_LEADER_ID, MotorAlignmentValue.Opposed); // motors face in opposite
         // directions

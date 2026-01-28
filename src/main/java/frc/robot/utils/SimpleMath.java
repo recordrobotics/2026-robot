@@ -1,5 +1,6 @@
 package frc.robot.utils;
 
+import com.google.common.primitives.ImmutableIntArray;
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -151,7 +152,7 @@ public final class SimpleMath {
 
     public static AprilTagFieldLayout addNoiseToAprilTagFieldLayout(
             AprilTagFieldLayout layout,
-            int[] ids,
+            ImmutableIntArray ids,
             double stdDevX,
             double stdDevY,
             double stdDevZ,
@@ -160,7 +161,7 @@ public final class SimpleMath {
             double stdDevRotZ) {
         Map<Integer, AprilTag> tagMap = layout.getTags().stream().collect(Collectors.toMap(tag -> tag.ID, tag -> tag));
 
-        for (int id : ids) {
+        ids.forEach(id -> {
             AprilTag tag = tagMap.get(id);
             if (tag == null) {
                 throw new IllegalArgumentException("Tag ID " + id + " not found in layout");
@@ -169,7 +170,7 @@ public final class SimpleMath {
             Pose3d noisyPose = poseNoise(tag.pose, stdDevX, stdDevY, stdDevZ, stdDevRotX, stdDevRotY, stdDevRotZ);
 
             tagMap.put(id, new AprilTag(id, noisyPose));
-        }
+        });
 
         return new AprilTagFieldLayout(
                 new ArrayList<>(tagMap.values()), layout.getFieldLength(), layout.getFieldWidth());
