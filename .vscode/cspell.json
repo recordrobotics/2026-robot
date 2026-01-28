@@ -19,6 +19,8 @@
         "fpga",
         "holonomic",
         "imu",
+        "intaked",
+        "intaking",
         "ispe",
         "jacoco",
         "jni",
