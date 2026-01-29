@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.ironmaple.simulation.SimulatedArena;
+import org.littletonrobotics.junction.Logger;
 
 public class MapleSimCamera extends ObjectDetectionCamera {
 
@@ -118,6 +119,8 @@ public class MapleSimCamera extends ObjectDetectionCamera {
         Pose2d fieldToRobot = RobotContainer.model.getRobot();
         Pose3d fieldToCamera = new Pose3d(fieldToRobot).transformBy(getRobotToCamera());
 
+        Logger.recordOutput(getPrefix() + "ftc", fieldToCamera);
+
         return SimulatedArena.getInstance().gamePiecesOnField().stream()
                 .map(target -> {
                     Pose3d fieldToTarget = target.getPose3d();
@@ -141,6 +144,9 @@ public class MapleSimCamera extends ObjectDetectionCamera {
 
                     double pitchDegrees =
                             -Units.radiansToDegrees(Math.atan2(cameraToTarget.getZ(), cameraToTarget.getX()));
+
+                    yawDegrees = SmartDashboard.getNumber(getPrefix() + "yaw", 0);
+                    pitchDegrees = SmartDashboard.getNumber(getPrefix() + "pitch", 0);
 
                     return Optional.of(new ObjectDetectionResult(
                             detectionClassReverseMap.get(detectionClass),
