@@ -9,7 +9,10 @@ import frc.robot.subsystems.io.IntakeIO;
 
 public class IntakeStub implements IntakeIO {
     @Override
-    public void applyArmTalonFXConfig(TalonFXConfiguration configuration) {}
+    public void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration) {}
+
+    @Override
+    public void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration) {}
 
     @Override
     public Follower createArmFollower() {

@@ -250,4 +250,9 @@ public class TestControlBridge implements AbstractControl {
         SPEED_LEVEL,
         POV
     }
+
+    @Override
+    public boolean isIntakePressed() {
+        return false; // TODO
+    }
 }

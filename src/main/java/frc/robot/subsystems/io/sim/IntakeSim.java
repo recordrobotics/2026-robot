@@ -8,7 +8,13 @@ import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
@@ -19,19 +25,26 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.io.IntakeIO;
 import frc.robot.utils.IntakeSimulationUtils;
 import frc.robot.utils.SimpleMath;
+import java.util.Random;
 import org.dyn4j.geometry.Rectangle;
 import org.ironmaple.simulation.IntakeSimulation;
+import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 
 public class IntakeSim implements IntakeIO {
 
     private static final Distance WIDTH = Inches.of(21.25);
     private static final Distance LENGTH_EXTENDED = Inches.of(8.419554);
 
-    private static final double INTAKE_VELOCITY_THRESHOLD = 1.0;
+    private static final Random RANDOM = new Random();
+
+    private static final double CORAL_GROUND_TOUCH_HEIGHT = 0.1; // meters
 
     private final double periodicDt;
 
@@ -40,7 +53,8 @@ public class IntakeSim implements IntakeIO {
     private final TalonFX armFollower;
 
     private final TalonFXSimState wheelSim;
-    private final TalonFXSimState armSim;
+    private final TalonFXSimState armSimLeader;
+    private final TalonFXSimState armSimFollower;
 
     private final DCMotor wheelMotor = DCMotor.getKrakenX44(1); // TODO is correct motor(s)?
     private final DCMotor armMotor = DCMotor.getKrakenX44(2); // TODO is correct motor(s)?
@@ -48,24 +62,27 @@ public class IntakeSim implements IntakeIO {
     private final DCMotorSim wheelSimModel = new DCMotorSim(
             LinearSystemId.createDCMotorSystem(Constants.Intake.WHEEL_KV, Constants.Intake.WHEEL_KA),
             wheelMotor,
-            0.01,
-            0.01);
+            0.0,
+            0.0);
 
     private final SingleJointedArmSim armSimModel = new SingleJointedArmSim(
             LinearSystemId.createSingleJointedArmSystem(armMotor, 0.7, Constants.Intake.ARM_GEAR_RATIO),
             armMotor,
             Constants.Intake.ARM_GEAR_RATIO,
             Units.inchesToMeters(17.02),
-            -0.95,
-            Math.PI / 2,
+            Constants.Intake.ARM_DOWN_POSITION_RADIANS,
+            Constants.Intake.ARM_STARTING_POSITION_RADIANS,
             true,
-            Constants.Intake.ARM_UP_POSITION,
-            0.001,
-            0.001);
+            Constants.Intake.ARM_STARTING_POSITION_RADIANS,
+            0.0,
+            0.0);
 
     private final IntakeSimulation intakeSimulation;
 
-    private boolean hadGamePieces = false;
+    private int fuelCount = 0;
+    private double intakeTimeAccumulatorMillis = 0.0;
+
+    private AbstractDriveTrainSimulation drivetrainSim;
 
     public IntakeSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
@@ -74,12 +91,18 @@ public class IntakeSim implements IntakeIO {
         armLeader = new TalonFX(RobotMap.Intake.ARM_LEADER_ID);
         armFollower = new TalonFX(RobotMap.Intake.ARM_FOLLOWER_ID);
         wheelSim = new TalonFXSimState(wheel);
-        armSim = armLeader.getSimState();
+        armSimLeader = armLeader.getSimState();
+        armSimFollower = armFollower.getSimState();
+
+        armSimLeader.Orientation = ChassisReference.Clockwise_Positive;
+        armSimFollower.Orientation = ChassisReference.CounterClockwise_Positive;
 
         Rectangle intakeRect = IntakeSimulationUtils.getIntakeRectangle(
                 drivetrainSim, WIDTH.in(Meters), LENGTH_EXTENDED.in(Meters), IntakeSimulation.IntakeSide.BACK);
 
-        intakeSimulation = new IntakeSimulation("Fuel", drivetrainSim, intakeRect, Constants.Intake.ROBOT_MAX_CAPACITY);
+        intakeSimulation =
+                new IntakeSimulation("Fuel", drivetrainSim, intakeRect, Constants.Intake.MAX_INTAKE_CAPACITY);
+        this.drivetrainSim = drivetrainSim;
     }
 
     public IntakeSimulation getIntakeSimulation() {
@@ -93,8 +116,13 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public void applyArmTalonFXConfig(TalonFXConfiguration configuration) {
+    public void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration) {
         armLeader.getConfigurator().apply(configuration);
+    }
+
+    @Override
+    public void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration) {
+        armFollower.getConfigurator().apply(configuration);
     }
 
     @Override
@@ -136,9 +164,14 @@ public class IntakeSim implements IntakeIO {
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
-        armSim.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_UP_POSITION));
-        armSim.setRotorVelocity(
+        armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
+                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+        armSimLeader.setRotorVelocity(
+                Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
+
+        armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
+                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+        armSimFollower.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         // Update internal raw position offset
@@ -235,6 +268,18 @@ public class IntakeSim implements IntakeIO {
         return intakeSimulation.obtainGamePieceFromIntake();
     }
 
+    private static Pair<Translation3d, Translation3d> getEjectionData(
+            AbstractDriveTrainSimulation drivetrainSimulation) {
+        Pose3d basePose = new Pose3d(drivetrainSimulation.getSimulatedDriveTrainPose());
+        Translation3d pose = basePose.transformBy(new Transform3d(
+                        Meters.of(-0.5), Meters.of(-0.5 + RANDOM.nextDouble()), Meters.of(0.1), Rotation3d.kZero))
+                .getTranslation();
+        Translation3d velocity = basePose.transformBy(
+                        new Transform3d(Meters.of(-1.0), Meters.of(0.0), Meters.of(0.0), Rotation3d.kZero))
+                .getTranslation();
+        return new Pair<>(pose, velocity);
+    }
+
     @Override
     public void simulationPeriodic() {
         updateMotorSimulations();
@@ -243,22 +288,30 @@ public class IntakeSim implements IntakeIO {
     }
 
     private void updateMotorSimulations() {
-        armSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        armSimLeader.setSupplyVoltage(RobotController.getBatteryVoltage());
+        armSimFollower.setSupplyVoltage(RobotController.getBatteryVoltage());
         wheelSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         double wheelVoltage =
                 wheelSim.getMotorVoltage(); // TODO what is the difference between this and getWheelVoltage()?
-        double armVoltage = armSim.getMotorVoltage(); // TODO what is the difference between this and getArmVoltage()?
+        double armLeaderVoltage =
+                armSimLeader.getMotorVoltage(); // TODO what is the difference between this and getArmVoltage()?
+        double armFollowerVoltage = armSimFollower.getMotorVoltage();
 
         wheelSimModel.setInputVoltage(wheelVoltage);
         wheelSimModel.update(periodicDt);
 
-        armSimModel.setInputVoltage(armVoltage);
+        armSimModel.setInputVoltage((armLeaderVoltage + armFollowerVoltage) / 2.0);
         armSimModel.update(periodicDt);
 
-        armSim.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_UP_POSITION));
-        armSim.setRotorVelocity(
+        armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
+                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+        armSimLeader.setRotorVelocity(
+                Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
+
+        armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
+                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+        armSimFollower.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         wheelSim.setRawRotorPosition(
@@ -269,23 +322,43 @@ public class IntakeSim implements IntakeIO {
     }
 
     private void handleIntakeSimulation() {
-        double wheelVelocity = RobotContainer.intake.getWheelVelocityRotationsPerSecond();
-
-        if (wheelVelocity < -INTAKE_VELOCITY_THRESHOLD) {
+        if (RobotContainer.intake.getTargetState() == Intake.IntakeState.INTAKE
+                && RobotContainer.intake.atGoal()
+                && (fuelCount < Constants.Intake.MAX_INTAKE_CAPACITY
+                        || /* TODO RobotContainer.hopper.getFuelCount() */ 0
+                                < Constants.Hopper.MAX_HOPPER_CAPACITY)) { // intake or hopper has more room
             intakeSimulation.startIntake();
+        } else if (RobotContainer.intake.getTargetState() == Intake.IntakeState.EJECT
+                && RobotContainer.intake.atGoal()
+                && fuelCount > 0) {
+            // Limit fuel ejection rate to Constants.Intake.EJECT_FUEL_PER_SECOND
+            intakeTimeAccumulatorMillis += periodicDt;
+            while (intakeTimeAccumulatorMillis >= 1000.0 / Constants.Intake.EJECT_FUEL_PER_SECOND && fuelCount > 0) {
+                createProjectile();
+                intakeTimeAccumulatorMillis -= 1000.0 / Constants.Intake.EJECT_FUEL_PER_SECOND;
+                fuelCount--;
+            }
         } else {
             intakeSimulation.stopIntake();
         }
     }
 
+    private void createProjectile() {
+        Pair<Translation3d, Translation3d> ejectionData = getEjectionData(drivetrainSim);
+
+        SimulatedArena.getInstance()
+                .addGamePieceProjectile(new GamePieceProjectile(
+                                RebuiltFuelOnField.REBUILT_FUEL_INFO,
+                                ejectionData.getFirst().toTranslation2d(),
+                                ejectionData.getSecond().toTranslation2d(),
+                                ejectionData.getFirst().getZ(),
+                                ejectionData.getSecond().getZ(),
+                                Rotation3d.kZero)
+                        .withTouchGroundHeight(CORAL_GROUND_TOUCH_HEIGHT)
+                        .enableBecomesGamePieceOnFieldAfterTouchGround());
+    }
+
     private void updateGamePieceState() {
-        if (intakeSimulation.getGamePiecesAmount() != 0) {
-            if (!hadGamePieces) { // just intaked a game piece
-                // TODO handle transfering game piece from intake to hopper
-                hadGamePieces = true;
-            }
-        } else {
-            hadGamePieces = false;
-        }
+        fuelCount += intakeSimulation.getGamePiecesAmount();
     }
 }

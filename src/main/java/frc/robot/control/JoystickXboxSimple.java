@@ -162,4 +162,9 @@ public class JoystickXboxSimple implements AbstractControl {
     public void vibrate(RumbleType type, double value) {
         xboxController.setRumble(type, value);
     }
+
+    @Override
+    public boolean isIntakePressed() {
+        return joystick.getRawButton(3);
+    }
 }

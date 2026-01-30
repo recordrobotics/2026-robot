@@ -27,8 +27,12 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public void applyArmTalonFXConfig(TalonFXConfiguration configuration) {
+    public void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration) {
         armLeader.getConfigurator().apply(configuration);
+    }
+
+    @Override
+    public void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration) {
         armFollower.getConfigurator().apply(configuration);
     }
 

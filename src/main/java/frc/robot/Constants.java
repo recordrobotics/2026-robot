@@ -346,7 +346,9 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final int ROBOT_MAX_CAPACITY = 50; // TODO make correct
+        public static final int MAX_INTAKE_CAPACITY =
+                8; // number of fuel that can remain above intake without falling into hopper with intake extended //
+        // TODO
 
         public static final Current ARM_SUPPLY_CURRENT_LIMIT = Amps.of(10);
         public static final Current ARM_STATOR_CURRENT_LIMIT = Amps.of(60);
@@ -362,8 +364,6 @@ public final class Constants {
         public static final double MAX_ARM_VELOCITY = 8;
         public static final double MAX_ARM_ACCELERATION = 22;
 
-        public static final double INTAKE_SPEED = 8;
-
         public static final double ARM_KP = 68.721;
         public static final double ARM_KD = 8.7176;
         public static final double ARM_KG = 0.47407;
@@ -375,8 +375,10 @@ public final class Constants {
         public static final double ARM_MMEXPO_KV = 1.931;
         public static final double ARM_MMEXPO_KA = 1.1;
 
-        public static final double ARM_UP_POSITION = Units.degreesToRadians(80.19);
-        public static final double ARM_INTAKE_POSITION = Units.degreesToRadians(77.08);
+        public static final double ARM_DOWN_POSITION_RADIANS = Units.degreesToRadians(
+                0.0); // should always be 0, TODO offset motionmagic gravity arm position offset based on cg
+        public static final double ARM_RETRACTED_POSITION_RADIANS = Units.degreesToRadians(81.0);
+        public static final double ARM_STARTING_POSITION_RADIANS = Units.degreesToRadians(120.0);
 
         public static final double ARM_GEAR_RATIO = 56.8889;
 
@@ -386,7 +388,21 @@ public final class Constants {
         public static final double LENGTH = 0.385;
         public static final double ANGLE_OFFSET = 0;
 
+        public static final double EJECT_FUEL_PER_SECOND = 10.0;
+
+        public static final AngularVelocity WHEEL_INTAKE_VELOCITY = RotationsPerSecond.of(0.0);
+        public static final AngularVelocity WHEEL_EJECT_VELOCITY = RotationsPerSecond.of(0.0);
+
         private Intake() {}
+    }
+
+    public static final class Hopper {
+        public static final int MAX_ROBOT_CAPACITY =
+                50; // number of fuel that can fit in the whole robot with intake extended
+        public static final int MAX_HOPPER_CAPACITY =
+                MAX_ROBOT_CAPACITY - Intake.MAX_INTAKE_CAPACITY; // number of fuel that can fit in the hopper alone
+
+        private Hopper() {}
     }
 
     public final class RobotState {

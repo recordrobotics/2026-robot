@@ -15,7 +15,6 @@ import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.field.FieldIntersection;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.Logger;
 
@@ -26,26 +25,6 @@ public final class RobotModel extends ManagedSubsystemBase {
         int getPoseCount();
 
         void updatePoses(Pose3d[] poses, int i);
-    }
-
-    public static class RobotGamePieceModel {
-        private Supplier<Pose3d> poseSupplier;
-
-        public RobotGamePieceModel(Supplier<Pose3d> poseSupplier) {
-            this.poseSupplier = poseSupplier;
-        }
-
-        public Supplier<Pose3d> getPoseSupplier() {
-            return poseSupplier;
-        }
-
-        public Pose3d getPose() {
-            return poseSupplier.get();
-        }
-
-        public void setPoseSupplier(Supplier<Pose3d> poseSupplier) {
-            this.poseSupplier = poseSupplier;
-        }
     }
 
     public final IntakeModel intakeModel = new IntakeModel();
@@ -109,15 +88,8 @@ public final class RobotModel extends ManagedSubsystemBase {
         @AutoLogLevel(level = Level.DEBUG_REAL)
         private double angle;
 
-        @AutoLogLevel(level = Level.DEBUG_REAL)
-        private double setpointAngle;
-
-        public void update(double newAngle) {
-            angle = newAngle;
-        }
-
-        public void updateSetpoint(double angle) {
-            setpointAngle = angle;
+        public void update(double newAngleDegrees) {
+            angle = newAngleDegrees;
         }
 
         @Override
