@@ -13,6 +13,9 @@ public interface AbstractControl {
 
     void update();
 
+    // TODO temporary, replace with AI
+    boolean isIntakePressed();
+
     // Movement
     DrivetrainControl getDrivetrainControl();
 

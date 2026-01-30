@@ -199,6 +199,9 @@ public final class RobotContainer {
     }
 
     private static void configureTriggers() {
+        new Trigger(() -> DashboardUI.Overview.getControl().isIntakePressed())
+                .whileTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE)))
+                .whileFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED)));
 
         // Command to kill robot
         new Trigger(() -> DashboardUI.Overview.getControl().isKillTriggered())

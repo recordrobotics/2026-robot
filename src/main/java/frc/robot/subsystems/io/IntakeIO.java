@@ -6,7 +6,9 @@ import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 
 public interface IntakeIO {
-    void applyArmTalonFXConfig(TalonFXConfiguration configuration);
+    void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration);
+
+    void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration);
 
     Follower createArmFollower();
 
