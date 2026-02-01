@@ -2,8 +2,12 @@ package frc.robot.utils.field;
 
 public final class FastPolygonIntersection {
     private final float[][] polygons;
-    private final float[] minX, maxX, minY, maxY;
-    private final float[][] edgeX, edgeY;
+    private final float[] minX;
+    private final float[] maxX;
+    private final float[] minY;
+    private final float[] maxY;
+    private final float[][] edgeX;
+    private final float[][] edgeY;
 
     public FastPolygonIntersection(float[][] polygons) {
         this.polygons = polygons;
@@ -43,8 +47,10 @@ public final class FastPolygonIntersection {
     private record BoundingBox(float minX, float maxX, float minY, float maxY) {}
 
     private static BoundingBox computeBoundingBox(float[] poly) {
-        float bMinX = Float.MAX_VALUE, bMaxX = -Float.MAX_VALUE;
-        float bMinY = Float.MAX_VALUE, bMaxY = -Float.MAX_VALUE;
+        float bMinX = Float.MAX_VALUE;
+        float bMaxX = -Float.MAX_VALUE;
+        float bMinY = Float.MAX_VALUE;
+        float bMaxY = -Float.MAX_VALUE;
         for (int j = 0; j < poly.length; j += 2) {
             float x = poly[j];
             float y = poly[j + 1];

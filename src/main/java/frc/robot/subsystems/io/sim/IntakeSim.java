@@ -255,7 +255,7 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         wheel.close();
         armLeader.close();
     }

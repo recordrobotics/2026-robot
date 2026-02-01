@@ -52,7 +52,7 @@ public interface IntakeIO {
 
     void setArmPositionRotations(double newValue);
 
-    void close() throws Exception;
+    void close();
 
     void simulationPeriodic();
 }

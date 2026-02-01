@@ -257,7 +257,7 @@ public final class Robot extends LoggedRobot {
 
         // schedule the autonomous command (example)
         if (autonomousCommand != null) {
-            autonomousCommand.schedule();
+            CommandScheduler.getInstance().schedule(autonomousCommand);
         }
 
         DashboardUI.Autonomous.switchTo();
@@ -291,7 +291,9 @@ public final class Robot extends LoggedRobot {
 
     /** This function is called periodically during operator control. */
     @Override
-    public void teleopPeriodic() {}
+    public void teleopPeriodic() {
+        // nothing to do, commandscheduler handles everything
+    }
 
     @Override
     public void testInit() {

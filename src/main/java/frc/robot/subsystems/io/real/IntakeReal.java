@@ -144,7 +144,7 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         wheelLeader.close();
         armLeader.close();
         armFollower.close();

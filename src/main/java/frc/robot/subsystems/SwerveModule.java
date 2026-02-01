@@ -12,6 +12,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
@@ -26,6 +27,7 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
 
     private static final double STATIONARY_DRIVE_VELOCITY_THRESHOLD = 0.08;
     private static final double STATIONARY_TURN_VELOCITY_THRESHOLD = 1.0;
+    private static final boolean USE_COSINE_COMPENSATION = false;
 
     private final int encoderChannel;
 
@@ -262,8 +264,10 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
         }
 
         double actualTargetDriveVelocity = targetDriveVelocity;
-        // * Math.cos(Units.rotationsToRadians(targetTurnPosition)
-        //         - getTurnWheelRotation2d().getRadians());
+        if (USE_COSINE_COMPENSATION) {
+            actualTargetDriveVelocity *= Math.cos(Units.rotationsToRadians(targetTurnPosition)
+                    - getTurnWheelRotation2d().getRadians());
+        }
 
         io.setDriveMotorMotionMagic(driveRequest.withVelocity(actualTargetDriveVelocity));
 

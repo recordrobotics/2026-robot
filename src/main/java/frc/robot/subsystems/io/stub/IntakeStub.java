@@ -9,10 +9,14 @@ import frc.robot.subsystems.io.IntakeIO;
 
 public class IntakeStub implements IntakeIO {
     @Override
-    public void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration) {}
+    public void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration) {
+        // stub
+    }
 
     @Override
-    public void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration) {}
+    public void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration) {
+        // stub
+    }
 
     @Override
     public Follower createArmFollower() {
@@ -20,22 +24,34 @@ public class IntakeStub implements IntakeIO {
     }
 
     @Override
-    public void applyWheelTalonFXConfig(TalonFXConfiguration configuration) {}
+    public void applyWheelTalonFXConfig(TalonFXConfiguration configuration) {
+        // stub
+    }
 
     @Override
-    public void setWheelVoltage(double outputVolts) {}
+    public void setWheelVoltage(double outputVolts) {
+        // stub
+    }
 
     @Override
-    public void setArmVoltage(double outputVolts) {}
+    public void setArmVoltage(double outputVolts) {
+        // stub
+    }
 
     @Override
-    public void setArmLeaderMotionMagic(MotionMagicExpoVoltage request) {}
+    public void setArmLeaderMotionMagic(MotionMagicExpoVoltage request) {
+        // stub
+    }
 
     @Override
-    public void setArmFollowerMotionMagic(Follower request) {}
+    public void setArmFollowerMotionMagic(Follower request) {
+        // stub
+    }
 
     @Override
-    public void setWheelMotionMagic(MotionMagicVelocityVoltage request) {}
+    public void setWheelMotionMagic(MotionMagicVelocityVoltage request) {
+        // stub
+    }
 
     @Override
     public double getArmLeaderPositionRotations() {
@@ -98,14 +114,22 @@ public class IntakeStub implements IntakeIO {
     }
 
     @Override
-    public void setWheelPositionRotations(double newValue) {}
+    public void setWheelPositionRotations(double newValue) {
+        // stub
+    }
 
     @Override
-    public void setArmPositionRotations(double newValue) {}
+    public void setArmPositionRotations(double newValue) {
+        // stub
+    }
 
     @Override
-    public void close() throws Exception {}
+    public void close() {
+        // stub
+    }
 
     @Override
-    public void simulationPeriodic() {}
+    public void simulationPeriodic() {
+        // stub
+    }
 }
