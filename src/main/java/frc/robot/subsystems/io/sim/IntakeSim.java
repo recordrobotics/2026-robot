@@ -165,12 +165,14 @@ public class IntakeSim implements IntakeIO {
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
         armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+                * Units.radiansToRotations(
+                        armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimLeader.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+                * Units.radiansToRotations(
+                        armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimFollower.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
@@ -305,12 +307,14 @@ public class IntakeSim implements IntakeIO {
         armSimModel.update(periodicDt);
 
         armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+                * Units.radiansToRotations(
+                        armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimLeader.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+                * Units.radiansToRotations(
+                        armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimFollower.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 

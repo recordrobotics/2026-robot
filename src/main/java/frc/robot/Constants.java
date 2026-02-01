@@ -347,7 +347,7 @@ public final class Constants {
 
     public static final class Intake {
         public static final int MAX_INTAKE_CAPACITY =
-                8; // number of fuel that can remain above intake without falling into hopper with intake extended //
+                8; // number of fuel that can remain above intake without falling into hopper with intake extended
         // TODO
 
         public static final Current ARM_SUPPLY_CURRENT_LIMIT = Amps.of(10);

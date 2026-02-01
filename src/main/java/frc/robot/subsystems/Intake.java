@@ -41,7 +41,8 @@ public class Intake extends KillableSubsystem implements PoweredSubsystem {
 
     public Intake(IntakeIO io) {
         this.io = io;
-        armLeaderRequest = new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+        armLeaderRequest =
+                new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armFollowerRequest = io.createArmFollower();
         wheelRequest = new MotionMagicVelocityVoltage(RotationsPerSecond.of(0.0));
 
