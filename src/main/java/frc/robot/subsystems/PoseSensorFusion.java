@@ -5,6 +5,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
@@ -70,28 +71,24 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      * The cameras used for vision measurements
      */
     private final Set<PoseEstimationCamera> cameras = Set.of(
-            /*
-             * Left Camera
-             */
             Cameras.createLimelightPoseEstimationCamera(
-                    Constants.Vision.LEFT_NAME, PhysicalCamera.LIMELIGHT_3G, Constants.Vision.ROBOT_TO_CAMERA_LEFT),
-            /*
-             * Center Camera
-             */
+                    Constants.Vision.LEFT_FRONT_NAME,
+                    PhysicalCamera.LIMELIGHT_3G,
+                    Constants.Vision.ROBOT_TO_CAMERA_LEFT_FRONT),
             Cameras.createLimelightPoseEstimationCamera(
-                    Constants.Vision.CENTER_NAME, PhysicalCamera.LIMELIGHT_2, Constants.Vision.ROBOT_TO_CAMERA_CENTER),
-            /*
-             * L1 Camera
-             */
+                    Constants.Vision.LEFT_BACK_NAME,
+                    PhysicalCamera.LIMELIGHT_2,
+                    Constants.Vision.ROBOT_TO_CAMERA_LEFT_BACK),
             Cameras.createPhotonVisionPoseEstimationCamera(
-                    Constants.Vision.L1_NAME, PhysicalCamera.SVPRO_GLOBAL_SHUTTER, Constants.Vision.ROBOT_TO_CAMERA_L1),
-            /*
-             * Source Camera
-             */
-            Cameras.createPhotonVisionPoseEstimationCamera(
-                    Constants.Vision.SOURCE_NAME,
+                    Constants.Vision.RIGHT_FRONT_NAME,
                     PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
-                    Constants.Vision.ROBOT_TO_CAMERA_SOURCE));
+                    Constants.Vision.ROBOT_TO_CAMERA_RIGHT_FRONT),
+            Cameras.createPhotonVisionPoseEstimationCamera(
+                    Constants.Vision.RIGHT_BACK_NAME,
+                    PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
+                    Constants.Vision.ROBOT_TO_CAMERA_RIGHT_BACK),
+            Cameras.createLimelightPoseEstimationCamera(
+                    Constants.Vision.TURRET_NAME, PhysicalCamera.LIMELIGHT_4, Transform3d.kZero));
 
     /**
      * The deferred pose estimations to be added at the end of the calculation phase

@@ -30,25 +30,24 @@ public class FieldStateTracker extends ManagedSubsystemBase {
              * Intake Left
              */
             Cameras.createPhotonVisionObjectDetectionCamera(
-                    Constants.Vision.SOURCE_NAME,
-                    PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
-                    Constants.Vision.ROBOT_TO_CAMERA_GROUND_INTAKE,
+                    Constants.Vision.INTAKE_LEFT_NAME,
+                    PhysicalCamera.ARDUCAM_160_FOV,
+                    Constants.Vision.ROBOT_TO_CAMERA_INTAKE_LEFT,
                     ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
                             .put(1, ObjectDetectionClass.BUMPER)
                             .put(2, ObjectDetectionClass.FUEL)
-                            .build())
+                            .build()),
             /*
              * Intake Right
              */
-            // Cameras.createPhotonVisionObjectDetectionCamera(
-            //         Constants.Vision.L1_NAME,
-            //         PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
-            //         Constants.Vision.ROBOT_TO_CAMERA_L1,
-            //         ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
-            //                 .put(1, ObjectDetectionClass.BUMPER)
-            //                 .put(2, ObjectDetectionClass.FUEL)
-            //                 .build())
-            );
+            Cameras.createPhotonVisionObjectDetectionCamera(
+                    Constants.Vision.INTAKE_RIGHT_NAME,
+                    PhysicalCamera.ARDUCAM_160_FOV,
+                    Constants.Vision.ROBOT_TO_CAMERA_INTAKE_RIGHT,
+                    ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
+                            .put(1, ObjectDetectionClass.BUMPER)
+                            .put(2, ObjectDetectionClass.FUEL)
+                            .build()));
 
     /**
      * The deferred pose estimations to be added at the end of the calculation phase

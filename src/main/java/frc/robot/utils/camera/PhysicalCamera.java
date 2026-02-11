@@ -28,9 +28,19 @@ public enum PhysicalCamera {
      * SVPro Global Shutter Camera Specifications
      * https://www.amazon.com/SVPRO-Shutter-Distortion-Free-1920x1200-Computer/dp/B0CC28R5TL
      */
-    SVPRO_GLOBAL_SHUTTER(1920, 1200, 1, 83, 23, 0.2, 0.0005, 35, 5, 0.55, 1.3, 0.35);
+    SVPRO_GLOBAL_SHUTTER(1920, 1200, 1, 83, 23, 0.2, 0.0005, 35, 5, 0.55, 1.3, 0.35),
 
-    private static final double NEAR_PLANE = 0.01; // meters
+    /**
+     * Arducam 100 FOV Camera Specifications
+     * https://www.amazon.com/Arducam-Camera-Computer-Microphone-Windows/dp/B07ZRJDTBQ/?th=1
+     */
+    ARDUCAM_100_FOV(1920, 1080, 1, 100, 30, 0.2, 0.0005, 35, 5, 0.55, 1.0, 0.35),
+
+    /**
+     * Arducam 160 FOV Camera Specifications
+     * https://www.amazon.com/Arducam-Camera-Computer-Microphone-Windows/dp/B07ZS75KZR/?th=1
+     */
+    ARDUCAM_160_FOV(1920, 1080, 1, 160, 30, 0.2, 0.0005, 35, 5, 0.55, 1.0, 0.35);
 
     public final int width;
     public final int height;
@@ -45,6 +55,10 @@ public enum PhysicalCamera {
     public final double minStdDevs;
     public final double stdDevsExponent;
     public final double txtyStdDevs;
+
+    public final double aspectRatio;
+    public final double horizontalFov;
+    public final double verticalFov;
 
     PhysicalCamera(
             int width,
@@ -71,6 +85,17 @@ public enum PhysicalCamera {
         this.minStdDevs = minStdDevs;
         this.stdDevsExponent = stdDevsExponent;
         this.txtyStdDevs = txtyStdDevs;
+
+        this.aspectRatio = (double) getDetectorWidth() / getDetectorHeight();
+        double diagonalFovRad = Math.toRadians(fov);
+        double halfDiagonal = Math.tan(diagonalFovRad / 2.0);
+
+        double k = 1.0 / Math.sqrt(1 + aspectRatio * aspectRatio);
+        double halfHorizontalFov = Math.atan(halfDiagonal * aspectRatio * k);
+        double halfVerticalFov = Math.atan(halfDiagonal * k);
+
+        this.horizontalFov = Math.toDegrees(halfHorizontalFov * 2.0);
+        this.verticalFov = Math.toDegrees(halfVerticalFov * 2.0);
     }
 
     /**
@@ -103,47 +128,18 @@ public enum PhysicalCamera {
     }
 
     /**
-     * Calculates the projected area percentage of a sphere onto the camera's near plane.
-     * <p>Note: it is simplified and does not clip area by the FOV bounds
-     * <p>However, if the sphere is completely outside the FOV, it returns 0.
-     * @param cameraRelativePosition The position of the sphere relative to the camera.
-     * @param radius The radius of the sphere.
-     * @return The projected area percentage of the sphere on the near plane.
+     * Checks if a point in camera-relative coordinates is within the camera's field of view.
+     * @param cameraRelativePosition The position of the point relative to the camera, where +X is forward, +Y is left, and +Z is up.
+     * @return True if the point is within the camera's field of view, false otherwise.
      */
-    public double calculateSphereProjectedAreaPercentage(Translation3d cameraRelativePosition, double radius) {
-        if (radius <= 0) {
-            return 0.0;
-        }
+    public boolean isPointInFOV(Translation3d cameraRelativePosition) {
+        double horizontalAngle = Math.atan2(cameraRelativePosition.getY(), cameraRelativePosition.getX());
 
-        double depth = cameraRelativePosition.getZ();
-        if (depth <= 0) {
-            return 0.0;
-        }
+        double verticalAngle = Math.atan(cameraRelativePosition.getZ()
+                / Math.sqrt(cameraRelativePosition.getX() * cameraRelativePosition.getX()
+                        + cameraRelativePosition.getY() * cameraRelativePosition.getY()));
 
-        double x = cameraRelativePosition.getX();
-        double y = cameraRelativePosition.getY();
-        double aspectRatio = (double) getDetectorWidth() / getDetectorHeight();
-        double diagonalFovRad = Math.toRadians(fov);
-        double halfDiagonal = NEAR_PLANE * Math.tan(diagonalFovRad / 2.0);
-
-        double halfHeight = halfDiagonal / Math.sqrt(1.0 + (aspectRatio * aspectRatio));
-        double halfWidth = halfHeight * aspectRatio;
-        double halfVerticalFov = Math.atan2(halfHeight, NEAR_PLANE);
-        double halfHorizontalFov = Math.atan2(halfWidth, NEAR_PLANE);
-        double angularRadius = Math.atan2(radius, depth);
-        double horizontalAngle = Math.atan2(x, depth);
-        double verticalAngle = Math.atan2(y, depth);
-
-        if (Math.abs(horizontalAngle) > (halfHorizontalFov + angularRadius)
-                || Math.abs(verticalAngle) > (halfVerticalFov + angularRadius)) {
-            return 0.0;
-        }
-
-        double nearPlaneArea = (2.0 * halfWidth) * (2.0 * halfHeight);
-        double projectedRadius = (NEAR_PLANE * radius) / depth;
-        double projectedArea = Math.PI * projectedRadius * projectedRadius;
-        double percentage = projectedArea / nearPlaneArea;
-
-        return Math.max(0.0, Math.min(1.0, percentage));
+        return Math.abs(horizontalAngle) <= Math.toRadians(horizontalFov / 2.0)
+                && Math.abs(verticalAngle) <= Math.toRadians(verticalFov / 2.0);
     }
 }
