@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotContainer;
 import frc.robot.utils.ContainerUtils;
 import frc.robot.utils.SimpleMath;
@@ -18,6 +17,7 @@ import frc.robot.utils.camera.PhysicalCamera;
 import frc.robot.utils.camera.objectdetection.ObjectDetectionCamera;
 import frc.robot.utils.camera.objectdetection.ObjectDetectionClass;
 import frc.robot.utils.camera.objectdetection.ObjectDetectionResult;
+import frc.robot.utils.field.FieldIntersection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.ironmaple.simulation.SimulatedArena;
-import org.littletonrobotics.junction.Logger;
 
 public class MapleSimCamera extends ObjectDetectionCamera {
 
@@ -34,6 +33,7 @@ public class MapleSimCamera extends ObjectDetectionCamera {
     private static final double NETWORK_LATENCY_STD_DEV_MS = 2;
 
     private static final double MAX_DETECTION_CONFIDENCE = 0.95;
+    private static final double MAX_DETECTION_AREA = 0.2;
 
     private static final ImmutableMap<String, ObjectDetectionClass> SIMULATION_DETECTION_CLASS_MAP =
             ImmutableMap.<String, ObjectDetectionClass>builder()
@@ -64,9 +64,6 @@ public class MapleSimCamera extends ObjectDetectionCamera {
         super(name, physicalCamera, robotToCamera, detectionClassMap);
         this.frameQueue = new TreeMap<>();
         this.detectionClassReverseMap = ContainerUtils.reverseMap(detectionClassMap);
-
-        SmartDashboard.putNumber(getPrefix() + "yaw", 0);
-        SmartDashboard.putNumber(getPrefix() + "pitch", 0);
     }
 
     /**
@@ -119,20 +116,17 @@ public class MapleSimCamera extends ObjectDetectionCamera {
         Pose2d fieldToRobot = RobotContainer.model.getRobot();
         Pose3d fieldToCamera = new Pose3d(fieldToRobot).transformBy(getRobotToCamera());
 
-        Logger.recordOutput(getPrefix() + "ftc", fieldToCamera);
-
         return SimulatedArena.getInstance().gamePiecesOnField().stream()
                 .map(target -> {
                     Pose3d fieldToTarget = target.getPose3d();
                     Pose3d cameraToTarget = fieldToTarget.relativeTo(fieldToCamera);
 
-                    double areaPercentage = getPhysicalCamera()
-                            .calculateSphereProjectedAreaPercentage(
-                                    cameraToTarget.getTranslation(), target.getRotationDiscRadius());
-
-                    // if (areaPercentage <= 0.0) {
-                    //     return Optional.empty();
-                    // }
+                    if (!getPhysicalCamera().isPointInFOV(cameraToTarget.getTranslation())
+                            || FieldIntersection.collidesWithField(
+                                    fieldToCamera.getTranslation().toTranslation2d(),
+                                    fieldToTarget.getTranslation().toTranslation2d())) {
+                        return Optional.empty();
+                    }
 
                     ObjectDetectionClass detectionClass = SIMULATION_DETECTION_CLASS_MAP.get(target.getType());
                     if (detectionClass == null || !getDetectionClassMap().containsValue(detectionClass)) {
@@ -142,18 +136,16 @@ public class MapleSimCamera extends ObjectDetectionCamera {
                     double yawDegrees =
                             Units.radiansToDegrees(Math.atan2(cameraToTarget.getY(), cameraToTarget.getX()));
 
-                    double pitchDegrees =
-                            -Units.radiansToDegrees(Math.atan2(cameraToTarget.getZ(), cameraToTarget.getX()));
-
-                    yawDegrees = SmartDashboard.getNumber(getPrefix() + "yaw", 0);
-                    pitchDegrees = SmartDashboard.getNumber(getPrefix() + "pitch", 0);
+                    double pitchDegrees = Units.radiansToDegrees(Math.atan(cameraToTarget.getZ()
+                            / Math.sqrt(cameraToTarget.getX() * cameraToTarget.getX()
+                                    + cameraToTarget.getY() * cameraToTarget.getY())));
 
                     return Optional.of(new ObjectDetectionResult(
                             detectionClassReverseMap.get(detectionClass),
                             MAX_DETECTION_CONFIDENCE,
                             yawDegrees,
                             pitchDegrees,
-                            areaPercentage,
+                            MAX_DETECTION_AREA,
                             Timer.getTimestamp(),
                             new ObjectDetectionResult.TargetCorner(0, 0),
                             new ObjectDetectionResult.TargetCorner(1, 0),

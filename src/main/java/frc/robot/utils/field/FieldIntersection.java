@@ -1,11 +1,13 @@
 package frc.robot.utils.field;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.utils.SimpleMath;
 import java.util.Arrays;
-import org.ironmaple.utils.FieldMirroringUtils;
 import org.littletonrobotics.junction.Logger;
 
 @SuppressWarnings("java:S109")
@@ -13,45 +15,99 @@ public final class FieldIntersection {
 
     private static final FastPolygonIntersection intersection;
 
+    private static final double FIELD_X_MAX = 16.54105;
+    private static final double FIELD_Y_MAX = 8.06926;
+
+    private static final double HUB_X_LEN = 1.19380;
+    private static final double HUB_Y_LEN = 1.19380;
+    private static final double HUB_X = 4.625594;
+    private static final double HUB_Y = 4.03463;
+    private static final double HUB_RAMP_LENGTH = Inches.of(73.0).in(Meters);
+
+    private static final double UPRIGHT_X_LEN = Inches.of(3.5).in(Meters);
+    private static final double UPRIGHT_Y_LEN = Inches.of(1.5).in(Meters);
+    private static final double UPRIGHT_OFFSET_FROM_END_WALL = 1.06204;
+    private static final double UPRIGHT_OFFSET_FROM_SIDE_WALL = 3.31524;
+    private static final double UPRIGHT_Y_SPACING = Inches.of(33.75).in(Meters);
+
+    private static final double TRENCH_WALL_Y_LEN = Inches.of(12.0).in(Meters);
+    private static final double TRENCH_WALL_X_LEN = Inches.of(47.0).in(Meters);
+    private static final double TRENCH_WALL_OFFSET_FROM_END_WALL = 4.61769;
+    private static final double TRENCH_WALL_OFFSET_FROM_SIDE_WALL = 1.43113;
+
+    private static final boolean ADD_RAMP_COLLIDER = true;
+
     private FieldIntersection() {}
 
     static {
-        // blue reef
-        Translation2d[] reefVorticesBlue = new Translation2d[] {
-            new Translation2d(3.658, 3.546),
-            new Translation2d(3.658, 4.506),
-            new Translation2d(4.489, 4.987),
-            new Translation2d(5.3213, 4.506),
-            new Translation2d(5.3213, 3.546),
-            new Translation2d(4.489, 3.065)
-        };
-
-        // red reef
-        Translation2d[] reefVorticesRed = Arrays.stream(reefVorticesBlue)
-                .map(pointAtBlue ->
-                        new Translation2d(FieldMirroringUtils.FIELD_WIDTH - pointAtBlue.getX(), pointAtBlue.getY()))
-                .toArray(Translation2d[]::new);
-
         // Define field polygons (in meters)
         float[][] polygons = new float[][] {
-            // blue coral stations
-            createTriangle(new Translation2d(0, 1.270), new Translation2d(1.672, 0), new Translation2d(0, 0)),
-            createTriangle(new Translation2d(0, 6.782), new Translation2d(1.672, 8.052), new Translation2d(0, 8.052)),
-            // red coral stations
-            createTriangle(
-                    new Translation2d(17.548, 1.270),
-                    new Translation2d(17.548 - 1.672, 0),
-                    new Translation2d(17.548, 0)),
-            createTriangle(
-                    new Translation2d(17.548, 6.782),
-                    new Translation2d(17.548 - 1.672, 8.052),
-                    new Translation2d(17.548, 8.052)),
-            // blue reef
-            createPolygonFromCorners(reefVorticesBlue),
-            // red reef
-            createPolygonFromCorners(reefVorticesRed),
-            // the pillar in the middle of the field
-            createRectangle(0.305, 0.305, new Pose2d(8.774, 4.026, new Rotation2d()))
+            // blue tower uprights
+            createRectangle(
+                    UPRIGHT_X_LEN,
+                    UPRIGHT_Y_LEN,
+                    new Pose2d(UPRIGHT_OFFSET_FROM_END_WALL, UPRIGHT_OFFSET_FROM_SIDE_WALL, new Rotation2d())),
+            createRectangle(
+                    UPRIGHT_X_LEN,
+                    UPRIGHT_Y_LEN,
+                    new Pose2d(
+                            UPRIGHT_OFFSET_FROM_END_WALL,
+                            UPRIGHT_OFFSET_FROM_SIDE_WALL + UPRIGHT_Y_SPACING,
+                            new Rotation2d())),
+            // red tower uprights
+            createRectangle(
+                    UPRIGHT_X_LEN,
+                    UPRIGHT_Y_LEN,
+                    new Pose2d(
+                            FIELD_X_MAX - UPRIGHT_OFFSET_FROM_END_WALL,
+                            FIELD_Y_MAX - UPRIGHT_OFFSET_FROM_SIDE_WALL,
+                            new Rotation2d())),
+            createRectangle(
+                    UPRIGHT_X_LEN,
+                    UPRIGHT_Y_LEN,
+                    new Pose2d(
+                            FIELD_X_MAX - UPRIGHT_OFFSET_FROM_END_WALL,
+                            FIELD_Y_MAX - UPRIGHT_OFFSET_FROM_SIDE_WALL - UPRIGHT_Y_SPACING,
+                            new Rotation2d())),
+            // blue trench wall
+            createRectangle(
+                    TRENCH_WALL_X_LEN,
+                    TRENCH_WALL_Y_LEN,
+                    new Pose2d(TRENCH_WALL_OFFSET_FROM_END_WALL, TRENCH_WALL_OFFSET_FROM_SIDE_WALL, new Rotation2d())),
+            createRectangle(
+                    TRENCH_WALL_X_LEN,
+                    TRENCH_WALL_Y_LEN,
+                    new Pose2d(
+                            TRENCH_WALL_OFFSET_FROM_END_WALL,
+                            FIELD_Y_MAX - TRENCH_WALL_OFFSET_FROM_SIDE_WALL,
+                            new Rotation2d())),
+            // red trench wall
+            createRectangle(
+                    TRENCH_WALL_X_LEN,
+                    TRENCH_WALL_Y_LEN,
+                    new Pose2d(
+                            FIELD_X_MAX - TRENCH_WALL_OFFSET_FROM_END_WALL,
+                            TRENCH_WALL_OFFSET_FROM_SIDE_WALL,
+                            new Rotation2d())),
+            createRectangle(
+                    TRENCH_WALL_X_LEN,
+                    TRENCH_WALL_Y_LEN,
+                    new Pose2d(
+                            FIELD_X_MAX - TRENCH_WALL_OFFSET_FROM_END_WALL,
+                            FIELD_Y_MAX - TRENCH_WALL_OFFSET_FROM_SIDE_WALL,
+                            new Rotation2d())),
+            // blue hub + ramps
+            ADD_RAMP_COLLIDER
+                    ? createRectangle(
+                            HUB_X_LEN, HUB_Y_LEN + 2.0 * HUB_RAMP_LENGTH, new Pose2d(HUB_X, HUB_Y, new Rotation2d()))
+                    : createRectangle(HUB_X_LEN, HUB_Y_LEN, new Pose2d(HUB_X, HUB_Y, new Rotation2d())),
+            // red hub + ramps
+            ADD_RAMP_COLLIDER
+                    ? createRectangle(
+                            HUB_X_LEN,
+                            HUB_Y_LEN + 2.0 * HUB_RAMP_LENGTH,
+                            new Pose2d(FIELD_X_MAX - HUB_X, HUB_Y, new Rotation2d()))
+                    : createRectangle(HUB_X_LEN, HUB_Y_LEN, new Pose2d(FIELD_X_MAX - HUB_X, HUB_Y, new Rotation2d()))
         };
         intersection = new FastPolygonIntersection(polygons);
     }
@@ -117,6 +173,10 @@ public final class FieldIntersection {
             }
         }
 
-        Logger.recordOutput("FieldIntersectionCorners", corners);
+        Logger.recordOutput(
+                "FieldIntersectionCorners",
+                Arrays.stream(corners)
+                        .flatMap(t -> Arrays.stream(t).map(p -> new Pose2d(p, Rotation2d.kZero)))
+                        .toArray(Pose2d[]::new));
     }
 }

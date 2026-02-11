@@ -119,25 +119,30 @@ public final class Constants {
 
     public static final class Vision {
 
-        public static final String L1_NAME = "photon-l1";
-        public static final String SOURCE_NAME = "photon-source";
-        public static final String CORAL_INTAKE_NAME = "coral-intake";
-        public static final String LEFT_NAME = "limelight-left";
-        public static final String CENTER_NAME = "limelight-center";
+        public static final String TURRET_NAME = "turret";
+        public static final String LEFT_FRONT_NAME = "left-front";
+        public static final String LEFT_BACK_NAME = "left-back";
+        public static final String RIGHT_FRONT_NAME = "right-front";
+        public static final String RIGHT_BACK_NAME = "right-back";
+        public static final String INTAKE_LEFT_NAME = "intake-left";
+        public static final String INTAKE_RIGHT_NAME = "intake-right";
 
-        public static final Transform3d ROBOT_TO_CAMERA_LEFT = new Transform3d(
+        public static final Transform3d ROBOT_TO_CAMERA_LEFT_FRONT = new Transform3d(
                 new Translation3d(0.311558, 0.330204, 0.246383), new Rotation3d(0, Units.degreesToRadians(-21), 0));
-        public static final Transform3d ROBOT_TO_CAMERA_CENTER = new Transform3d(
+        public static final Transform3d ROBOT_TO_CAMERA_LEFT_BACK = new Transform3d(
                 new Translation3d(0.219412, -0.050800, 0.156247), new Rotation3d(0, Units.degreesToRadians(-27), 0));
-        public static final Transform3d ROBOT_TO_CAMERA_L1 = new Transform3d(
+        public static final Transform3d ROBOT_TO_CAMERA_RIGHT_FRONT = new Transform3d(
                 new Translation3d(-0.031750, 0.373120, 0.196097),
                 new Rotation3d(0, Units.degreesToRadians(-12.894), Units.degreesToRadians(90)));
-        public static final Transform3d ROBOT_TO_CAMERA_SOURCE = new Transform3d(
+        public static final Transform3d ROBOT_TO_CAMERA_RIGHT_BACK = new Transform3d(
                 new Translation3d(-0.006350, -0.370769, 0.197020),
                 new Rotation3d(0, Units.degreesToRadians(-18.951), Units.degreesToRadians(-90)));
-        public static final Transform3d ROBOT_TO_CAMERA_GROUND_INTAKE = new Transform3d(
+        public static final Transform3d ROBOT_TO_CAMERA_INTAKE_LEFT = new Transform3d(
                 new Translation3d(Meters.of(0.142850), Meters.of(0.369435), Meters.of(0.526114)),
-                new Rotation3d(Degrees.of(0), Degrees.of(20), Degrees.of(90.0 + 25.0)));
+                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(0)));
+        public static final Transform3d ROBOT_TO_CAMERA_INTAKE_RIGHT = new Transform3d(
+                new Translation3d(Meters.of(0.142850), Meters.of(0.369435), Meters.of(0.526114)),
+                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(0)));
 
         public static final Distance CORAL_ID_DISTANCE = Inches.of(8);
         public static final Time CORAL_TIMEOUT = Seconds.of(0.5);
