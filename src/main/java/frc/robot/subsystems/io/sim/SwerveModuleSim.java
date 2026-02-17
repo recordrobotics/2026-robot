@@ -195,4 +195,6 @@ public class SwerveModuleSim implements SwerveModuleIO {
     public void simulationPeriodic() {
         absoluteTurningMotorEncoderPosition.set(getTurnMechanismPosition());
     }
+    
+    public boolean isAbsEncoderConnected(){return false;}
 }

@@ -3,6 +3,7 @@ package frc.robot.subsystems.io.real;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.subsystems.io.SwerveModuleIO;
@@ -15,7 +16,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
     private final TalonFX driveMotor;
     private final TalonFX turningMotor;
-    private final DutyCycleEncoder absoluteTurningMotorEncoder;
+    private final CANcoder absoluteTurningMotorEncoder;
 
     public SwerveModuleReal(double periodicDt, ModuleConstants m) {
         this.periodicDt = periodicDt;
@@ -23,7 +24,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
         driveMotor = new TalonFX(m.driveMotorChannel());
         turningMotor = new TalonFX(m.turningMotorChannel());
 
-        absoluteTurningMotorEncoder = new DutyCycleEncoder(m.absoluteTurningMotorEncoderChannel());
+        absoluteTurningMotorEncoder = new CANcoder(m.absoluteTurningMotorEncoderChannel());
     }
 
     @Override
@@ -88,7 +89,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
     @Override
     public double getAbsoluteEncoder() {
-        return absoluteTurningMotorEncoder.get();
+        return absoluteTurningMotorEncoder.getAbsolutePosition(true).getValueAsDouble();
     }
 
     @Override
@@ -146,5 +147,9 @@ public class SwerveModuleReal implements SwerveModuleIO {
     @Override
     public void simulationPeriodic() {
         /* real */
+    }
+
+    public boolean isAbsEncoderConnected(){
+        return absoluteTurningMotorEncoder.isConnected();
     }
 }

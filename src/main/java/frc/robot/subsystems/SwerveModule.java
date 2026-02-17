@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -9,12 +10,13 @@ import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.AutoLogLevel.Level;
@@ -29,11 +31,7 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
     private static final double STATIONARY_TURN_VELOCITY_THRESHOLD = 1.0;
     private static final boolean USE_COSINE_COMPENSATION = false;
 
-    private final int encoderChannel;
-
     private final SwerveModuleIO io;
-
-    private final double turningEncoderOffset;
 
     private double targetDriveVelocity;
     private double targetTurnPosition;
@@ -64,12 +62,6 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
      */
     public SwerveModule(ModuleConstants m, SwerveModuleIO io) {
         this.io = io;
-
-        // Creates TalonFX objects
-        encoderChannel = m.absoluteTurningMotorEncoderChannel();
-
-        // Creates Motor Encoder object and gets offset
-        turningEncoderOffset = m.turningEncoderOffset();
 
         // Creates other variables
         this.turnGearRatio = m.turnGearRatio();
@@ -137,9 +129,13 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
         io.setDriveMotorVoltage(0);
         io.setTurnMotorVoltage(0);
 
+        CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+        encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
+        encoderConfig.MagnetSensor.MagnetOffset = m.turningEncoderOffset();
+
         // Corrects for offset in absolute wheel position
         if (isAbsEncoderConnected()) {
-            turnPositionCached = getAbsWheelTurnOffset();
+            turnPositionCached = io.getAbsoluteEncoder();
             io.setTurnMechanismPosition(turnPositionCached);
         } else {
             turnPositionCached = io.getTurnMechanismPosition();
@@ -149,28 +145,8 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
         driveRequest = new MotionMagicVelocityVoltage(0);
     }
 
-    @SuppressWarnings("java:S1244") // value is exactly 1.0 when disconnected
     public boolean isAbsEncoderConnected() {
-        return io.getAbsoluteEncoder() != 1;
-    }
-
-    /**
-     * Calculates the offset-corrected absolute position of the wheel's turning mechanism.
-     *
-     * This method takes the raw absolute encoder reading, subtracts the configured turning
-     * encoder offset to account for mechanical alignment, adds 1 to handle negative values,
-     * and uses modulo 1 to normalize the result to a range of [0, 1) representing rotations.
-     *
-     * The calculation handles the case where the encoder reading minus offset could be negative
-     * by adding 1 before applying the modulo operation, ensuring the result is always positive
-     * and within the expected range.
-     *
-     * @return The normalized absolute position of the wheel's turn in rotations (0.0 to 1.0),
-     *         where 0.0 represents the calibrated zero position and values approaching 1.0
-     *         represent nearly one full rotation from that position
-     */
-    private double getAbsWheelTurnOffset() {
-        return (io.getAbsoluteEncoder() - turningEncoderOffset + 1) % 1;
+        return io.isAbsEncoderConnected();
     }
 
     /**
@@ -259,7 +235,7 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
                 && isAbsEncoderConnected()
                 && !hasResetAbs) { // if still for 2 seconds
             hasResetAbs = true;
-            turnPositionCached = getAbsWheelTurnOffset();
+            turnPositionCached = io.getAbsoluteEncoder();
             io.setTurnMechanismPosition(turnPositionCached);
         }
 
@@ -270,8 +246,6 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
         }
 
         io.setDriveMotorMotionMagic(driveRequest.withVelocity(actualTargetDriveVelocity));
-
-        SmartDashboard.putNumber("Encoder " + encoderChannel, io.getAbsoluteEncoder());
 
         if (!(SysIdManager.getProvider() instanceof Drivetrain.SysIdTurn)) {
             io.setTurnMotorMotionMagic(turnRequest.withPosition(targetTurnPosition));

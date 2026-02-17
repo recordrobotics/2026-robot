@@ -112,4 +112,6 @@ public class SwerveModuleStub implements SwerveModuleIO {
 
     @Override
     public void simulationPeriodic() {}
+
+    public boolean isAbsEncoderConnected(){return false;}
 }

@@ -51,4 +51,6 @@ public interface SwerveModuleIO extends AutoCloseable {
     double getTurnMotorCurrentDrawAmps();
 
     void simulationPeriodic();
+
+    boolean isAbsEncoderConnected();
 }
