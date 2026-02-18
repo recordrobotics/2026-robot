@@ -257,7 +257,9 @@ public final class Robot extends LoggedRobot {
             SimulatedArena.getInstance().resetFieldForAuto();
         }
 
-        // schedule the autonomous command (example)
+        RobotContainer.model.intakeModel.resetHopperExtension();
+
+        // schedule the autonomous command
         if (autonomousCommand != null) {
             CommandScheduler.getInstance().schedule(autonomousCommand);
         }
