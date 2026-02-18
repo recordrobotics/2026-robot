@@ -40,7 +40,7 @@ public class ShooterSim implements ShooterIO {
             LinearSystemId.createSingleJointedArmSystem(hoodMotor, 0.007440336, Constants.Shooter.HOOD_GEAR_RATIO),
             hoodMotor,
             Constants.Shooter.HOOD_GEAR_RATIO,
-            Units.inchesToMeters(6.02),
+            0.107361364429, // distance from hood pinion to center of mass
             Constants.Shooter.HOOD_MIN_POSITION_RADIANS + HOOD_ANGLE_OFFSET,
             Constants.Shooter.HOOD_MAX_POSITION_RADIANS + HOOD_ANGLE_OFFSET,
             true,

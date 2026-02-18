@@ -63,7 +63,7 @@ public class IntakeSim implements IntakeIO {
             LinearSystemId.createSingleJointedArmSystem(armMotor, 0.2943129061, Constants.Intake.ARM_GEAR_RATIO),
             armMotor,
             Constants.Intake.ARM_GEAR_RATIO,
-            Units.inchesToMeters(17.02),
+            0.253046091813, // distance from axis of rotation to center of mass
             Constants.Intake.ARM_DOWN_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
             Constants.Intake.ARM_STARTING_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
             true,
@@ -72,7 +72,7 @@ public class IntakeSim implements IntakeIO {
             0.0);
 
     private final DCMotorSim wheelSimModel = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(Constants.Intake.WHEEL_KV, Constants.Intake.WHEEL_KA),
+            LinearSystemId.createDCMotorSystem(wheelMotor, 0.0000819391, Constants.Intake.WHEEL_GEAR_RATIO),
             wheelMotor,
             0.0,
             0.0);

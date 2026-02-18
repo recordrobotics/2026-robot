@@ -445,10 +445,10 @@ public final class Constants {
                 Constants.Swerve.MAX_MODULE_SPEED * 2; // surface speed of roller // TODO make correct
         public static final double WHEEL_EJECT_VELOCITY_MPS = -6.0; // surface speed of roller // TODO make correct
 
-        public static final double ARM_GEAR_RATIO = 56.8889;
+        public static final double ARM_GEAR_RATIO = 12.8571428571;
         public static final double ARM_GRAVITY_POSITION_OFFSET_RADIANS = 0; // TODO: add offset from SysId
 
-        public static final double WHEEL_GEAR_RATIO = 10;
+        public static final double WHEEL_GEAR_RATIO = 1.0;
 
         private Intake() {}
     }
