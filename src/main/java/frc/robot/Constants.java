@@ -430,10 +430,12 @@ public final class Constants {
         public static final double ARM_KA = 0.1;
 
         public static final double WHEEL_KP = 0.037121;
-        public static final double WHEEL_KD = 0.0;
         public static final double WHEEL_KS = 0.1709;
         public static final double WHEEL_KV = 0.61705;
         public static final double WHEEL_KA = 0.039556;
+
+        public static final double WHEEL_MAX_ACCELERATION = 13.18;
+        public static final double WHEEL_MAX_JERK = 131.28;
 
         public static final double ARM_DOWN_POSITION_RADIANS = Units.degreesToRadians(0.0); // should always be 0
         public static final double ARM_RETRACTED_POSITION_RADIANS = Units.degreesToRadians(81.0);
@@ -444,7 +446,7 @@ public final class Constants {
         public static final double WHEEL_EJECT_VELOCITY_MPS = -6.0; // surface speed of roller // TODO make correct
 
         public static final double ARM_GEAR_RATIO = 56.8889;
-        public static final double ARM_GRAVITY_POSITION_OFFSET = 0; // TODO: add offset from SysId
+        public static final double ARM_GRAVITY_POSITION_OFFSET_RADIANS = 0; // TODO: add offset from SysId
 
         public static final double WHEEL_GEAR_RATIO = 10;
 
@@ -475,13 +477,52 @@ public final class Constants {
         public static final double MMEXPO_KV = 1.931;
         public static final double MMEXPO_KA = 1.1;
 
-        public static final double GEAR_RATIO = 16;
+        public static final double GEAR_RATIO = 15.5428571429;
 
         public static final double STARTING_POSITION_RADIANS = Units.degreesToRadians(90.0);
         public static final double ROTATION_MAX_POSITION_RADIANS = Units.degreesToRadians(360.0);
         public static final double ROTATION_MIN_POSITION_RADIANS = -ROTATION_MAX_POSITION_RADIANS; // symmetric
 
         private Turret() {}
+    }
+
+    public static final class Shooter {
+        public static final double HOOD_KP = 0.8;
+        public static final double HOOD_KD = 0.0;
+        public static final double HOOD_KS = 0.1;
+        public static final double HOOD_KV = 0.1;
+        public static final double HOOD_KA = 0.01;
+
+        public static final double FLYWHEEL_KP = 0.8;
+        public static final double FLYWHEEL_KS = 0.1;
+        public static final double FLYWHEEL_KV = 0.1;
+        public static final double FLYWHEEL_KA = 0.01;
+
+        public static final Current HOOD_SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current HOOD_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Time HOOD_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final Current HOOD_STATOR_CURRENT_LIMIT = Amps.of(120);
+
+        public static final Current FLYWHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current FLYWHEEL_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Time FLYWHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final Current FLYWHEEL_STATOR_CURRENT_LIMIT = Amps.of(120);
+
+        public static final double HOOD_MMEXPO_KV = 1.931;
+        public static final double HOOD_MMEXPO_KA = 1.1;
+
+        public static final double FLYWHEEL_MAX_ACCELERATION = 13.18;
+        public static final double FLYWHEEL_MAX_JERK = 131.28;
+
+        public static final double HOOD_GEAR_RATIO = 35.0476190476;
+
+        public static final double FLYWHEEL_GEAR_RATIO = 1;
+
+        public static final double HOOD_STARTING_POSITION_RADIANS = Units.degreesToRadians(76);
+        public static final double HOOD_MAX_POSITION_RADIANS = HOOD_STARTING_POSITION_RADIANS;
+        public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(50);
+
+        private Shooter() {}
     }
 
     public final class RobotState {

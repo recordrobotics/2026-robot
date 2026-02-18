@@ -28,7 +28,7 @@ public interface IntakeIO {
 
     double getArmFollowerPositionRotations();
 
-    double getWheelPositionRotations();
+    double getWheelPositionMeters();
 
     double getArmLeaderVelocityRotationsPerSecond();
 
@@ -48,7 +48,7 @@ public interface IntakeIO {
 
     double getArmFollowerCurrentDrawAmps();
 
-    void setWheelPositionMps(double newValue);
+    void setWheelPositionMeters(double newValue);
 
     void setArmPositionRotations(double newValue);
 

@@ -29,7 +29,6 @@ import frc.robot.RobotMap;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.io.IntakeIO;
 import frc.robot.utils.IntakeSimulationUtils;
-import frc.robot.utils.SimpleMath;
 import java.util.Random;
 import org.dyn4j.geometry.Rectangle;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -61,14 +60,14 @@ public class IntakeSim implements IntakeIO {
     private final DCMotor wheelMotor = DCMotor.getKrakenX44(1);
 
     private final SingleJointedArmSim armSimModel = new SingleJointedArmSim(
-            LinearSystemId.createSingleJointedArmSystem(armMotor, 0.7, Constants.Intake.ARM_GEAR_RATIO),
+            LinearSystemId.createSingleJointedArmSystem(armMotor, 0.2943129061, Constants.Intake.ARM_GEAR_RATIO),
             armMotor,
             Constants.Intake.ARM_GEAR_RATIO,
             Units.inchesToMeters(17.02),
-            Constants.Intake.ARM_DOWN_POSITION_RADIANS,
-            Constants.Intake.ARM_STARTING_POSITION_RADIANS,
+            Constants.Intake.ARM_DOWN_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
+            Constants.Intake.ARM_STARTING_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
             true,
-            Constants.Intake.ARM_STARTING_POSITION_RADIANS,
+            Constants.Intake.ARM_STARTING_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
             0.0,
             0.0);
 
@@ -149,7 +148,7 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public void setWheelPositionMps(double newValue) {
+    public void setWheelPositionMeters(double newValue) {
         // Reset internal sim state
         wheelSimModel.setState(Units.rotationsToRadians(newValue), 0);
 
@@ -168,19 +167,22 @@ public class IntakeSim implements IntakeIO {
     @Override
     public void setArmPositionRotations(double newValueRotations) {
         // Reset internal sim state
-        armSimModel.setState(Units.rotationsToRadians(newValueRotations), 0);
+        armSimModel.setState(
+                Units.rotationsToRadians(newValueRotations) + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS, 0);
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
         armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(
-                        armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+                * Units.radiansToRotations(armSimModel.getAngleRads()
+                        - Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS
+                        - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimLeader.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(
-                        armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+                * Units.radiansToRotations(armSimModel.getAngleRads()
+                        - Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS
+                        - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimFollower.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
@@ -205,7 +207,7 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public double getWheelPositionRotations() {
+    public double getWheelPositionMeters() {
         return wheel.getPosition().getValueAsDouble();
     }
 
@@ -313,22 +315,24 @@ public class IntakeSim implements IntakeIO {
         armSimModel.update(periodicDt);
 
         armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(
-                        armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+                * Units.radiansToRotations(armSimModel.getAngleRads()
+                        - Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS
+                        - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimLeader.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(
-                        armSimModel.getAngleRads() - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+                * Units.radiansToRotations(armSimModel.getAngleRads()
+                        - Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS
+                        - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimFollower.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
-        wheelSim.setRawRotorPosition(
-                Constants.Intake.WHEEL_GEAR_RATIO * Units.radiansToRotations(wheelSimModel.getAngularPositionRad()));
+        wheelSim.setRawRotorPosition(Constants.Intake.WHEEL_GEAR_RATIO * wheelSimModel.getAngularPositionRotations());
         wheelSim.setRotorVelocity(Constants.Intake.WHEEL_GEAR_RATIO
-                * Units.radiansToRotations(wheelSimModel.getAngularVelocityRadPerSec())
-                * SimpleMath.SECONDS_PER_MINUTE);
+                * Units.radiansToRotations(wheelSimModel.getAngularVelocityRadPerSec()));
+        wheelSim.setRotorAcceleration(Constants.Intake.WHEEL_GEAR_RATIO
+                * Units.radiansToRotations(wheelSimModel.getAngularAccelerationRadPerSecSq()));
     }
 
     private void handleIntakeSimulation() {

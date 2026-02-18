@@ -20,6 +20,7 @@ import frc.robot.utils.SimpleMath;
 public final class Turret extends KillableSubsystem implements PoweredSubsystem {
 
     private static final double POSITION_TOLERANCE = Units.degreesToRotations(2);
+    private static final double VELOCITY_TOLERANCE = Units.degreesToRotations(50);
 
     private final TurretIO io;
     private final MotionMagicExpoVoltage turretRequest;
@@ -37,8 +38,10 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
         slot0Configs.kV = Constants.Turret.KV;
         slot0Configs.kA = Constants.Turret.KA;
         slot0Configs.kP = Constants.Turret.KP;
-        slot0Configs.kI = 0;
         slot0Configs.kD = Constants.Turret.KD;
+
+        config.MotionMagic.MotionMagicExpo_kV = Constants.Turret.MMEXPO_KV;
+        config.MotionMagic.MotionMagicExpo_kA = Constants.Turret.MMEXPO_KA;
 
         config.CurrentLimits.SupplyCurrentLimit = Constants.Turret.SUPPLY_CURRENT_LIMIT.in(Amps);
         config.CurrentLimits.SupplyCurrentLowerLimit = Constants.Turret.SUPPLY_LOWER_CURRENT_LIMIT.in(Amps);
@@ -88,7 +91,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     }
 
     public boolean atGoal() {
-        return SimpleMath.isWithinTolerance(getPositionRotations(), targetPositionRotations, POSITION_TOLERANCE);
+        return SimpleMath.isWithinTolerance(getPositionRotations(), targetPositionRotations, POSITION_TOLERANCE)
+                && SimpleMath.isWithinTolerance(getVelocityRotationsPerSecond(), 0, VELOCITY_TOLERANCE);
     }
 
     @Override
@@ -108,5 +112,11 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     @Override
     public void kill() {
         io.setVoltage(0);
+    }
+
+    /** frees up all hardware allocations */
+    @Override
+    public void close() {
+        io.close();
     }
 }

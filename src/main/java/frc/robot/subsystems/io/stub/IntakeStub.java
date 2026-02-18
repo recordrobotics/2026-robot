@@ -64,7 +64,7 @@ public class IntakeStub implements IntakeIO {
     }
 
     @Override
-    public double getWheelPositionRotations() {
+    public double getWheelPositionMeters() {
         return 0.0;
     }
 
@@ -114,7 +114,7 @@ public class IntakeStub implements IntakeIO {
     }
 
     @Override
-    public void setWheelPositionMps(double newValue) {
+    public void setWheelPositionMeters(double newValue) {
         // stub
     }
 

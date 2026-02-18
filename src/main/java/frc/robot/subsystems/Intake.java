@@ -63,10 +63,13 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         slot0ConfigsLeader.kA = Constants.Intake.ARM_KA;
         slot0ConfigsLeader.kG = Constants.Intake.ARM_KG;
         slot0ConfigsLeader.kP = Constants.Intake.ARM_KP;
-        slot0ConfigsLeader.kI = 0;
         slot0ConfigsLeader.kD = Constants.Intake.ARM_KD;
         slot0ConfigsLeader.GravityType = GravityTypeValue.Arm_Cosine;
-        slot0ConfigsLeader.GravityArmPositionOffset = Constants.Intake.ARM_GRAVITY_POSITION_OFFSET;
+        slot0ConfigsLeader.GravityArmPositionOffset =
+                Units.radiansToRotations(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS);
+
+        configLeader.MotionMagic.MotionMagicExpo_kV = Constants.Intake.ARM_MMEXPO_KV;
+        configLeader.MotionMagic.MotionMagicExpo_kA = Constants.Intake.ARM_MMEXPO_KA;
 
         configLeader.CurrentLimits.SupplyCurrentLimit = Constants.Intake.ARM_SUPPLY_CURRENT_LIMIT.in(Amps);
         configLeader.CurrentLimits.StatorCurrentLimit = Constants.Intake.ARM_STATOR_CURRENT_LIMIT.in(Amps);
@@ -100,10 +103,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         slot0ConfigsWheel.kS = Constants.Intake.WHEEL_KS;
         slot0ConfigsWheel.kV = Constants.Intake.WHEEL_KV;
         slot0ConfigsWheel.kA = Constants.Intake.WHEEL_KA;
-        slot0ConfigsWheel.kG = 0;
         slot0ConfigsWheel.kP = Constants.Intake.WHEEL_KP;
-        slot0ConfigsWheel.kI = 0;
-        slot0ConfigsWheel.kD = Constants.Intake.WHEEL_KD;
+
+        configWheel.MotionMagic.MotionMagicJerk = Constants.Intake.WHEEL_MAX_JERK;
+        configWheel.MotionMagic.MotionMagicAcceleration = Constants.Intake.WHEEL_MAX_ACCELERATION;
 
         configWheel.CurrentLimits.SupplyCurrentLimit = Constants.Intake.WHEEL_SUPPLY_CURRENT_LIMIT.in(Amps);
         configWheel.CurrentLimits.StatorCurrentLimit = Constants.Intake.WHEEL_STATOR_CURRENT_LIMIT.in(Amps);
@@ -180,8 +183,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getWheelPositionRotations() {
-        return io.getWheelPositionRotations();
+    public double getWheelPositionMeters() {
+        return io.getWheelPositionMeters();
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
@@ -212,5 +215,11 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     public void kill() {
         io.setArmVoltage(0);
         io.setWheelVoltage(0);
+    }
+
+    /** frees up all hardware allocations */
+    @Override
+    public void close() {
+        io.close();
     }
 }

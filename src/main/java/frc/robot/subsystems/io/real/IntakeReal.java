@@ -79,7 +79,7 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public void setWheelPositionMps(double newValue) {
+    public void setWheelPositionMeters(double newValue) {
         wheel.setPosition(newValue);
     }
 
@@ -94,7 +94,7 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public double getWheelPositionRotations() {
+    public double getWheelPositionMeters() {
         return wheel.getPosition().getValueAsDouble();
     }
 

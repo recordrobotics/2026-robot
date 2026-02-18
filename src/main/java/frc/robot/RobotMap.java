@@ -16,4 +16,12 @@ public final class RobotMap {
 
         private Turret() {}
     }
+
+    public static final class Shooter {
+        public static final int HOOD_ID = 19; // TODO
+        public static final int FLYWHEEL_LEADER_ID = 21; // TODO
+        public static final int FLYWHEEL_FOLLOWER_ID = 22; // TODO
+
+        private Shooter() {}
+    }
 }
