@@ -23,16 +23,6 @@ import org.photonvision.PhotonUtils;
 public abstract class ObjectDetectionCamera extends GenericCamera {
 
     /**
-     * The height of the bumper in meters.
-     */
-    private static final double BUMPER_HEIGHT_METERS = Units.inchesToMeters(20.0);
-
-    /**
-     * The height of the fuel object in meters.
-     */
-    private static final double FUEL_HEIGHT_METERS = 15.0 / 100.0; // 15 cm
-
-    /**
      * The transform from robot to camera.
      */
     private Transform3d robotToCamera;
@@ -171,14 +161,7 @@ public abstract class ObjectDetectionCamera extends GenericCamera {
             return Optional.empty();
         }
 
-        double targetHeightMeters =
-                switch (detectionClass) {
-                    case FUEL ->
-                        // PV gives us top point of fuel
-                        FUEL_HEIGHT_METERS;
-                    case BUMPER -> BUMPER_HEIGHT_METERS;
-                    default -> throw new IllegalArgumentException("Unknown detection class: " + detectionClass);
-                };
+        double targetHeightMeters = detectionClass.getHeight();
 
         Pose3d fieldToCamera = new Pose3d(fieldToRobot.get()).transformBy(robotToCamera);
 

@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.google.common.collect.ImmutableSortedMap;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -104,6 +105,11 @@ public class FieldStateTracker extends ManagedSubsystemBase {
 
         public Pose2d getPose() {
             return pose;
+        }
+
+        public Pose3d getPose3d() {
+            return new Pose3d(
+                    pose.getX(), pose.getY(), detectionClass.getHeight() / 2, new Rotation3d(pose.getRotation()));
         }
 
         public Translation2d getVelocity() {
@@ -526,8 +532,7 @@ public class FieldStateTracker extends ManagedSubsystemBase {
                 "FieldStateTracker/FieldObjects",
                 fieldObjects.stream()
                         .filter(FieldObject::isAlive)
-                        .map(FieldObject::getPose)
-                        .map(Pose3d::new)
+                        .map(FieldObject::getPose3d)
                         .toArray(Pose3d[]::new));
 
         cameras.stream().forEach(GenericCamera::logValues);
