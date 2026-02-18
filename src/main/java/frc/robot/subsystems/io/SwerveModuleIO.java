@@ -1,14 +1,18 @@
 package frc.robot.subsystems.io;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.signals.MagnetHealthValue;
 
 public interface SwerveModuleIO extends AutoCloseable {
 
     void applyDriveTalonFXConfig(TalonFXConfiguration configuration);
 
     void applyTurnTalonFXConfig(TalonFXConfiguration configuration);
+
+    void applyTurningEncoderConfig(CANcoderConfiguration configuration);
 
     void setDriveMotorVoltage(double newValue);
 
@@ -53,4 +57,6 @@ public interface SwerveModuleIO extends AutoCloseable {
     void simulationPeriodic();
 
     boolean isAbsEncoderConnected();
+
+    MagnetHealthValue getAbsEncoderMagnetHealth();
 }

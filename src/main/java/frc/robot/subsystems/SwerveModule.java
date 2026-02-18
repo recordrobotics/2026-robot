@@ -9,12 +9,14 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MagnetHealthValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.subsystems.io.SwerveModuleIO;
@@ -52,6 +54,11 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
 
     private double lastMovementTime = Timer.getTimestamp();
     private boolean hasResetAbs = false;
+
+    private final Alert absEncoderDisconnectedAlert;
+    private final Alert absEncoderInvalidAlert;
+    private final Alert absEncoderRedAlert;
+    private final Alert absEncoderOrangeAlert;
 
     /**
      * Constructs a SwerveModule with a drive motor, turning motor, and absolute turning encoder.
@@ -132,6 +139,8 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
         encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
         encoderConfig.MagnetSensor.MagnetOffset = m.turningEncoderOffset();
 
+        io.applyTurningEncoderConfig(encoderConfig);
+
         // Corrects for offset in absolute wheel position
         if (isAbsEncoderConnected()) {
             turnPositionCached = io.getAbsoluteEncoder();
@@ -140,12 +149,37 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
             turnPositionCached = io.getTurnMechanismPosition();
         }
 
+        absEncoderDisconnectedAlert = new Alert(
+                "Absolute encoder " + m.absoluteTurningMotorEncoderChannel() + " disconnected", Alert.AlertType.kError);
+        absEncoderInvalidAlert = new Alert(
+                "Absolute encoder " + m.absoluteTurningMotorEncoderChannel() + " invalid magnet health",
+                Alert.AlertType.kError);
+        absEncoderRedAlert = new Alert(
+                "Absolute encoder " + m.absoluteTurningMotorEncoderChannel() + " red magnet health",
+                Alert.AlertType.kWarning);
+        absEncoderOrangeAlert = new Alert(
+                "Absolute encoder " + m.absoluteTurningMotorEncoderChannel() + " orange magnet health",
+                Alert.AlertType.kWarning);
+
+        updateAbsEncoderAlert();
+
         turnRequest = new MotionMagicExpoVoltage(turnPositionCached);
         driveRequest = new MotionMagicVelocityVoltage(0);
     }
 
+    private void updateAbsEncoderAlert() {
+        absEncoderDisconnectedAlert.set(!isAbsEncoderConnected());
+        absEncoderInvalidAlert.set(getAbsEncoderMagnetHealth() == MagnetHealthValue.Magnet_Invalid);
+        absEncoderRedAlert.set(getAbsEncoderMagnetHealth() == MagnetHealthValue.Magnet_Red);
+        absEncoderOrangeAlert.set(getAbsEncoderMagnetHealth() == MagnetHealthValue.Magnet_Orange);
+    }
+
     public boolean isAbsEncoderConnected() {
         return io.isAbsEncoderConnected();
+    }
+
+    public MagnetHealthValue getAbsEncoderMagnetHealth() {
+        return io.getAbsEncoderMagnetHealth();
     }
 
     /**

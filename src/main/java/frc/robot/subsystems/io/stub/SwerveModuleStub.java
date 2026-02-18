@@ -1,8 +1,10 @@
 package frc.robot.subsystems.io.stub;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.signals.MagnetHealthValue;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.ModuleConstants;
 
@@ -22,6 +24,9 @@ public class SwerveModuleStub implements SwerveModuleIO {
 
     @Override
     public void applyTurnTalonFXConfig(TalonFXConfiguration configuration) {}
+
+    @Override
+    public void applyTurningEncoderConfig(CANcoderConfiguration configuration) {}
 
     @Override
     public void setDriveMotorVoltage(double newValue) {}
@@ -113,7 +118,13 @@ public class SwerveModuleStub implements SwerveModuleIO {
     @Override
     public void simulationPeriodic() {}
 
+    @Override
     public boolean isAbsEncoderConnected() {
         return false;
+    }
+
+    @Override
+    public MagnetHealthValue getAbsEncoderMagnetHealth() {
+        return MagnetHealthValue.Magnet_Invalid;
     }
 }

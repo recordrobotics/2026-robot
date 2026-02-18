@@ -1,10 +1,12 @@
 package frc.robot.subsystems.io.real;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MagnetHealthValue;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.ModuleConstants;
 
@@ -22,7 +24,6 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
         driveMotor = new TalonFX(m.driveMotorChannel());
         turningMotor = new TalonFX(m.turningMotorChannel());
-
         absoluteTurningMotorEncoder = new CANcoder(m.absoluteTurningMotorEncoderChannel());
     }
 
@@ -34,6 +35,11 @@ public class SwerveModuleReal implements SwerveModuleIO {
     @Override
     public void applyTurnTalonFXConfig(TalonFXConfiguration configuration) {
         turningMotor.getConfigurator().apply(configuration);
+    }
+
+    @Override
+    public void applyTurningEncoderConfig(CANcoderConfiguration configuration) {
+        absoluteTurningMotorEncoder.getConfigurator().apply(configuration);
     }
 
     @Override
@@ -88,7 +94,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
     @Override
     public double getAbsoluteEncoder() {
-        return absoluteTurningMotorEncoder.getAbsolutePosition(true).getValueAsDouble();
+        return absoluteTurningMotorEncoder.getAbsolutePosition().getValueAsDouble();
     }
 
     @Override
@@ -148,7 +154,13 @@ public class SwerveModuleReal implements SwerveModuleIO {
         /* real */
     }
 
+    @Override
     public boolean isAbsEncoderConnected() {
         return absoluteTurningMotorEncoder.isConnected();
+    }
+
+    @Override
+    public MagnetHealthValue getAbsEncoderMagnetHealth() {
+        return absoluteTurningMotorEncoder.getMagnetHealth().getValue();
     }
 }
