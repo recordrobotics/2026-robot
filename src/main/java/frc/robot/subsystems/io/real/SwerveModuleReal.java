@@ -5,7 +5,6 @@ import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.ModuleConstants;
 
@@ -149,7 +148,7 @@ public class SwerveModuleReal implements SwerveModuleIO {
         /* real */
     }
 
-    public boolean isAbsEncoderConnected(){
+    public boolean isAbsEncoderConnected() {
         return absoluteTurningMotorEncoder.isConnected();
     }
 }

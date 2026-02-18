@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -48,22 +49,16 @@ public class IntakeSim implements IntakeIO {
 
     private final double periodicDt;
 
-    private final TalonFX wheel;
     private final TalonFX armLeader;
     private final TalonFX armFollower;
+    private final TalonFX wheel;
 
-    private final TalonFXSimState wheelSim;
     private final TalonFXSimState armSimLeader;
     private final TalonFXSimState armSimFollower;
+    private final TalonFXSimState wheelSim;
 
-    private final DCMotor wheelMotor = DCMotor.getKrakenX44(1); // TODO is correct motor(s)?
-    private final DCMotor armMotor = DCMotor.getKrakenX44(2); // TODO is correct motor(s)?
-
-    private final DCMotorSim wheelSimModel = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(Constants.Intake.WHEEL_KV, Constants.Intake.WHEEL_KA),
-            wheelMotor,
-            0.0,
-            0.0);
+    private final DCMotor armMotor = DCMotor.getKrakenX44(2);
+    private final DCMotor wheelMotor = DCMotor.getKrakenX44(1);
 
     private final SingleJointedArmSim armSimModel = new SingleJointedArmSim(
             LinearSystemId.createSingleJointedArmSystem(armMotor, 0.7, Constants.Intake.ARM_GEAR_RATIO),
@@ -77,6 +72,12 @@ public class IntakeSim implements IntakeIO {
             0.0,
             0.0);
 
+    private final DCMotorSim wheelSimModel = new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(Constants.Intake.WHEEL_KV, Constants.Intake.WHEEL_KA),
+            wheelMotor,
+            0.0,
+            0.0);
+
     private final IntakeSimulation intakeSimulation;
 
     private int fuelCount = 0;
@@ -87,15 +88,22 @@ public class IntakeSim implements IntakeIO {
     public IntakeSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
 
-        wheel = new TalonFX(RobotMap.Intake.WHEEL_ID);
         armLeader = new TalonFX(RobotMap.Intake.ARM_LEADER_ID);
         armFollower = new TalonFX(RobotMap.Intake.ARM_FOLLOWER_ID);
-        wheelSim = new TalonFXSimState(wheel);
+        wheel = new TalonFX(RobotMap.Intake.WHEEL_ID);
         armSimLeader = armLeader.getSimState();
         armSimFollower = armFollower.getSimState();
+        wheelSim = wheel.getSimState();
 
-        armSimLeader.Orientation = ChassisReference.Clockwise_Positive;
-        armSimFollower.Orientation = ChassisReference.CounterClockwise_Positive;
+        armSimLeader.Orientation =
+                ChassisReference.CounterClockwise_Positive; // Left of intake, right of robot // Arm up is positive
+        armSimFollower.Orientation =
+                ChassisReference.Clockwise_Positive; // Right of intake, left of robot // Arm up is positive
+        wheelSim.Orientation = ChassisReference.Clockwise_Positive; // Positive is intake, negative is eject
+
+        armSimLeader.setMotorType(MotorType.KrakenX44);
+        armSimFollower.setMotorType(MotorType.KrakenX44);
+        wheelSim.setMotorType(MotorType.KrakenX44);
 
         Rectangle intakeRect = IntakeSimulationUtils.getIntakeRectangle(
                 drivetrainSim, WIDTH.in(Meters), LENGTH_EXTENDED.in(Meters), IntakeSimulation.IntakeSide.BACK);
@@ -111,8 +119,8 @@ public class IntakeSim implements IntakeIO {
 
     @Override
     public Follower createArmFollower() {
-        return new Follower(RobotMap.Intake.ARM_LEADER_ID, MotorAlignmentValue.Opposed); // motors face in opposite
-        // directions
+        return new Follower(
+                RobotMap.Intake.ARM_LEADER_ID, MotorAlignmentValue.Opposed); // motors face in opposite directions
     }
 
     @Override
@@ -141,7 +149,7 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public void setWheelPositionRotations(double newValue) {
+    public void setWheelPositionMps(double newValue) {
         // Reset internal sim state
         wheelSimModel.setState(Units.rotationsToRadians(newValue), 0);
 
@@ -158,9 +166,9 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public void setArmPositionRotations(double newValue) {
+    public void setArmPositionRotations(double newValueRotations) {
         // Reset internal sim state
-        armSimModel.setState(Units.rotationsToRadians(newValue), 0);
+        armSimModel.setState(Units.rotationsToRadians(newValueRotations), 0);
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
@@ -177,8 +185,8 @@ public class IntakeSim implements IntakeIO {
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         // Update internal raw position offset
-        armLeader.setPosition(newValue);
-        armFollower.setPosition(newValue);
+        armLeader.setPosition(newValueRotations);
+        armFollower.setPosition(newValueRotations);
     }
 
     @Override
@@ -202,7 +210,7 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public double getWheelVelocityRotationsPerSecond() {
+    public double getWheelVelocityMps() {
         return wheel.getVelocity().getValueAsDouble();
     }
 

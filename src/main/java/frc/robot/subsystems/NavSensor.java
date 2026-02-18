@@ -6,7 +6,7 @@ import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.io.NavSensorIO;
 import frc.robot.utils.ManagedSubsystemBase;
 
-public class NavSensor extends ManagedSubsystemBase {
+public final class NavSensor extends ManagedSubsystemBase {
 
     private static final double PERIODIC = RobotContainer.ROBOT_PERIODIC;
 

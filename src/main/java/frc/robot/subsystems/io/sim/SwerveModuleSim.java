@@ -6,6 +6,7 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -65,6 +66,9 @@ public class SwerveModuleSim implements SwerveModuleIO {
         turningMotorSim = turningMotor.getSimState();
 
         turningMotorSim.Orientation = ChassisReference.Clockwise_Positive;
+
+        driveMotorSim.setMotorType(MotorType.KrakenX60);
+        turningMotorSim.setMotorType(MotorType.KrakenX44);
 
         moduleSimulation.useDriveMotorController(new TalonFXMotorControllerSim(driveMotor));
         moduleSimulation.useSteerMotorController(new TalonFXMotorControllerSim(turningMotor));
@@ -195,6 +199,8 @@ public class SwerveModuleSim implements SwerveModuleIO {
     public void simulationPeriodic() {
         absoluteTurningMotorEncoderPosition.set(getTurnMechanismPosition());
     }
-    
-    public boolean isAbsEncoderConnected(){return false;}
+
+    public boolean isAbsEncoderConnected() {
+        return false;
+    }
 }

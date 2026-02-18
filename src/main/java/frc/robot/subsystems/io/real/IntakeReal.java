@@ -14,14 +14,14 @@ public class IntakeReal implements IntakeIO {
     @SuppressWarnings("unused")
     private final double periodicDt;
 
-    private final TalonFX wheelLeader;
+    private final TalonFX wheel;
     private final TalonFX armLeader;
     private final TalonFX armFollower;
 
     public IntakeReal(double periodicDt) {
         this.periodicDt = periodicDt;
 
-        wheelLeader = new TalonFX(RobotMap.Intake.WHEEL_ID);
+        wheel = new TalonFX(RobotMap.Intake.WHEEL_ID);
         armLeader = new TalonFX(RobotMap.Intake.ARM_LEADER_ID);
         armFollower = new TalonFX(RobotMap.Intake.ARM_FOLLOWER_ID);
     }
@@ -37,24 +37,24 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
+    public void applyWheelTalonFXConfig(TalonFXConfiguration configuration) {
+        wheel.getConfigurator().apply(configuration);
+    }
+
+    @Override
     public Follower createArmFollower() {
         return new Follower(
                 RobotMap.Intake.ARM_LEADER_ID, MotorAlignmentValue.Opposed); // motors face in opposite directions
     }
 
     @Override
-    public void applyWheelTalonFXConfig(TalonFXConfiguration configuration) {
-        wheelLeader.getConfigurator().apply(configuration);
+    public void setArmVoltage(double outputVolts) {
+        armLeader.setVoltage(outputVolts);
     }
 
     @Override
     public void setWheelVoltage(double outputVolts) {
-        wheelLeader.setVoltage(outputVolts);
-    }
-
-    @Override
-    public void setArmVoltage(double outputVolts) {
-        armLeader.setVoltage(outputVolts);
+        wheel.setVoltage(outputVolts);
     }
 
     @Override
@@ -69,12 +69,7 @@ public class IntakeReal implements IntakeIO {
 
     @Override
     public void setWheelMotionMagic(MotionMagicVelocityVoltage request) {
-        wheelLeader.setControl(request);
-    }
-
-    @Override
-    public void setWheelPositionRotations(double newValue) {
-        wheelLeader.setPosition(newValue);
+        wheel.setControl(request);
     }
 
     @Override
@@ -84,8 +79,8 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public double getWheelVelocityRotationsPerSecond() {
-        return wheelLeader.getVelocity().getValueAsDouble();
+    public void setWheelPositionMps(double newValue) {
+        wheel.setPosition(newValue);
     }
 
     @Override
@@ -100,12 +95,7 @@ public class IntakeReal implements IntakeIO {
 
     @Override
     public double getWheelPositionRotations() {
-        return wheelLeader.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getWheelVoltage() {
-        return wheelLeader.getMotorVoltage().getValueAsDouble();
+        return wheel.getPosition().getValueAsDouble();
     }
 
     @Override
@@ -119,6 +109,11 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
+    public double getWheelVoltage() {
+        return wheel.getMotorVoltage().getValueAsDouble();
+    }
+
+    @Override
     public double getArmLeaderVelocityRotationsPerSecond() {
         return armLeader.getVelocity().getValueAsDouble();
     }
@@ -129,8 +124,8 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public double getWheelCurrentDrawAmps() {
-        return wheelLeader.getSupplyCurrent().getValueAsDouble();
+    public double getWheelVelocityMps() {
+        return wheel.getVelocity().getValueAsDouble();
     }
 
     @Override
@@ -144,8 +139,13 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
+    public double getWheelCurrentDrawAmps() {
+        return wheel.getSupplyCurrent().getValueAsDouble();
+    }
+
+    @Override
     public void close() {
-        wheelLeader.close();
+        wheel.close();
         armLeader.close();
         armFollower.close();
     }

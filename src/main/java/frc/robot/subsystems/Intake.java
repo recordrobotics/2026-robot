@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -10,7 +12,7 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.IntakeIO;
@@ -19,17 +21,20 @@ import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 
-public class Intake extends KillableSubsystem implements PoweredSubsystem {
+public final class Intake extends KillableSubsystem implements PoweredSubsystem {
+    // Arm Leader is on the left of the intake (right of the robot) and Arm Follower is on the right of the intake (left
+    // of the robot)
 
     private static final double ARM_POSITION_TOLERANCE = 0.15; // TODO
     private static final double ARM_VELOCITY_TOLERANCE = 1.05; // TODO
-    private static final double WHEEL_VELOCITY_TOLERANCE = 1.0; // TODO
+    private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 1.0; // TODO
     private final IntakeIO io;
     private final MotionMagicExpoVoltage armLeaderRequest;
     private final Follower armFollowerRequest;
     private final MotionMagicVelocityVoltage wheelRequest;
     private double armTargetRotations = Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
-    private AngularVelocity wheelTargetVelocity = RotationsPerSecond.of(0.0);
+    private double wheelTargetVelocityMps = 0.0;
+    private Distance rollerDiameter = Inches.of(1.875);
     private IntakeState targetState = IntakeState.STARTING;
 
     public enum IntakeState {
@@ -59,35 +64,42 @@ public class Intake extends KillableSubsystem implements PoweredSubsystem {
         slot0ConfigsLeader.kD = Constants.Intake.ARM_KD;
         slot0ConfigsLeader.GravityType = GravityTypeValue.Arm_Cosine;
         configLeader.Feedback.SensorToMechanismRatio = Constants.Intake.ARM_GEAR_RATIO;
-        configLeader.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        configLeader.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         io.applyArmLeaderTalonFXConfig(configLeader);
 
         TalonFXConfiguration configFollower = new TalonFXConfiguration();
 
-        // set slot 0 gains
-        Slot0Configs slot0ConfigsFollower = configFollower.Slot0;
-        slot0ConfigsFollower.kS = Constants.Intake.ARM_KS;
-        slot0ConfigsFollower.kV = Constants.Intake.ARM_KV;
-        slot0ConfigsFollower.kA = Constants.Intake.ARM_KA;
-        slot0ConfigsFollower.kG = Constants.Intake.ARM_KG;
-        slot0ConfigsFollower.kP = Constants.Intake.ARM_KP;
-        slot0ConfigsFollower.kI = 0;
-        slot0ConfigsFollower.kD = Constants.Intake.ARM_KD;
-        slot0ConfigsFollower.GravityType = GravityTypeValue.Arm_Cosine;
         configFollower.Feedback.SensorToMechanismRatio = Constants.Intake.ARM_GEAR_RATIO;
-        configFollower.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        configFollower.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         io.applyArmFollowerTalonFXConfig(configFollower);
 
         io.setArmFollowerMotionMagic(armFollowerRequest);
+
+        TalonFXConfiguration configWheel = new TalonFXConfiguration();
+
+        // set slot 0 gains
+        Slot0Configs slot0ConfigsWheel = configWheel.Slot0;
+        slot0ConfigsWheel.kS = Constants.Intake.WHEEL_KS;
+        slot0ConfigsWheel.kV = Constants.Intake.WHEEL_KV;
+        slot0ConfigsWheel.kA = Constants.Intake.WHEEL_KA;
+        slot0ConfigsWheel.kG = 0;
+        slot0ConfigsWheel.kP = Constants.Intake.WHEEL_KP;
+        slot0ConfigsWheel.kI = 0;
+        slot0ConfigsWheel.kD = Constants.Intake.WHEEL_KD;
+        configWheel.Feedback.SensorToMechanismRatio =
+                Constants.Intake.WHEEL_GEAR_RATIO * Math.PI * rollerDiameter.in(Meter);
+        configWheel.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+        io.applyWheelTalonFXConfig(configWheel);
 
         setState(targetState);
     }
 
     @Override
     public void periodicManaged() {
-        RobotContainer.model.intakeModel.update(getArmPositionRotations() * 360);
+        RobotContainer.model.intakeModel.update(Units.rotationsToDegrees(getArmPositionRotations()));
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
@@ -102,13 +114,13 @@ public class Intake extends KillableSubsystem implements PoweredSubsystem {
             case STARTING -> Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
             case RETRACTED -> Units.radiansToRotations(Constants.Intake.ARM_RETRACTED_POSITION_RADIANS);
         };
-        wheelTargetVelocity = switch (state) {
-            case INTAKE -> Constants.Intake.WHEEL_INTAKE_VELOCITY;
-            case EJECT -> Constants.Intake.WHEEL_EJECT_VELOCITY;
-            case STARTING, RETRACTED -> RotationsPerSecond.of(0.0);
+        wheelTargetVelocityMps = switch (state) {
+            case INTAKE -> Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS;
+            case EJECT -> Constants.Intake.WHEEL_EJECT_VELOCITY_MPS;
+            case STARTING, RETRACTED -> 0.0;
         };
         io.setArmLeaderMotionMagic(armLeaderRequest.withPosition(armTargetRotations)); // follower will follow this
-        io.setWheelMotionMagic(wheelRequest.withVelocity(wheelTargetVelocity));
+        io.setWheelMotionMagic(wheelRequest.withVelocity(wheelTargetVelocityMps));
         targetState = state;
     }
 
@@ -124,9 +136,7 @@ public class Intake extends KillableSubsystem implements PoweredSubsystem {
 
     private boolean wheelAtGoal() {
         return SimpleMath.isWithinTolerance(
-                getWheelVelocityRotationsPerSecond(),
-                wheelTargetVelocity.in(RotationsPerSecond),
-                WHEEL_VELOCITY_TOLERANCE);
+                getWheelVelocityMps(), wheelTargetVelocityMps, WHEEL_VELOCITY_TOLERANCE_MPS);
     }
 
     public boolean atGoal() {
@@ -137,8 +147,8 @@ public class Intake extends KillableSubsystem implements PoweredSubsystem {
         return (io.getArmLeaderVelocityRotationsPerSecond() + io.getArmFollowerVelocityRotationsPerSecond()) / 2.0;
     }
 
-    public double getWheelVelocityRotationsPerSecond() {
-        return io.getWheelVelocityRotationsPerSecond();
+    public double getWheelVelocityMps() {
+        return io.getWheelVelocityMps();
     }
 
     @Override

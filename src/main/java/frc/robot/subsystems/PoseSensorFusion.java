@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.littletonrobotics.junction.Logger;
 
-public class PoseSensorFusion extends ManagedSubsystemBase {
+public final class PoseSensorFusion extends ManagedSubsystemBase {
 
     public static final double MAX_MEASUREMENT_STD_DEVS = 9_999_999;
 

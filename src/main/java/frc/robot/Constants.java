@@ -349,20 +349,15 @@ public final class Constants {
         public static final int MAX_INTAKE_CAPACITY =
                 8; // number of fuel that can remain above intake without falling into hopper with intake extended
         // TODO
+        public static final double EJECT_FUEL_PER_SECOND = 10.0;
 
         public static final Current ARM_SUPPLY_CURRENT_LIMIT = Amps.of(10);
         public static final Current ARM_STATOR_CURRENT_LIMIT = Amps.of(60);
         public static final Current WHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(10);
         public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(60);
 
-        public static final double WHEEL_KP = 0.037121;
-        public static final double WHEEL_KD = 0.0;
-        public static final double WHEEL_KS = 0.1709;
-        public static final double WHEEL_KV = 0.61705;
-        public static final double WHEEL_KA = 0.039556;
-
-        public static final double MAX_ARM_VELOCITY = 8;
-        public static final double MAX_ARM_ACCELERATION = 22;
+        public static final double ARM_MMEXPO_KV = 1.931;
+        public static final double ARM_MMEXPO_KA = 1.1;
 
         public static final double ARM_KP = 68.721;
         public static final double ARM_KD = 8.7176;
@@ -371,27 +366,27 @@ public final class Constants {
         public static final double ARM_KV = 5.3;
         public static final double ARM_KA = 0.1;
 
-        public static final double MAX_ARM_JERK = 1600;
-        public static final double ARM_MMEXPO_KV = 1.931;
-        public static final double ARM_MMEXPO_KA = 1.1;
+        public static final double WHEEL_KP = 0.037121;
+        public static final double WHEEL_KD = 0.0;
+        public static final double WHEEL_KS = 0.1709;
+        public static final double WHEEL_KV = 0.61705;
+        public static final double WHEEL_KA = 0.039556;
 
         public static final double ARM_DOWN_POSITION_RADIANS = Units.degreesToRadians(
                 0.0); // should always be 0, TODO offset motionmagic gravity arm position offset based on cg
         public static final double ARM_RETRACTED_POSITION_RADIANS = Units.degreesToRadians(81.0);
         public static final double ARM_STARTING_POSITION_RADIANS = Units.degreesToRadians(120.0);
 
-        public static final double ARM_GEAR_RATIO = 56.8889;
+        public static final double WHEEL_INTAKE_VELOCITY_MPS =
+                Constants.Swerve.ROBOT_MAX_SPEED * 2; // surface speed of roller // TODO make correct
+        public static final double WHEEL_EJECT_VELOCITY_MPS = -6.0; // surface speed of roller // TODO make correct
 
+        public static final double ARM_GEAR_RATIO = 56.8889;
         public static final double WHEEL_GEAR_RATIO = 10;
 
         public static final Pose2d ROOT_MECHANISM_POSE = new Pose2d(0, 0.4, Rotation2d.fromDegrees(0));
         public static final double LENGTH = 0.385;
         public static final double ANGLE_OFFSET = 0;
-
-        public static final double EJECT_FUEL_PER_SECOND = 10.0;
-
-        public static final AngularVelocity WHEEL_INTAKE_VELOCITY = RotationsPerSecond.of(0.0);
-        public static final AngularVelocity WHEEL_EJECT_VELOCITY = RotationsPerSecond.of(0.0);
 
         private Intake() {}
     }

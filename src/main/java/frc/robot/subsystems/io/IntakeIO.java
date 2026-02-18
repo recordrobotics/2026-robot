@@ -14,7 +14,7 @@ public interface IntakeIO {
 
     void applyWheelTalonFXConfig(TalonFXConfiguration configuration);
 
-    void setArmLeaderMotionMagic(MotionMagicExpoVoltage request);
+    void setArmLeaderMotionMagic(MotionMagicExpoVoltage request); // test
 
     void setArmFollowerMotionMagic(Follower request);
 
@@ -34,7 +34,7 @@ public interface IntakeIO {
 
     double getArmFollowerVelocityRotationsPerSecond();
 
-    double getWheelVelocityRotationsPerSecond();
+    double getWheelVelocityMps();
 
     double getWheelVoltage();
 
@@ -48,7 +48,7 @@ public interface IntakeIO {
 
     double getArmFollowerCurrentDrawAmps();
 
-    void setWheelPositionRotations(double newValue);
+    void setWheelPositionMps(double newValue);
 
     void setArmPositionRotations(double newValue);
 

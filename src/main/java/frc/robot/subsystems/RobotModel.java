@@ -86,10 +86,10 @@ public final class RobotModel extends ManagedSubsystemBase {
         private static final Translation3d SHAFT_ORIGIN = new Translation3d(0, 0.3337, 0.3598);
 
         @AutoLogLevel(level = Level.DEBUG_REAL)
-        private double angle;
+        private double angleDegrees;
 
         public void update(double newAngleDegrees) {
-            angle = newAngleDegrees;
+            angleDegrees = newAngleDegrees;
         }
 
         @Override
@@ -99,7 +99,8 @@ public final class RobotModel extends ManagedSubsystemBase {
 
         @Override
         public void updatePoses(Pose3d[] poses, int i) {
-            poses[i] = Pose3d.kZero.rotateAround(SHAFT_ORIGIN, new Rotation3d(0, Units.degreesToRadians(-angle), 0));
+            poses[i] = Pose3d.kZero.rotateAround(
+                    SHAFT_ORIGIN, new Rotation3d(0, Units.degreesToRadians(-angleDegrees), 0));
         }
     }
 }
