@@ -99,7 +99,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
 
     @Override
     public void periodicManaged() {
-        RobotContainer.model.intakeModel.update(Units.rotationsToDegrees(getArmPositionRotations()));
+        RobotContainer.model.intakeModel.update(Units.rotationsToRadians(getArmPositionRotations()), 0.0);
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)

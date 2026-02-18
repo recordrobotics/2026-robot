@@ -3,8 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.Constants.Game.IGamePosition;
 import frc.robot.RobotContainer;
@@ -28,9 +28,12 @@ public final class RobotModel extends ManagedSubsystemBase {
     }
 
     public final IntakeModel intakeModel = new IntakeModel();
+    public final ShooterModel shooterModel = new ShooterModel();
+    public final ClimberModel climberModel = new ClimberModel();
 
     @AutoLogLevel(level = Level.REAL)
-    public Pose3d[] mechanismPoses = new Pose3d[IntakeModel.POSE_COUNT];
+    public Pose3d[] mechanismPoses =
+            new Pose3d[intakeModel.getPoseCount() + shooterModel.getPoseCount() + climberModel.getPoseCount()];
 
     public RobotModel() {
         periodicManaged();
@@ -38,7 +41,7 @@ public final class RobotModel extends ManagedSubsystemBase {
 
     @Override
     public void periodicManaged() {
-        updatePoses(intakeModel);
+        updatePoses(intakeModel, shooterModel, climberModel);
 
         if (Constants.RobotState.AUTO_LOG_LEVEL.isAtOrLowerThan(Level.DEBUG_SIM)) {
             Logger.recordOutput("IGamePositions", IGamePosition.aggregatePositions());
@@ -82,14 +85,15 @@ public final class RobotModel extends ManagedSubsystemBase {
     }
 
     public static class IntakeModel implements MechanismModel {
-        public static final int POSE_COUNT = 1;
-        private static final Translation3d SHAFT_ORIGIN = new Translation3d(0, 0.3337, 0.3598);
+        public static final int POSE_COUNT = 2;
+        private static final Translation3d SHAFT_ORIGIN = new Translation3d(-0.285662, 0, 0.274755);
 
-        @AutoLogLevel(level = Level.DEBUG_REAL)
-        private double angleDegrees;
+        private double angleRadians;
+        private double hopperExtensionMeters;
 
-        public void update(double newAngleDegrees) {
-            angleDegrees = newAngleDegrees;
+        public void update(double newAngleRadians, double newHopperExtensionMeters) {
+            angleRadians = newAngleRadians;
+            hopperExtensionMeters = newHopperExtensionMeters;
         }
 
         @Override
@@ -99,8 +103,55 @@ public final class RobotModel extends ManagedSubsystemBase {
 
         @Override
         public void updatePoses(Pose3d[] poses, int i) {
-            poses[i] = Pose3d.kZero.rotateAround(
-                    SHAFT_ORIGIN, new Rotation3d(0, Units.degreesToRadians(-angleDegrees), 0));
+            poses[i] = Pose3d.kZero.rotateAround(SHAFT_ORIGIN, new Rotation3d(0, angleRadians, 0));
+            poses[i + 1] = new Pose3d(-hopperExtensionMeters, 0, 0, Rotation3d.kZero);
+        }
+    }
+
+    public static class ShooterModel implements MechanismModel {
+        public static final int POSE_COUNT = 2;
+        private static final Translation3d TURRET_ORIGIN = new Translation3d(0.12715, 0.12715, 0);
+        private static final Translation3d HOOD_LOCAL_ORIGIN = new Translation3d(0.2105, 0, 0.4556);
+
+        private double turretAngleRadians;
+        private double hoodAngleRadians;
+
+        public void update(double newTurretAngleRadians, double newHoodAngleRadians) {
+            turretAngleRadians = newTurretAngleRadians;
+            hoodAngleRadians = newHoodAngleRadians;
+        }
+
+        @Override
+        public int getPoseCount() {
+            return POSE_COUNT;
+        }
+
+        @Override
+        public void updatePoses(Pose3d[] poses, int i) {
+            poses[i] = Pose3d.kZero.rotateAround(TURRET_ORIGIN, new Rotation3d(0, 0, turretAngleRadians));
+            poses[i + 1] = poses[i].transformBy(new Transform3d(
+                    Translation3d.kZero.rotateAround(HOOD_LOCAL_ORIGIN, new Rotation3d(0, -hoodAngleRadians, 0)),
+                    new Rotation3d(0, -hoodAngleRadians, 0)));
+        }
+    }
+
+    public static class ClimberModel implements MechanismModel {
+        public static final int POSE_COUNT = 1;
+
+        private double climberHeightMeters;
+
+        public void update(double newClimberHeightMeters) {
+            climberHeightMeters = newClimberHeightMeters;
+        }
+
+        @Override
+        public int getPoseCount() {
+            return POSE_COUNT;
+        }
+
+        @Override
+        public void updatePoses(Pose3d[] poses, int i) {
+            poses[i] = new Pose3d(0, 0, climberHeightMeters, Rotation3d.kZero);
         }
     }
 }
