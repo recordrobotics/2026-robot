@@ -63,6 +63,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         slot0ConfigsLeader.kI = 0;
         slot0ConfigsLeader.kD = Constants.Intake.ARM_KD;
         slot0ConfigsLeader.GravityType = GravityTypeValue.Arm_Cosine;
+        slot0ConfigsLeader.GravityArmPositionOffset = Constants.Intake.ARM_GRAVITY_POSITION_OFFSET;
         configLeader.Feedback.SensorToMechanismRatio = Constants.Intake.ARM_GEAR_RATIO;
         configLeader.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 

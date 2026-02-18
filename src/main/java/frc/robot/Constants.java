@@ -415,16 +415,17 @@ public final class Constants {
         public static final double WHEEL_KV = 0.61705;
         public static final double WHEEL_KA = 0.039556;
 
-        public static final double ARM_DOWN_POSITION_RADIANS = Units.degreesToRadians(
-                0.0); // should always be 0, TODO offset motionmagic gravity arm position offset based on cg
+        public static final double ARM_DOWN_POSITION_RADIANS = Units.degreesToRadians(0.0); // should always be 0
         public static final double ARM_RETRACTED_POSITION_RADIANS = Units.degreesToRadians(81.0);
-        public static final double ARM_STARTING_POSITION_RADIANS = Units.degreesToRadians(120.0);
+        public static final double ARM_STARTING_POSITION_RADIANS = Units.degreesToRadians(137.0);
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS =
                 Constants.Swerve.ROBOT_MAX_SPEED * 2; // surface speed of roller // TODO make correct
         public static final double WHEEL_EJECT_VELOCITY_MPS = -6.0; // surface speed of roller // TODO make correct
 
         public static final double ARM_GEAR_RATIO = 56.8889;
+        public static final double ARM_GRAVITY_POSITION_OFFSET = 0; // TODO: add offset from SysId
+
         public static final double WHEEL_GEAR_RATIO = 10;
 
         public static final Pose2d ROOT_MECHANISM_POSE = new Pose2d(0, 0.4, Rotation2d.fromDegrees(0));
