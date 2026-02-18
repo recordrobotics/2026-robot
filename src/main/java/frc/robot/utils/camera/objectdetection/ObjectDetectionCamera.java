@@ -1,7 +1,6 @@
 package frc.robot.utils.camera.objectdetection;
 
 import com.google.common.collect.ImmutableSortedMap;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -11,7 +10,6 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.FieldStateTracker;
 import frc.robot.utils.ConsoleLogger;
-import frc.robot.utils.SimpleMath;
 import frc.robot.utils.camera.GenericCamera;
 import frc.robot.utils.camera.PhysicalCamera;
 import java.util.List;
@@ -173,21 +171,14 @@ public abstract class ObjectDetectionCamera extends GenericCamera {
             return Optional.empty();
         }
 
-        double targetHeightMeters;
-        switch (detectionClass) {
-            case FUEL:
-                double aspectRatio = calculateAspectRatio(detection);
-                double heightFraction = 1.0 - MathUtil.clamp(1.0 / aspectRatio, 0.0, 1.0);
-                double bottomHeight = heightFraction * FUEL_HEIGHT_METERS;
-                // Center point height between bottom height and top of fuel
-                targetHeightMeters = (FUEL_HEIGHT_METERS + bottomHeight) / 2.0;
-                break;
-            case BUMPER:
-                targetHeightMeters = BUMPER_HEIGHT_METERS;
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown detection class: " + detectionClass);
-        }
+        double targetHeightMeters =
+                switch (detectionClass) {
+                    case FUEL ->
+                        // PV gives us top point of fuel
+                        FUEL_HEIGHT_METERS;
+                    case BUMPER -> BUMPER_HEIGHT_METERS;
+                    default -> throw new IllegalArgumentException("Unknown detection class: " + detectionClass);
+                };
 
         Pose3d fieldToCamera = new Pose3d(fieldToRobot.get()).transformBy(robotToCamera);
 
@@ -220,34 +211,5 @@ public abstract class ObjectDetectionCamera extends GenericCamera {
                 .getTranslation()
                 .toTranslation2d()
                 .plus(cameraToTarget.rotateBy(fieldToCamera.getRotation().toRotation2d()));
-    }
-
-    /**
-     * Calculates the aspect ratio of the detected object. Always >= 1.0.
-     * @param detection The object detection result.
-     * @return The aspect ratio of the detected object.
-     */
-    private static double calculateAspectRatio(ObjectDetectionResult detection) {
-        double minX = detection.corner0().x();
-        double maxX = detection.corner0().x();
-
-        double minY = detection.corner0().y();
-        double maxY = detection.corner0().y();
-
-        for (ObjectDetectionResult.TargetCorner corner :
-                List.of(detection.corner1(), detection.corner2(), detection.corner3())) {
-            minX = Math.min(minX, corner.x());
-            maxX = Math.max(maxX, corner.x());
-            minY = Math.min(minY, corner.y());
-            maxY = Math.max(maxY, corner.y());
-        }
-
-        double xSize = maxX - minX;
-        double ySize = maxY - minY;
-        if (SimpleMath.isWithinTolerance(xSize, 0, 1e-6) || SimpleMath.isWithinTolerance(ySize, 0, 1e-6)) {
-            return 0.0;
-        }
-
-        return xSize / ySize;
     }
 }

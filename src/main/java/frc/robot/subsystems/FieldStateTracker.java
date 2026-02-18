@@ -28,6 +28,19 @@ import org.littletonrobotics.junction.Logger;
 
 public class FieldStateTracker extends ManagedSubsystemBase {
 
+    private static final double OBJECT_TIMEOUT_SECONDS = 5.0;
+    private static final double OBJECT_THRESHOLD_SECONDS = 0.002;
+    private static final double OBJECT_ASSOCIATION_DISTANCE_THRESHOLD = 0.5; // meters
+    private static final double OBJECT_ASSOCIATION_DISTANCE_THRESHOLD_SQUARED =
+            OBJECT_ASSOCIATION_DISTANCE_THRESHOLD * OBJECT_ASSOCIATION_DISTANCE_THRESHOLD;
+    private static final double NON_ASSOCIATION_COST = 1e6;
+    private static final double ASSOCIATION_COST_MARGIN = NON_ASSOCIATION_COST / 2.0;
+    private static final double MEASUREMENT_BLEND_WINDOW_SECONDS = 0.01;
+    private static final int HUNGARIAN_INITIAL_CAPACITY = 127;
+    private static final int HUNGARIAN_GROWTH_FACTOR = 2;
+    private static final double MAX_OBJECT_VELOCITY = 4.0;
+    private static final double MAX_OBJECT_VELOCITY_SQUARED = MAX_OBJECT_VELOCITY * MAX_OBJECT_VELOCITY;
+
     /**
      * The cameras used for vision measurements
      */
@@ -74,19 +87,6 @@ public class FieldStateTracker extends ManagedSubsystemBase {
     private final EnumMap<ObjectDetectionClass, List<FieldObject>> objectsByClassBuffer = createObjectsByClassBuffer();
     private final EnumMap<ObjectDetectionClass, List<DeferredObjectDetection>> detectionsByClassBuffer =
             createDetectionsByClassBuffer();
-
-    private static final double OBJECT_TIMEOUT_SECONDS = 5.0;
-    private static final double OBJECT_THRESHOLD_SECONDS = 0.002;
-    private static final double OBJECT_ASSOCIATION_DISTANCE_THRESHOLD = 0.5; // meters
-    private static final double OBJECT_ASSOCIATION_DISTANCE_THRESHOLD_SQUARED =
-            OBJECT_ASSOCIATION_DISTANCE_THRESHOLD * OBJECT_ASSOCIATION_DISTANCE_THRESHOLD;
-    private static final double NON_ASSOCIATION_COST = 1e6;
-    private static final double ASSOCIATION_COST_MARGIN = NON_ASSOCIATION_COST / 2.0;
-    private static final double MEASUREMENT_BLEND_WINDOW_SECONDS = 0.01;
-    private static final int HUNGARIAN_INITIAL_CAPACITY = 127;
-    private static final int HUNGARIAN_GROWTH_FACTOR = 2;
-    private static final double MAX_OBJECT_VELOCITY = 4.0;
-    private static final double MAX_OBJECT_VELOCITY_SQUARED = MAX_OBJECT_VELOCITY * MAX_OBJECT_VELOCITY;
 
     public static class FieldObject {
         private Pose2d pose;
