@@ -138,11 +138,17 @@ public final class Constants {
                 new Translation3d(-0.006350, -0.370769, 0.197020),
                 new Rotation3d(0, Units.degreesToRadians(-18.951), Units.degreesToRadians(-90)));
         public static final Transform3d ROBOT_TO_CAMERA_INTAKE_LEFT = new Transform3d(
-                new Translation3d(Meters.of(0.142850), Meters.of(0.369435), Meters.of(0.526114)),
-                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(0)));
+                new Translation3d(Meters.of(-0.338901), Meters.of(-0.277466), Meters.of(0.443145)),
+                new Rotation3d(
+                        Degrees.of(0),
+                        Degrees.of(0),
+                        Degrees.of(180.0 + 9.0))); // TODO: pitch down 25 deg, object detection sim breaks with pitch rn
         public static final Transform3d ROBOT_TO_CAMERA_INTAKE_RIGHT = new Transform3d(
-                new Translation3d(Meters.of(0.142850), Meters.of(0.369435), Meters.of(0.526114)),
-                new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(0)));
+                new Translation3d(Meters.of(-0.338901), Meters.of(0.277466), Meters.of(0.443145)),
+                new Rotation3d(
+                        Degrees.of(0),
+                        Degrees.of(0),
+                        Degrees.of(180.0 - 9.0))); // TODO: pitch down 25 deg, object detection sim breaks with pitch rn
 
         public static final Distance CORAL_ID_DISTANCE = Inches.of(8);
         public static final Time CORAL_TIMEOUT = Seconds.of(0.5);
