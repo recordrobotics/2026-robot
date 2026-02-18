@@ -18,6 +18,7 @@ import frc.robot.utils.camera.objectdetection.ObjectDetectionCamera;
 import frc.robot.utils.camera.objectdetection.ObjectDetectionClass;
 import frc.robot.utils.camera.objectdetection.ObjectDetectionResult;
 import frc.robot.utils.field.FieldIntersection;
+import frc.robot.utils.field.FieldIntersection.FieldIntersectionOptions;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.ironmaple.simulation.SimulatedArena;
+import org.photonvision.PhotonUtils;
 
 public class MapleSimCamera extends ObjectDetectionCamera {
 
@@ -39,6 +41,11 @@ public class MapleSimCamera extends ObjectDetectionCamera {
             ImmutableMap.<String, ObjectDetectionClass>builder()
                     .put("Fuel", ObjectDetectionClass.FUEL)
                     .build();
+
+    private static final FieldIntersection fieldIntersection = new FieldIntersection(
+            FieldIntersectionOptions.DEFAULT.withRampCollider(false).withTransparentColliders(false));
+
+    private static final int MAX_DETECTIONS_PER_FRAME = 127;
 
     /**
      * The next update time in seconds. Used for simulating realistic camera behavior.
@@ -94,7 +101,7 @@ public class MapleSimCamera extends ObjectDetectionCamera {
     protected List<ObjectDetectionResult> makeDetections() {
         double currentTime = Timer.getTimestamp();
 
-        if (true || currentTime >= nextUpdateTime) {
+        if (currentTime >= nextUpdateTime) {
             performCapture();
         }
 
@@ -122,7 +129,7 @@ public class MapleSimCamera extends ObjectDetectionCamera {
                     Pose3d cameraToTarget = fieldToTarget.relativeTo(fieldToCamera);
 
                     if (!getPhysicalCamera().isPointInFOV(cameraToTarget.getTranslation())
-                            || FieldIntersection.collidesWithField(
+                            || fieldIntersection.collidesWithField(
                                     fieldToCamera.getTranslation().toTranslation2d(),
                                     fieldToTarget.getTranslation().toTranslation2d())) {
                         return Optional.empty();
@@ -155,6 +162,20 @@ public class MapleSimCamera extends ObjectDetectionCamera {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .map(v -> (ObjectDetectionResult) v)
+                .sorted((a, b) -> {
+                    double distanceToTargetA = PhotonUtils.calculateDistanceToTargetMeters(
+                            fieldToCamera.getZ(),
+                            0, // target height doesn't matter for sorting by distance
+                            fieldToCamera.getRotation().getY(),
+                            Units.degreesToRadians(a.pitchDegrees()));
+                    double distanceToTargetB = PhotonUtils.calculateDistanceToTargetMeters(
+                            fieldToCamera.getZ(),
+                            0, // target height doesn't matter for sorting by distance
+                            fieldToCamera.getRotation().getY(),
+                            Units.degreesToRadians(b.pitchDegrees()));
+                    return Double.compare(distanceToTargetA, distanceToTargetB);
+                })
+                .limit(MAX_DETECTIONS_PER_FRAME)
                 .toList();
     }
 

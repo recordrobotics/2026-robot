@@ -42,7 +42,7 @@ public final class RobotModel extends ManagedSubsystemBase {
 
         if (Constants.RobotState.AUTO_LOG_LEVEL.isAtOrLowerThan(Level.DEBUG_SIM)) {
             Logger.recordOutput("IGamePositions", IGamePosition.aggregatePositions());
-            FieldIntersection.logPolygons();
+            FieldIntersection.logAllInstances();
         }
     }
 
