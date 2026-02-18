@@ -24,4 +24,10 @@ public final class RobotMap {
 
         private Shooter() {}
     }
+
+    public static final class Spindexer {
+        public static final int MOTOR_ID = 29; // TODO
+
+        private Spindexer() {}
+    }
 }
