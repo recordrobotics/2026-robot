@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.utils.field.FieldIntersection;
+import frc.robot.utils.field.FieldIntersection.FieldIntersectionOptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class FieldIntersectionTests {
+
+    private static final FieldIntersection fieldIntersection = new FieldIntersection(FieldIntersectionOptions.DEFAULT);
 
     @Test
     @DisplayName("Test collision detection with points outside field bounds")
@@ -17,16 +20,16 @@ class FieldIntersectionTests {
         Translation2d insidePoint = new Translation2d(5.0, 4.0);
 
         assertTrue(
-                FieldIntersection.collidesWithField(outsidePoint1, insidePoint),
+                fieldIntersection.collidesWithField(outsidePoint1, insidePoint),
                 "Line from outside field should return true");
 
         Translation2d outsidePoint2 = new Translation2d(20.0, 4.0);
         assertTrue(
-                FieldIntersection.collidesWithField(insidePoint, outsidePoint2),
+                fieldIntersection.collidesWithField(insidePoint, outsidePoint2),
                 "Line to outside field should return true");
 
         assertTrue(
-                FieldIntersection.collidesWithField(outsidePoint1, outsidePoint2),
+                fieldIntersection.collidesWithField(outsidePoint1, outsidePoint2),
                 "Line between outside points should return true");
     }
 
@@ -38,10 +41,10 @@ class FieldIntersectionTests {
         Translation2d openPoint2 = new Translation2d(4.0, 7.0);
 
         assertFalse(
-                FieldIntersection.collidesWithField(openPoint1, openPoint2), "Line in open field should not collide");
+                fieldIntersection.collidesWithField(openPoint1, openPoint2), "Line in open field should not collide");
 
         // Test same point
-        assertFalse(FieldIntersection.collidesWithField(openPoint1, openPoint1), "Same point should not collide");
+        assertFalse(fieldIntersection.collidesWithField(openPoint1, openPoint1), "Same point should not collide");
     }
 
     @Test
@@ -52,12 +55,12 @@ class FieldIntersectionTests {
         Translation2d pointOutside = new Translation2d(2.0, 4.0);
 
         assertTrue(
-                FieldIntersection.collidesWithField(pointInBlueCorralTop, pointOutside),
+                fieldIntersection.collidesWithField(pointInBlueCorralTop, pointOutside),
                 "Line through blue coral station should collide");
 
         Translation2d pointInBlueCorralBottom = new Translation2d(0.5, 0.5);
         assertTrue(
-                FieldIntersection.collidesWithField(pointInBlueCorralBottom, pointOutside),
+                fieldIntersection.collidesWithField(pointInBlueCorralBottom, pointOutside),
                 "Line through bottom blue coral station should collide");
     }
 
@@ -69,12 +72,12 @@ class FieldIntersectionTests {
         Translation2d pointOutside = new Translation2d(15.0, 4.0);
 
         assertTrue(
-                FieldIntersection.collidesWithField(pointInRedCorralTop, pointOutside),
+                fieldIntersection.collidesWithField(pointInRedCorralTop, pointOutside),
                 "Line through red coral station should collide");
 
         Translation2d pointInRedCorralBottom = new Translation2d(17.0, 0.5);
         assertTrue(
-                FieldIntersection.collidesWithField(pointInRedCorralBottom, pointOutside),
+                fieldIntersection.collidesWithField(pointInRedCorralBottom, pointOutside),
                 "Line through bottom red coral station should collide");
     }
 
@@ -86,7 +89,7 @@ class FieldIntersectionTests {
         Translation2d pointOutside = new Translation2d(2.0, 4.0);
 
         assertTrue(
-                FieldIntersection.collidesWithField(pointInBlueReef, pointOutside),
+                fieldIntersection.collidesWithField(pointInBlueReef, pointOutside),
                 "Line through blue reef should collide");
     }
 
@@ -98,7 +101,7 @@ class FieldIntersectionTests {
         Translation2d pointOutside = new Translation2d(15.5, 4.0);
 
         assertTrue(
-                FieldIntersection.collidesWithField(pointInRedReef, pointOutside),
+                fieldIntersection.collidesWithField(pointInRedReef, pointOutside),
                 "Line through red reef should collide");
     }
 
@@ -110,7 +113,7 @@ class FieldIntersectionTests {
         Translation2d pointOutside = new Translation2d(10.0, 4.0);
 
         assertTrue(
-                FieldIntersection.collidesWithField(pointInPillar, pointOutside),
+                fieldIntersection.collidesWithField(pointInPillar, pointOutside),
                 "Line through center pillar should collide");
 
         // Test line that crosses the pillar
@@ -118,7 +121,7 @@ class FieldIntersectionTests {
         Translation2d afterPillar = new Translation2d(9.5, 4.026);
 
         assertTrue(
-                FieldIntersection.collidesWithField(beforePillar, afterPillar),
+                fieldIntersection.collidesWithField(beforePillar, afterPillar),
                 "Line crossing center pillar should collide");
     }
 
@@ -129,7 +132,7 @@ class FieldIntersectionTests {
         Translation2d farInsideField = new Translation2d(5.0, 0.1);
 
         assertFalse(
-                FieldIntersection.collidesWithField(justInsideField, farInsideField),
+                fieldIntersection.collidesWithField(justInsideField, farInsideField),
                 "Line between valid field points in open area should not collide");
     }
 
@@ -141,7 +144,7 @@ class FieldIntersectionTests {
         Translation2d point2 = new Translation2d(3.0, 2.0);
 
         // This line should be in open field
-        assertFalse(FieldIntersection.collidesWithField(point1, point2), "Line in open field should not collide");
+        assertFalse(fieldIntersection.collidesWithField(point1, point2), "Line in open field should not collide");
     }
 
     @Test
@@ -152,7 +155,7 @@ class FieldIntersectionTests {
         Translation2d point2 = new Translation2d(5.001, 4.0);
 
         assertFalse(
-                FieldIntersection.collidesWithField(point1, point2),
+                fieldIntersection.collidesWithField(point1, point2),
                 "Very short line in open field should not collide");
 
         // Test short segment within an obstacle
@@ -160,7 +163,7 @@ class FieldIntersectionTests {
         Translation2d pillarPoint2 = new Translation2d(8.775, 4.026);
 
         assertTrue(
-                FieldIntersection.collidesWithField(pillarPoint1, pillarPoint2),
+                fieldIntersection.collidesWithField(pillarPoint1, pillarPoint2),
                 "Short line within obstacle should collide");
     }
 
@@ -172,7 +175,7 @@ class FieldIntersectionTests {
         Translation2d topRight = new Translation2d(17.0, 7.5);
 
         assertTrue(
-                FieldIntersection.collidesWithField(bottomLeft, topRight),
+                fieldIntersection.collidesWithField(bottomLeft, topRight),
                 "Diagonal line across field should hit obstacles");
     }
 
@@ -198,7 +201,7 @@ class FieldIntersectionTests {
                 Translation2d p2 = openPoints[j];
                 // Some of these might intersect obstacles, but we test they execute without error
                 assertDoesNotThrow(
-                        () -> FieldIntersection.collidesWithField(p1, p2),
+                        () -> fieldIntersection.collidesWithField(p1, p2),
                         "Collision detection should not throw exceptions");
             }
         }
