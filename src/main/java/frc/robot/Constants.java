@@ -35,6 +35,7 @@ import frc.robot.utils.wrappers.Pose2d;
 import frc.robot.utils.wrappers.Translation2d;
 import java.util.ArrayList;
 import java.util.List;
+import org.ironmaple.simulation.drivesims.COTS;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -100,7 +101,7 @@ public final class Constants {
 
     public static final class Align {
 
-        public static final double MAX_VELOCITY = Constants.Swerve.ROBOT_MAX_SPEED; // m/s
+        public static final double MAX_VELOCITY = Constants.Swerve.MAX_MODULE_SPEED; // m/s
         public static final double MAX_ANGULAR_VELOCITY = 1.8; // rad/s
         public static final double MAX_ACCELERATION = 3.3228; // m/s^2
         public static final double MAX_DECELERATION = 11.0; // m/s^2
@@ -250,17 +251,20 @@ public final class Constants {
          * Distance between wheels (width aka between left and right and length aka between front and
          * back). Used for calculating wheel locations on the robot
          */
-        public static final double ROBOT_WHEEL_DISTANCE_WIDTH = 0.5588;
+        public static final double ROBOT_WHEEL_DISTANCE_WIDTH = 0.514350;
 
-        public static final double ROBOT_WHEEL_DISTANCE_LENGTH = 0.5588;
+        public static final double ROBOT_WHEEL_DISTANCE_LENGTH = 0.514350;
 
-        public static final double FRAME_WIDTH = Inches.of(30).in(Meters);
+        public static final double FRAME_WIDTH = Inches.of(27).in(Meters);
+        public static final double FRAME_LENGTH = Inches.of(27).in(Meters);
+
         public static final double FRAME_WITH_BUMPER_WIDTH =
-                FRAME_WIDTH + Inches.of(6.5).in(Meters);
-        public static final double MAX_MECHANISM_HEIGHT = 2.1336;
+                FRAME_WIDTH + Inches.of(8.264).in(Meters);
+        public static final double FRAME_WITH_BUMPER_LENGTH =
+                FRAME_LENGTH + Inches.of(7.5).in(Meters);
 
-        public static final double ROBOT_MASS = 64.864; // kg
-        public static final double ROBOT_MOI = 14.547; // kg*m^2
+        public static final double ROBOT_MASS = 56.398311242825; // kg
+        public static final double ROBOT_MOI = 6.4482549519; // kg*m^2
 
         private Frame() {}
     }
@@ -291,15 +295,23 @@ public final class Constants {
         public static final double KRAKEN_TURN_GEAR_RATIO = 13.3714;
         public static final double KRAKEN_DRIVE_GEAR_RATIO = 6.75; // X1 12 pinion
 
-        public static final ImmutableCurrent FALCON_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(100));
-        public static final ImmutableCurrent FALCON_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(25));
+        public static final ImmutableCurrent FALCON_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
+        public static final ImmutableCurrent FALCON_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
+        public static final ImmutableCurrent FALCON_TURN_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
+        public static final Time FALCON_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
         public static final ImmutableCurrent FALCON_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
-        public static final ImmutableCurrent FALCON_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(32));
+        public static final ImmutableCurrent FALCON_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
+        public static final Time FALCON_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final ImmutableCurrent FALCON_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
 
-        public static final ImmutableCurrent KRAKEN_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(100));
-        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(25));
+        public static final ImmutableCurrent KRAKEN_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
+        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
+        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
+        public static final Time KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
         public static final ImmutableCurrent KRAKEN_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
-        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(52));
+        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
+        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
+        public static final Time KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
 
         public static final double FALCON_DRIVE_KS = 0.13192;
         public static final double FALCON_DRIVE_KV = 2.7547;
@@ -326,32 +338,29 @@ public final class Constants {
         // Wheel diameter
         public static final double WHEEL_DIAMETER = Units.inchesToMeters(4);
 
-        // Turn max velocity and acceleration
+        // Turn max velocity
         // Calculated from motor rpm 5000 / 60 (rps) / gear ratio (15.43)
         public static final double TURN_MAX_ANGULAR_VELOCITY = 5; // ROTATIONS / SECOND
-        // Calculated from max velocity / time to reach (0.1)
-        public static final double TURN_MAX_ANGULAR_ACCELERATION = 20; // ROTATIONS / SECOND / SECOND
 
         public static final double DRIVE_MAX_ACCELERATION = 13.18;
         public static final double DRIVE_MAX_JERK = 131.28;
 
-        public static final double TURN_MAX_JERK = 1600;
         public static final double TURN_MMEXPO_KV = 1.5;
         public static final double TURN_MMEXPO_KA = 0.02;
 
         /** The max speed the robot can travel safely */
-        public static final double ROBOT_MAX_SPEED = 4.35;
+        public static final double MAX_MODULE_SPEED = 4.35;
 
         public static final RobotConfig PP_DEFAULT_CONFIG = new RobotConfig(
                 Constants.Frame.ROBOT_MASS,
                 Constants.Frame.ROBOT_MOI,
                 new ModuleConfig(
                         WHEEL_DIAMETER / 2,
-                        ROBOT_MAX_SPEED,
-                        1.2,
+                        MAX_MODULE_SPEED,
+                        COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
                         DCMotor.getKrakenX60(1),
                         Constants.Swerve.KRAKEN_DRIVE_GEAR_RATIO,
-                        52,
+                        Constants.Swerve.KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT.in(Amps),
                         1),
                 FRONT_LEFT_WHEEL_LOCATION,
                 FRONT_RIGHT_WHEEL_LOCATION,
@@ -400,10 +409,15 @@ public final class Constants {
         // TODO
         public static final double EJECT_FUEL_PER_SECOND = 10.0;
 
-        public static final Current ARM_SUPPLY_CURRENT_LIMIT = Amps.of(10);
-        public static final Current ARM_STATOR_CURRENT_LIMIT = Amps.of(60);
-        public static final Current WHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(10);
-        public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(60);
+        public static final Current ARM_SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current ARM_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Time ARM_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final Current ARM_STATOR_CURRENT_LIMIT = Amps.of(120);
+
+        public static final Current WHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current WHEEL_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Time WHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(120);
 
         public static final double ARM_MMEXPO_KV = 1.931;
         public static final double ARM_MMEXPO_KA = 1.1;
@@ -426,17 +440,13 @@ public final class Constants {
         public static final double ARM_STARTING_POSITION_RADIANS = Units.degreesToRadians(137.0);
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS =
-                Constants.Swerve.ROBOT_MAX_SPEED * 2; // surface speed of roller // TODO make correct
+                Constants.Swerve.MAX_MODULE_SPEED * 2; // surface speed of roller // TODO make correct
         public static final double WHEEL_EJECT_VELOCITY_MPS = -6.0; // surface speed of roller // TODO make correct
 
         public static final double ARM_GEAR_RATIO = 56.8889;
         public static final double ARM_GRAVITY_POSITION_OFFSET = 0; // TODO: add offset from SysId
 
         public static final double WHEEL_GEAR_RATIO = 10;
-
-        public static final Pose2d ROOT_MECHANISM_POSE = new Pose2d(0, 0.4, Rotation2d.fromDegrees(0));
-        public static final double LENGTH = 0.385;
-        public static final double ANGLE_OFFSET = 0;
 
         private Intake() {}
     }
@@ -448,6 +458,30 @@ public final class Constants {
                 MAX_ROBOT_CAPACITY - Intake.MAX_INTAKE_CAPACITY; // number of fuel that can fit in the hopper alone
 
         private Hopper() {}
+    }
+
+    public static final class Turret {
+        public static final double KP = 0.8;
+        public static final double KD = 0.0;
+        public static final double KS = 0.1;
+        public static final double KV = 0.1;
+        public static final double KA = 0.01;
+
+        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Time SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final Current STATOR_CURRENT_LIMIT = Amps.of(120);
+
+        public static final double MMEXPO_KV = 1.931;
+        public static final double MMEXPO_KA = 1.1;
+
+        public static final double GEAR_RATIO = 16;
+
+        public static final double STARTING_POSITION_RADIANS = Units.degreesToRadians(90.0);
+        public static final double ROTATION_MAX_POSITION_RADIANS = Units.degreesToRadians(360.0);
+        public static final double ROTATION_MIN_POSITION_RADIANS = -ROTATION_MAX_POSITION_RADIANS; // symmetric
+
+        private Turret() {}
     }
 
     public final class RobotState {

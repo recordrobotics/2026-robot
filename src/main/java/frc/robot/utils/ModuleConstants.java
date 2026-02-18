@@ -1,6 +1,7 @@
 package frc.robot.utils;
 
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
 import frc.robot.utils.wrappers.ImmutableCurrent;
@@ -38,8 +39,6 @@ import org.json.simple.parser.ParseException;
  * @param turnKs Turn motor static constant
  * @param turnKp Turn motor proportional gain
  * @param turnKd Turn motor derivative gain
- * @param turnMaxAngularVelocity Max angular velocity of the turn motor
- * @param turnMaxAngularAcceleration Max angular acceleration of the turn motor
  * @param wheelDiameter Diameter of the wheel
  */
 public record ModuleConstants(
@@ -51,8 +50,12 @@ public record ModuleConstants(
         double turnGearRatio,
         double driveGearRatio,
         Current turnMotorSupplyCurrentLimit,
+        Current turnMotorSupplyLowerCurrentLimit,
+        Time turnMotorSupplyLowerCurrentLimitTime,
         Current turnMotorStatorCurrentLimit,
         Current driveMotorSupplyCurrentLimit,
+        Current driveMotorSupplyLowerCurrentLimit,
+        Time driveMotorSupplyLowerCurrentLimitTime,
         Current driveMotorStatorCurrentLimit,
         double driveKv,
         double driveKa,
@@ -63,8 +66,6 @@ public record ModuleConstants(
         double turnKs,
         double turnKp,
         double turnKd,
-        double turnMaxAngularVelocity,
-        double turnMaxAngularAcceleration,
         double wheelDiameter) {
 
     private static JSONParser parser = new JSONParser();
@@ -101,6 +102,8 @@ public record ModuleConstants(
                 "falcon",
                 Constants.Swerve.FALCON_TURN_GEAR_RATIO,
                 Constants.Swerve.FALCON_TURN_SUPPLY_CURRENT_LIMIT,
+                Constants.Swerve.FALCON_TURN_SUPPLY_LOWER_CURRENT_LIMIT,
+                Constants.Swerve.FALCON_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME,
                 Constants.Swerve.FALCON_TURN_STATOR_CURRENT_LIMIT,
                 Constants.Swerve.FALCON_TURN_KV,
                 Constants.Swerve.FALCON_TURN_KA,
@@ -111,6 +114,8 @@ public record ModuleConstants(
                 "kraken",
                 Constants.Swerve.KRAKEN_TURN_GEAR_RATIO,
                 Constants.Swerve.KRAKEN_TURN_SUPPLY_CURRENT_LIMIT,
+                Constants.Swerve.KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT,
+                Constants.Swerve.KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME,
                 Constants.Swerve.KRAKEN_TURN_STATOR_CURRENT_LIMIT,
                 Constants.Swerve.KRAKEN_TURN_KV,
                 Constants.Swerve.KRAKEN_TURN_KA,
@@ -121,6 +126,8 @@ public record ModuleConstants(
         private final String jsonId;
         private final double gearRatio;
         private final ImmutableCurrent supplyCurrentLimit;
+        private final ImmutableCurrent supplyLowerCurrentLimit;
+        private final Time supplyLowerCurrentLimitTime;
         private final ImmutableCurrent statorCurrentLimit;
 
         private final double kV;
@@ -133,6 +140,8 @@ public record ModuleConstants(
                 String jsonId,
                 double gearRatio,
                 ImmutableCurrent supplyCurrentLimit,
+                ImmutableCurrent supplyLowerCurrentLimit,
+                Time supplyLowerCurrentLimitTime,
                 ImmutableCurrent statorCurrentLimit,
                 double kV,
                 double kA,
@@ -142,6 +151,8 @@ public record ModuleConstants(
             this.jsonId = jsonId;
             this.gearRatio = gearRatio;
             this.supplyCurrentLimit = supplyCurrentLimit;
+            this.supplyLowerCurrentLimit = supplyLowerCurrentLimit;
+            this.supplyLowerCurrentLimitTime = supplyLowerCurrentLimitTime;
             this.statorCurrentLimit = statorCurrentLimit;
             this.kV = kV;
             this.kA = kA;
@@ -161,6 +172,8 @@ public record ModuleConstants(
                 "falcon",
                 Constants.Swerve.FALCON_DRIVE_GEAR_RATIO,
                 Constants.Swerve.FALCON_DRIVE_SUPPLY_CURRENT_LIMIT,
+                Constants.Swerve.FALCON_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT,
+                Constants.Swerve.FALCON_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME,
                 Constants.Swerve.FALCON_DRIVE_STATOR_CURRENT_LIMIT,
                 Constants.Swerve.FALCON_DRIVE_KV,
                 Constants.Swerve.FALCON_DRIVE_KA,
@@ -170,6 +183,8 @@ public record ModuleConstants(
                 "kraken",
                 Constants.Swerve.KRAKEN_DRIVE_GEAR_RATIO,
                 Constants.Swerve.KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT,
+                Constants.Swerve.KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT,
+                Constants.Swerve.KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME,
                 Constants.Swerve.KRAKEN_DRIVE_STATOR_CURRENT_LIMIT,
                 Constants.Swerve.KRAKEN_DRIVE_KV,
                 Constants.Swerve.KRAKEN_DRIVE_KA,
@@ -179,6 +194,8 @@ public record ModuleConstants(
         private final String jsonId;
         private final double gearRatio;
         private final ImmutableCurrent supplyCurrentLimit;
+        private final ImmutableCurrent supplyLowerCurrentLimit;
+        private final Time supplyLowerCurrentLimitTime;
         private final ImmutableCurrent statorCurrentLimit;
 
         private final double kV;
@@ -190,6 +207,8 @@ public record ModuleConstants(
                 String jsonId,
                 double gearRatio,
                 ImmutableCurrent supplyCurrentLimit,
+                ImmutableCurrent supplyLowerCurrentLimit,
+                Time supplyLowerCurrentLimitTime,
                 ImmutableCurrent statorCurrentLimit,
                 double kV,
                 double kA,
@@ -199,6 +218,8 @@ public record ModuleConstants(
             this.gearRatio = gearRatio;
             this.supplyCurrentLimit = supplyCurrentLimit;
             this.statorCurrentLimit = statorCurrentLimit;
+            this.supplyLowerCurrentLimit = supplyLowerCurrentLimit;
+            this.supplyLowerCurrentLimitTime = supplyLowerCurrentLimitTime;
             this.kV = kV;
             this.kA = kA;
             this.kS = kS;
@@ -252,8 +273,12 @@ public record ModuleConstants(
                 turnMotorType.gearRatio,
                 driveMotorType.gearRatio,
                 turnMotorType.supplyCurrentLimit,
+                turnMotorType.supplyLowerCurrentLimit,
+                turnMotorType.supplyLowerCurrentLimitTime,
                 turnMotorType.statorCurrentLimit,
                 driveMotorType.supplyCurrentLimit,
+                driveMotorType.supplyLowerCurrentLimit,
+                driveMotorType.supplyLowerCurrentLimitTime,
                 driveMotorType.statorCurrentLimit,
                 driveMotorType.kV,
                 driveMotorType.kA,
@@ -264,8 +289,6 @@ public record ModuleConstants(
                 turnMotorType.kS,
                 turnMotorType.kP,
                 turnMotorType.kD,
-                Constants.Swerve.TURN_MAX_ANGULAR_VELOCITY,
-                Constants.Swerve.TURN_MAX_ANGULAR_ACCELERATION,
                 Constants.Swerve.WHEEL_DIAMETER);
     }
 

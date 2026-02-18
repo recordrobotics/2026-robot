@@ -10,4 +10,10 @@ public final class RobotMap {
 
         private Intake() {}
     }
+
+    public static final class Turret {
+        public static final int MOTOR_ID = 18; // TODO
+
+        private Turret() {}
+    }
 }

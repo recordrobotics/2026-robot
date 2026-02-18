@@ -21,7 +21,9 @@ import frc.robot.control.*;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.io.real.IntakeReal;
+import frc.robot.subsystems.io.real.TurretReal;
 import frc.robot.subsystems.io.sim.IntakeSim;
+import frc.robot.subsystems.io.sim.TurretSim;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
@@ -73,6 +75,7 @@ public final class RobotContainer {
     public static PoseSensorFusion poseSensorFusion;
     public static PowerDistributionPanel pdp;
     public static Intake intake;
+    public static Turret turret;
     public static RobotModel model;
     public static FieldStateTracker fieldStateTracker;
     public static VisionSystemSim visionSim;
@@ -105,6 +108,7 @@ public final class RobotContainer {
 
         if (Constants.RobotState.getMode() == Mode.REAL) {
             intake = new Intake(new IntakeReal(ROBOT_PERIODIC));
+            turret = new Turret(new TurretReal(ROBOT_PERIODIC));
         } else {
             if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
                 visionSim = new VisionSystemSim("main");
@@ -137,6 +141,7 @@ public final class RobotContainer {
             }
 
             intake = new Intake(new IntakeSim(ROBOT_PERIODIC, drivetrain.getSwerveDriveSimulation()));
+            turret = new Turret(new TurretSim(ROBOT_PERIODIC));
         }
 
         poseSensorFusion = new PoseSensorFusion(
@@ -255,6 +260,7 @@ public final class RobotContainer {
 
     public static void resetEncoders() {
         intake.resetEncoders();
+        turret.resetEncoders();
 
         noEncoderResetAlert.set(false);
         Elastic.sendNotification(

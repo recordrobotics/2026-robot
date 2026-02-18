@@ -84,6 +84,7 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
         slot0ConfigsDrive.kP = m.driveKp();
         slot0ConfigsDrive.kI = 0;
         slot0ConfigsDrive.kD = 0;
+
         double wheelCircumference = wheelDiameter * Math.PI;
         driveConfig.Feedback.SensorToMechanismRatio = driveGearRatio / wheelCircumference;
 
@@ -97,6 +98,8 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
                 .withCurrentLimits(new CurrentLimitsConfigs()
                         .withSupplyCurrentLimit(m.driveMotorSupplyCurrentLimit())
                         .withStatorCurrentLimit(m.driveMotorStatorCurrentLimit())
+                        .withSupplyCurrentLowerLimit(m.driveMotorSupplyLowerCurrentLimit())
+                        .withSupplyCurrentLowerTime(m.driveMotorSupplyLowerCurrentLimitTime())
                         .withSupplyCurrentLimitEnable(true)
                         .withStatorCurrentLimitEnable(true)));
 
@@ -115,9 +118,6 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
 
         // set Motion Magic settings
         MotionMagicConfigs motionMagicConfigsTurn = turnConfig.MotionMagic;
-        motionMagicConfigsTurn.MotionMagicCruiseVelocity = m.turnMaxAngularVelocity();
-        motionMagicConfigsTurn.MotionMagicAcceleration = m.turnMaxAngularAcceleration();
-        motionMagicConfigsTurn.MotionMagicJerk = Constants.Swerve.TURN_MAX_JERK;
         motionMagicConfigsTurn.MotionMagicExpo_kV = Constants.Swerve.TURN_MMEXPO_KV;
         motionMagicConfigsTurn.MotionMagicExpo_kA = Constants.Swerve.TURN_MMEXPO_KA;
 
@@ -128,6 +128,8 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
                 .withCurrentLimits(new CurrentLimitsConfigs()
                         .withSupplyCurrentLimit(m.turnMotorSupplyCurrentLimit())
                         .withStatorCurrentLimit(m.turnMotorStatorCurrentLimit())
+                        .withSupplyCurrentLowerLimit(m.turnMotorSupplyLowerCurrentLimit())
+                        .withSupplyCurrentLowerTime(m.turnMotorSupplyLowerCurrentLimitTime())
                         .withSupplyCurrentLimitEnable(true)
                         .withStatorCurrentLimitEnable(true)));
 

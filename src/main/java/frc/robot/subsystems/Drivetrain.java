@@ -16,7 +16,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -57,8 +56,6 @@ public final class Drivetrain extends KillableSubsystem implements PoweredSubsys
 
     private static final boolean DEBUG_LOG_MODIFIERS = false;
 
-    private static final double ENCODER_STABILIZATION_TIME = 2.3;
-
     private static final Velocity<VoltageUnit> SYSID_DRIVE_RAMP_RATE =
             Volts.of(3.0).per(Second);
     private static final Voltage SYSID_DRIVE_STEP_VOLTAGE = Volts.of(3.0);
@@ -96,9 +93,9 @@ public final class Drivetrain extends KillableSubsystem implements PoweredSubsys
                     DCMotor.getKrakenX44(1), // Steer motor is a Kraken X44
                     Constants.Swerve.KRAKEN_DRIVE_GEAR_RATIO, // Drive motor gear ratio.
                     Constants.Swerve.KRAKEN_TURN_GEAR_RATIO, // Steer motor gear ratio.
-                    Volts.of(0.1),
-                    Volts.of(0.2),
-                    Inches.of(2),
+                    Volts.of(Constants.Swerve.KRAKEN_DRIVE_KS), // Drive static voltage
+                    Volts.of(Constants.Swerve.KRAKEN_TURN_KS), // Steer static voltage
+                    Meters.of(Constants.Swerve.WHEEL_DIAMETER / 2), // Wheel radius
                     KilogramSquareMeters.of(0.03),
                     COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof // Use the COF for Neoprene Tread
                     ))
@@ -108,7 +105,7 @@ public final class Drivetrain extends KillableSubsystem implements PoweredSubsys
                     Meters.of(Constants.Frame.ROBOT_WHEEL_DISTANCE_WIDTH))
             // Configures the bumper size (dimensions of the robot bumper)
             .withBumperSize(
-                    Meters.of(Constants.Frame.FRAME_WITH_BUMPER_WIDTH),
+                    Meters.of(Constants.Frame.FRAME_WITH_BUMPER_LENGTH),
                     Meters.of(Constants.Frame.FRAME_WITH_BUMPER_WIDTH))
             .withRobotMass(Kilograms.of(Constants.Frame.ROBOT_MASS));
 
@@ -138,9 +135,6 @@ public final class Drivetrain extends KillableSubsystem implements PoweredSubsys
             frontRightIO = new SwerveModuleReal(Constants.Swerve.PERIODIC, frontRightConstants);
             backLeftIO = new SwerveModuleReal(Constants.Swerve.PERIODIC, backLeftConstants);
             backRightIO = new SwerveModuleReal(Constants.Swerve.PERIODIC, backRightConstants);
-
-            // delay to wait for encoder values to stabilize
-            Timer.delay(ENCODER_STABILIZATION_TIME);
         } else {
             /* Create a swerve drive simulation */
             swerveDriveSimulation = new SwerveDriveSimulation(

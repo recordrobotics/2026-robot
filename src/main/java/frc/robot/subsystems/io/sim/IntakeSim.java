@@ -155,11 +155,11 @@ public class IntakeSim implements IntakeIO {
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
-        wheelSim.setRawRotorPosition(
-                Constants.Intake.WHEEL_GEAR_RATIO * Units.radiansToRotations(wheelSimModel.getAngularPositionRad()));
+        wheelSim.setRawRotorPosition(Constants.Intake.WHEEL_GEAR_RATIO * wheelSimModel.getAngularPositionRotations());
         wheelSim.setRotorVelocity(Constants.Intake.WHEEL_GEAR_RATIO
-                * Units.radiansToRotations(wheelSimModel.getAngularVelocityRadPerSec())
-                * SimpleMath.SECONDS_PER_MINUTE);
+                * Units.radiansToRotations(wheelSimModel.getAngularVelocityRadPerSec()));
+        wheelSim.setRotorAcceleration(Constants.Intake.WHEEL_GEAR_RATIO
+                * Units.radiansToRotations(wheelSimModel.getAngularAccelerationRadPerSecSq()));
 
         // Update internal raw position offset
         wheel.setPosition(newValue);
@@ -302,10 +302,8 @@ public class IntakeSim implements IntakeIO {
         armSimFollower.setSupplyVoltage(RobotController.getBatteryVoltage());
         wheelSim.setSupplyVoltage(RobotController.getBatteryVoltage());
 
-        double wheelVoltage =
-                wheelSim.getMotorVoltage(); // TODO what is the difference between this and getWheelVoltage()?
-        double armLeaderVoltage =
-                armSimLeader.getMotorVoltage(); // TODO what is the difference between this and getArmVoltage()?
+        double wheelVoltage = wheelSim.getMotorVoltage();
+        double armLeaderVoltage = armSimLeader.getMotorVoltage();
         double armFollowerVoltage = armSimFollower.getMotorVoltage();
 
         wheelSimModel.setInputVoltage(wheelVoltage);

@@ -148,8 +148,11 @@ public final class RobotModel extends ManagedSubsystemBase {
         private double turretAngleRadians;
         private double hoodAngleRadians;
 
-        public void update(double newTurretAngleRadians, double newHoodAngleRadians) {
+        public void updateTurret(double newTurretAngleRadians) {
             turretAngleRadians = newTurretAngleRadians;
+        }
+
+        public void updateHood(double newHoodAngleRadians) {
             hoodAngleRadians = newHoodAngleRadians;
         }
 
