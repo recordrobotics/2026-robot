@@ -120,7 +120,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         }
 
         private record ArmGeometryPoint(double lowestArmAngleRadians, double angleOffset, double length) {
-            public static ArmGeometryPoint findCurrentPoint(double armAngle, ArmGeometryPoint[] geometry) {
+            private static ArmGeometryPoint findCurrentPoint(double armAngle, ArmGeometryPoint[] geometry) {
                 for (ArmGeometryPoint point : geometry) {
                     if (armAngle >= point.lowestArmAngleRadians) {
                         return point;
@@ -130,7 +130,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                         geometry.length - 1]; // if we are below the lowest point, just use the lowest point's geometry
             }
 
-            public static double calculateHopperExtension(double armAngle, ArmGeometryPoint[] geometry) {
+            private static double calculateHopperExtension(double armAngle, ArmGeometryPoint[] geometry) {
                 ArmGeometryPoint currentPoint = findCurrentPoint(armAngle, geometry);
                 return Math.max(
                         0,

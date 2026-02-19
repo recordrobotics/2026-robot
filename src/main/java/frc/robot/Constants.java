@@ -31,6 +31,7 @@ import frc.robot.utils.ModuleConstants.MotorLocation;
 import frc.robot.utils.ModuleConstants.TurnMotorType;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.wrappers.ImmutableCurrent;
+import frc.robot.utils.wrappers.ImmutableTime;
 import frc.robot.utils.wrappers.Pose2d;
 import frc.robot.utils.wrappers.Translation2d;
 import java.util.ArrayList;
@@ -298,20 +299,24 @@ public final class Constants {
         public static final ImmutableCurrent FALCON_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
         public static final ImmutableCurrent FALCON_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
         public static final ImmutableCurrent FALCON_TURN_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
-        public static final Time FALCON_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final ImmutableTime FALCON_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
+                ImmutableTime.of(Seconds.of(1.0));
         public static final ImmutableCurrent FALCON_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
         public static final ImmutableCurrent FALCON_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
-        public static final Time FALCON_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final ImmutableTime FALCON_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
+                ImmutableTime.of(Seconds.of(1.0));
         public static final ImmutableCurrent FALCON_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
 
         public static final ImmutableCurrent KRAKEN_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
         public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
         public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
-        public static final Time KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final ImmutableTime KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
+                ImmutableTime.of(Seconds.of(1.0));
         public static final ImmutableCurrent KRAKEN_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
         public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
         public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
-        public static final Time KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final ImmutableTime KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
+                ImmutableTime.of(Seconds.of(1.0));
 
         public static final double FALCON_DRIVE_KS = 0.13192;
         public static final double FALCON_DRIVE_KV = 2.7547;

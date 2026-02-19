@@ -5,6 +5,7 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.Constants;
 import frc.robot.utils.wrappers.ImmutableCurrent;
+import frc.robot.utils.wrappers.ImmutableTime;
 import frc.robot.utils.wrappers.Translation2d;
 import java.io.File;
 import java.io.FileReader;
@@ -127,7 +128,7 @@ public record ModuleConstants(
         private final double gearRatio;
         private final ImmutableCurrent supplyCurrentLimit;
         private final ImmutableCurrent supplyLowerCurrentLimit;
-        private final Time supplyLowerCurrentLimitTime;
+        private final ImmutableTime supplyLowerCurrentLimitTime;
         private final ImmutableCurrent statorCurrentLimit;
 
         private final double kV;
@@ -141,7 +142,7 @@ public record ModuleConstants(
                 double gearRatio,
                 ImmutableCurrent supplyCurrentLimit,
                 ImmutableCurrent supplyLowerCurrentLimit,
-                Time supplyLowerCurrentLimitTime,
+                ImmutableTime supplyLowerCurrentLimitTime,
                 ImmutableCurrent statorCurrentLimit,
                 double kV,
                 double kA,
@@ -195,7 +196,7 @@ public record ModuleConstants(
         private final double gearRatio;
         private final ImmutableCurrent supplyCurrentLimit;
         private final ImmutableCurrent supplyLowerCurrentLimit;
-        private final Time supplyLowerCurrentLimitTime;
+        private final ImmutableTime supplyLowerCurrentLimitTime;
         private final ImmutableCurrent statorCurrentLimit;
 
         private final double kV;
@@ -208,7 +209,7 @@ public record ModuleConstants(
                 double gearRatio,
                 ImmutableCurrent supplyCurrentLimit,
                 ImmutableCurrent supplyLowerCurrentLimit,
-                Time supplyLowerCurrentLimitTime,
+                ImmutableTime supplyLowerCurrentLimitTime,
                 ImmutableCurrent statorCurrentLimit,
                 double kV,
                 double kA,
