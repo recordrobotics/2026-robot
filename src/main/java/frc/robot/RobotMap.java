@@ -30,4 +30,10 @@ public final class RobotMap {
 
         private Spindexer() {}
     }
+
+    public static final class Feeder {
+        public static final int MOTOR_ID = 30; // TODO
+
+        private Feeder() {}
+    }
 }

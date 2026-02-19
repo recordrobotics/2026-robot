@@ -23,7 +23,7 @@ public class SpindexerSim implements SpindexerIO {
     private final DCMotor spindexerMotor = DCMotor.getKrakenX60(1);
 
     private final DCMotorSim spindexerSimModel = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(spindexerMotor, 0.0028087817, Constants.Spindexer.GEAR_RATIO),
+            LinearSystemId.createDCMotorSystem(spindexerMotor, 0.0004429452, Constants.Spindexer.GEAR_RATIO),
             spindexerMotor,
             0.0,
             0.0);

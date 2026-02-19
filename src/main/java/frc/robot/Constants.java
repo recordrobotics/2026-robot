@@ -546,6 +546,27 @@ public final class Constants {
         private Spindexer() {}
     }
 
+    public static final class Feeder {
+        public static final double KP = 0.8;
+        public static final double KS = 0.1;
+        public static final double KV = 0.1;
+        public static final double KA = 0.01;
+
+        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Time SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
+        public static final Current STATOR_CURRENT_LIMIT = Amps.of(120);
+
+        public static final double MAX_ACCELERATION = 13.18;
+        public static final double MAX_JERK = 131.28;
+
+        public static final double GEAR_RATIO = 1.2;
+
+        public static final double INTAKE_VELOCITY_RPS = 58.0;
+
+        private Feeder() {}
+    }
+
     public final class RobotState {
 
         public static final boolean MOTOR_LOGGING_ENABLED = false;
