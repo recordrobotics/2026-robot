@@ -32,13 +32,16 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     private static final double ARM_VELOCITY_TOLERANCE = Units.degreesToRotations(50);
     private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 1.0; // TODO
 
+    private static final Distance ROLLER_DIAMETER = Inches.of(1.875);
+
     private final IntakeIO io;
+
     private final MotionMagicExpoVoltage armLeaderRequest;
     private final Follower armFollowerRequest;
     private final MotionMagicVelocityVoltage wheelRequest;
+
     private double armTargetRotations = Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
     private double wheelTargetVelocityMps = 0.0;
-    private Distance rollerDiameter = Inches.of(1.875);
     private IntakeState targetState = IntakeState.STARTING;
 
     public enum IntakeState {
@@ -118,7 +121,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
                 Constants.Intake.WHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME.in(Seconds);
 
         configWheel.Feedback.SensorToMechanismRatio =
-                Constants.Intake.WHEEL_GEAR_RATIO * Math.PI * rollerDiameter.in(Meter);
+                Constants.Intake.WHEEL_GEAR_RATIO * Math.PI * ROLLER_DIAMETER.in(Meter);
         configWheel.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         configWheel.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
