@@ -36,4 +36,10 @@ public final class RobotMap {
 
         private Feeder() {}
     }
+
+    public static final class Climber {
+        public static final int MOTOR_ID = 23; // TODO
+
+        private Climber() {}
+    }
 }

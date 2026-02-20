@@ -16,6 +16,8 @@ public interface AbstractControl {
     // TODO temporary, replace with AI
     boolean isIntakePressed();
 
+    boolean isClimbPressed();
+
     // Movement
     DrivetrainControl getDrivetrainControl();
 

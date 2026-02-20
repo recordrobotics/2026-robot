@@ -107,7 +107,7 @@ public final class Drivetrain extends KillableSubsystem implements PoweredSubsys
             .withBumperSize(
                     Meters.of(Constants.Frame.FRAME_WITH_BUMPER_LENGTH),
                     Meters.of(Constants.Frame.FRAME_WITH_BUMPER_WIDTH))
-            .withRobotMass(Kilograms.of(Constants.Frame.ROBOT_MASS));
+            .withRobotMass(Kilograms.of(Constants.Frame.ROBOT_MASS_KG));
 
     private final SwerveDriveSimulation swerveDriveSimulation;
 

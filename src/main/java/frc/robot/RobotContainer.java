@@ -20,10 +20,12 @@ import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.io.real.ClimberReal;
 import frc.robot.subsystems.io.real.IntakeReal;
 import frc.robot.subsystems.io.real.ShooterReal;
 import frc.robot.subsystems.io.real.SpindexerReal;
 import frc.robot.subsystems.io.real.TurretReal;
+import frc.robot.subsystems.io.sim.ClimberSim;
 import frc.robot.subsystems.io.sim.IntakeSim;
 import frc.robot.subsystems.io.sim.ShooterSim;
 import frc.robot.subsystems.io.sim.SpindexerSim;
@@ -82,6 +84,7 @@ public final class RobotContainer {
     public static Turret turret;
     public static Shooter shooter;
     public static Spindexer spindexer;
+    public static Climber climber;
     public static RobotModel model;
     public static FieldStateTracker fieldStateTracker;
     public static VisionSystemSim visionSim;
@@ -117,6 +120,7 @@ public final class RobotContainer {
             turret = new Turret(new TurretReal(ROBOT_PERIODIC));
             shooter = new Shooter(new ShooterReal(ROBOT_PERIODIC));
             spindexer = new Spindexer(new SpindexerReal(ROBOT_PERIODIC));
+            climber = new Climber(new ClimberReal(ROBOT_PERIODIC));
         } else {
             if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
                 visionSim = new VisionSystemSim("main");
@@ -152,6 +156,7 @@ public final class RobotContainer {
             turret = new Turret(new TurretSim(ROBOT_PERIODIC));
             shooter = new Shooter(new ShooterSim(ROBOT_PERIODIC));
             spindexer = new Spindexer(new SpindexerSim(ROBOT_PERIODIC));
+            climber = new Climber(new ClimberSim(ROBOT_PERIODIC, drivetrain.getSwerveDriveSimulation()));
         }
 
         poseSensorFusion = new PoseSensorFusion(
@@ -217,6 +222,14 @@ public final class RobotContainer {
                 .whileTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE)))
                 .whileFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED)));
 
+        new Trigger(() -> DashboardUI.Overview.getControl().isClimbPressed()).onTrue(new InstantCommand(() -> {
+            if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {
+                climber.moveTo(Constants.ClimberHeight.UP);
+            } else {
+                climber.moveTo(Constants.ClimberHeight.DOWN);
+            }
+        }));
+
         // Command to kill robot
         new Trigger(() -> DashboardUI.Overview.getControl().isKillTriggered())
                 .whileTrue(new KillSpecified(drivetrain, intake)
@@ -255,7 +268,7 @@ public final class RobotContainer {
     }
 
     public static void simulationPeriodic() {
-        updateSimulationBattery(drivetrain, intake, turret, shooter, spindexer);
+        updateSimulationBattery(drivetrain, intake, turret, shooter, spindexer, climber);
         if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
             visionSim.update(model.getRobot());
         }
@@ -272,6 +285,7 @@ public final class RobotContainer {
         intake.resetEncoders();
         turret.resetEncoders();
         shooter.resetEncoders();
+        climber.resetEncoders();
 
         noEncoderResetAlert.set(false);
         Elastic.sendNotification(
@@ -284,6 +298,7 @@ public final class RobotContainer {
         poseSensorFusion.close();
         intake.close();
         shooter.close();
+        climber.close();
         turret.close();
         spindexer.close();
         pdp.close();

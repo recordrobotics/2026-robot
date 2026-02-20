@@ -255,4 +255,9 @@ public class TestControlBridge implements AbstractControl {
     public boolean isIntakePressed() {
         return false; // TODO
     }
+
+    @Override
+    public boolean isClimbPressed() {
+        return false; // TODO
+    }
 }

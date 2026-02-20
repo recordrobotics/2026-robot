@@ -264,7 +264,7 @@ public final class Constants {
         public static final double FRAME_WITH_BUMPER_LENGTH =
                 FRAME_LENGTH + Inches.of(7.5).in(Meters);
 
-        public static final double ROBOT_MASS = 56.398311242825; // kg
+        public static final double ROBOT_MASS_KG = 56.398311242825; // kg
         public static final double ROBOT_MOI = 6.4482549519; // kg*m^2
 
         private Frame() {}
@@ -357,7 +357,7 @@ public final class Constants {
         public static final double MAX_MODULE_SPEED = 4.35;
 
         public static final RobotConfig PP_DEFAULT_CONFIG = new RobotConfig(
-                Constants.Frame.ROBOT_MASS,
+                Constants.Frame.ROBOT_MASS_KG,
                 Constants.Frame.ROBOT_MOI,
                 new ModuleConfig(
                         WHEEL_DIAMETER / 2,
@@ -570,6 +570,81 @@ public final class Constants {
         public static final double INTAKE_VELOCITY_RPS = 58.0;
 
         private Feeder() {}
+    }
+
+    public enum ClimberHeight {
+        DOWN(0),
+        UP(Units.inchesToMeters(6)); // TODO make correct
+
+        private static final double HEIGHT_DIFFERENCE_TOLERANCE = 0.1; // meters
+
+        private final double height;
+
+        private ClimberHeight(double heightMeters) {
+            this.height = heightMeters;
+        }
+
+        public double getHeight() {
+            return height;
+        }
+
+        public double getDifference(double height) {
+            return Math.abs(this.height - height) / HEIGHT_DIFFERENCE_TOLERANCE;
+        }
+    }
+
+    public static final class Climber {
+        public static final double KV_0 = 6.8; // TODO make correct
+        public static final double KV_1 = 6.8; // TODO make correct
+        public static final double KA_0 = 0.21006; // TODO make correct
+        public static final double KA_1 = 0.21006; // TODO make correct
+        public static final double KG_0 = 0.20027; // TODO make correct
+        public static final double KG_1 = 0.20027; // TODO make correct
+        public static final double KS = 0.016248; // TODO make correct
+
+        public static final double KP_0 = 68.424; // TODO make correct
+        public static final double KP_1 = 68.424; // TODO make correct
+        public static final double KD_0 = 9.2646; // TODO make correct
+        public static final double KD_1 = 9.2646; // TODO make correct
+
+        public static final double MMEXPO_KV_0 = 5.8; // TODO make correct
+        public static final double MMEXPO_KV_1 = 5.8; // TODO make correct
+        public static final double MMEXPO_KA_0 = 1.5; // TODO make correct
+        public static final double MMEXPO_KA_1 = 1.5; // TODO make correct
+
+        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(60); // TODO make correct
+        public static final Current SUPPLY_CURRENT_LOWER_LIMIT = Amps.of(30); // TODO make correct
+        public static final Current STATOR_CURRENT_LIMIT = Amps.of(100); // TODO make correct
+
+        public static final double GEAR_RATIO = 13.4321; // TODO make correct
+        public static final double SPROCKET_EFFECTIVE_RADIUS = Units.inchesToMeters(
+                0.8783343); // TODO make correct // MUST BE EFFECTIVE RADIUS, NOT PHYSICAL RADIUS. This is the radius at
+        // which it contacts
+        // the rack, which is not the same as the physical radius of the sprocket due to the
+        // sprocket entering into the rack.
+        public static final double METERS_PER_ROTATION = SPROCKET_EFFECTIVE_RADIUS
+                * 2
+                * Math.PI
+                / GEAR_RATIO; // TODO make correct // 2 * pi * r / gear ratio because same as getting distance a wheel
+        // moved, just vertically
+
+        public static final double AT_GOAL_POSITION_TOLERANCE = 0.03; // TODO make correct
+        public static final double AT_GOAL_VELOCITY_TOLERANCE = 0.63514; // TODO make correct
+
+        public static final Pose2d ROOT_MECHANISM_POSE =
+                new Pose2d(0.15, 0, Rotation2d.fromDegrees(0)); // TODO make correct
+        public static final double MIN_LENGTH = 0.65; // TODO make correct
+        public static final double MAX_HEIGHT = 1.339; // TODO make correct
+
+        public static final Distance MANUAL_CONTROL_MARGIN =
+                Meters.of(0.1); // bruh what is this // TODO make correct // TODO make correct
+
+        public static final double STATOR_CURRENT_AMPS_THRESHOLD =
+                5; // TODO make correct // less than this, not supporting weight of robot, greater than this, supporting
+        // weight of robot
+        public static final double MASS_KG = 1.0; // TODO make correct
+
+        private Climber() {}
     }
 
     public final class RobotState {
