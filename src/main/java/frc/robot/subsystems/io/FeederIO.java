@@ -19,6 +19,10 @@ public interface FeederIO {
 
     double getCurrentDrawAmps();
 
+    boolean isBottomBeamBroken();
+
+    boolean isTopBeamBroken();
+
     void simulationPeriodic();
 
     void close();

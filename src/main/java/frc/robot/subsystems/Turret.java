@@ -12,6 +12,7 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.TurretIO;
+import frc.robot.subsystems.io.TurretIO.LimitSwitchStates;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PoweredSubsystem;
@@ -93,6 +94,11 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     public boolean atGoal() {
         return SimpleMath.isWithinTolerance(getPositionRotations(), targetPositionRotations, POSITION_TOLERANCE)
                 && SimpleMath.isWithinTolerance(getVelocityRotationsPerSecond(), 0, VELOCITY_TOLERANCE);
+    }
+
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
+    public LimitSwitchStates getLimitSwitchStates() {
+        return io.getLimitSwitchStates();
     }
 
     @Override

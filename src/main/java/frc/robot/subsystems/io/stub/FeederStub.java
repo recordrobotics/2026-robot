@@ -46,6 +46,18 @@ public class FeederStub implements FeederIO {
     }
 
     @Override
+    public boolean isBottomBeamBroken() {
+        // stub
+        return false;
+    }
+
+    @Override
+    public boolean isTopBeamBroken() {
+        // stub
+        return false;
+    }
+
+    @Override
     public void simulationPeriodic() {
         // stub
     }

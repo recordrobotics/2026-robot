@@ -14,6 +14,10 @@ public final class RobotMap {
     public static final class Turret {
         public static final int MOTOR_ID = 18; // TODO
 
+        public static final int FRONT_LEFT_LIMIT_SWITCH_ID = 2; // TODO
+        public static final int BACK_LEFT_LIMIT_SWITCH_ID = 3; // TODO
+        public static final int BACK_RIGHT_LIMIT_SWITCH_ID = 4; // TODO
+
         private Turret() {}
     }
 
@@ -33,6 +37,9 @@ public final class RobotMap {
 
     public static final class Feeder {
         public static final int MOTOR_ID = 30; // TODO
+
+        public static final int BOTTOM_BEAM_BREAK_ID = 0; // TODO
+        public static final int TOP_BEAM_BREAK_ID = 1; // TODO
 
         private Feeder() {}
     }

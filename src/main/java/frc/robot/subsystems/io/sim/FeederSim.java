@@ -5,9 +5,13 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import edu.wpi.first.hal.SimBoolean;
+import edu.wpi.first.hal.SimDevice;
+import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
@@ -28,6 +32,13 @@ public class FeederSim implements FeederIO {
             0.0,
             0.0);
 
+    private final DigitalInput bottomBeambreak = new DigitalInput(RobotMap.Feeder.BOTTOM_BEAM_BREAK_ID);
+    private final DigitalInput topBeambreak = new DigitalInput(RobotMap.Feeder.TOP_BEAM_BREAK_ID);
+    private final SimDevice bottomBeambreakSim = SimDevice.create("DigitalInput", RobotMap.Feeder.BOTTOM_BEAM_BREAK_ID);
+    private final SimDevice topBeambreakSim = SimDevice.create("DigitalInput", RobotMap.Feeder.TOP_BEAM_BREAK_ID);
+    private final SimBoolean bottomBeambreakSimValue;
+    private final SimBoolean topBeambreakSimValue;
+
     public FeederSim(double periodicDt) {
         this.periodicDt = periodicDt;
 
@@ -35,6 +46,20 @@ public class FeederSim implements FeederIO {
         feederSimState = feeder.getSimState();
         feederSimState.Orientation = ChassisReference.Clockwise_Positive;
         feederSimState.setMotorType(TalonFXSimState.MotorType.KrakenX60);
+
+        if (bottomBeambreakSim != null)
+            bottomBeambreakSimValue = bottomBeambreakSim.createBoolean("Value", Direction.kOutput, true);
+        else bottomBeambreakSimValue = null;
+
+        if (bottomBeambreakSim != null) bottomBeambreak.setSimDevice(bottomBeambreakSim);
+        else bottomBeambreak.close();
+
+        if (topBeambreakSim != null)
+            topBeambreakSimValue = topBeambreakSim.createBoolean("Value", Direction.kOutput, true);
+        else topBeambreakSimValue = null;
+
+        if (topBeambreakSim != null) topBeambreak.setSimDevice(topBeambreakSim);
+        else topBeambreak.close();
     }
 
     @Override
@@ -73,6 +98,26 @@ public class FeederSim implements FeederIO {
     }
 
     @Override
+    public boolean isBottomBeamBroken() {
+        if (bottomBeambreakSim != null) return !bottomBeambreakSimValue.get();
+        else return false;
+    }
+
+    @Override
+    public boolean isTopBeamBroken() {
+        if (topBeambreakSim != null) return !topBeambreakSimValue.get();
+        else return false;
+    }
+
+    public void setBottomBeamBroken(boolean newValue) {
+        if (bottomBeambreakSimValue != null) bottomBeambreakSimValue.set(!newValue);
+    }
+
+    public void setTopBeamBroken(boolean newValue) {
+        if (topBeambreakSimValue != null) topBeambreakSimValue.set(!newValue);
+    }
+
+    @Override
     public void simulationPeriodic() {
         feederSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
@@ -91,5 +136,13 @@ public class FeederSim implements FeederIO {
     @Override
     public void close() {
         feeder.close();
+        if (bottomBeambreakSim != null) {
+            bottomBeambreakSim.close();
+            bottomBeambreak.close();
+        }
+        if (topBeambreakSim != null) {
+            topBeambreakSim.close();
+            topBeambreak.close();
+        }
     }
 }

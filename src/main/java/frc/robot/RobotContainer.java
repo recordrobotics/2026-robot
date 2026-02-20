@@ -21,11 +21,13 @@ import frc.robot.control.*;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.io.real.ClimberReal;
+import frc.robot.subsystems.io.real.FeederReal;
 import frc.robot.subsystems.io.real.IntakeReal;
 import frc.robot.subsystems.io.real.ShooterReal;
 import frc.robot.subsystems.io.real.SpindexerReal;
 import frc.robot.subsystems.io.real.TurretReal;
 import frc.robot.subsystems.io.sim.ClimberSim;
+import frc.robot.subsystems.io.sim.FeederSim;
 import frc.robot.subsystems.io.sim.IntakeSim;
 import frc.robot.subsystems.io.sim.ShooterSim;
 import frc.robot.subsystems.io.sim.SpindexerSim;
@@ -84,6 +86,7 @@ public final class RobotContainer {
     public static Turret turret;
     public static Shooter shooter;
     public static Spindexer spindexer;
+    public static Feeder feeder;
     public static Climber climber;
     public static RobotModel model;
     public static FieldStateTracker fieldStateTracker;
@@ -120,6 +123,7 @@ public final class RobotContainer {
             turret = new Turret(new TurretReal(ROBOT_PERIODIC));
             shooter = new Shooter(new ShooterReal(ROBOT_PERIODIC));
             spindexer = new Spindexer(new SpindexerReal(ROBOT_PERIODIC));
+            feeder = new Feeder(new FeederReal(ROBOT_PERIODIC));
             climber = new Climber(new ClimberReal(ROBOT_PERIODIC));
         } else {
             if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
@@ -156,6 +160,7 @@ public final class RobotContainer {
             turret = new Turret(new TurretSim(ROBOT_PERIODIC));
             shooter = new Shooter(new ShooterSim(ROBOT_PERIODIC));
             spindexer = new Spindexer(new SpindexerSim(ROBOT_PERIODIC));
+            feeder = new Feeder(new FeederSim(ROBOT_PERIODIC));
             climber = new Climber(new ClimberSim(ROBOT_PERIODIC, drivetrain.getSwerveDriveSimulation()));
         }
 
@@ -268,7 +273,7 @@ public final class RobotContainer {
     }
 
     public static void simulationPeriodic() {
-        updateSimulationBattery(drivetrain, intake, turret, shooter, spindexer, climber);
+        updateSimulationBattery(drivetrain, intake, turret, shooter, spindexer, feeder, climber);
         if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
             visionSim.update(model.getRobot());
         }
@@ -301,6 +306,7 @@ public final class RobotContainer {
         climber.close();
         turret.close();
         spindexer.close();
+        feeder.close();
         pdp.close();
     }
 }

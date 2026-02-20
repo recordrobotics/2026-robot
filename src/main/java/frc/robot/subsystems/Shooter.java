@@ -130,17 +130,17 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
                         getFlywheelVelocityMps(), flywheelTargetVelocityMps, FLYWHEEL_VELOCITY_TOLERANCE_MPS);
     }
 
-    @AutoLogLevel(level = AutoLogLevel.Level.DEBUG_REAL)
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public double getTargetHoodAngle() {
         return Units.rotationsToRadians(hoodTargetPositionRotations);
     }
 
-    @AutoLogLevel(level = AutoLogLevel.Level.DEBUG_REAL)
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public double getTargetFlywheelVelocityMps() {
         return flywheelTargetVelocityMps;
     }
 
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public double getHoodPositionRotations() {
         return io.getHoodPositionRotations();
     }
@@ -160,7 +160,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         return (io.getFlywheelLeaderPositionMeters() + io.getFlywheelFollowerPositionMeters()) / 2.0;
     }
 
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public double getFlywheelVelocityMps() {
         return (io.getFlywheelLeaderVelocityMps() + io.getFlywheelFollowerVelocityMps()) / 2.0;
     }

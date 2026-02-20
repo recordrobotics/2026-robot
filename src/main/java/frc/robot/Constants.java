@@ -488,6 +488,14 @@ public final class Constants {
         public static final double ROTATION_MAX_POSITION_RADIANS = Units.degreesToRadians(360.0);
         public static final double ROTATION_MIN_POSITION_RADIANS = -ROTATION_MAX_POSITION_RADIANS; // symmetric
 
+        public static final double MAGNETIC_LIMIT_SWITCH_TRIGGER_ANGLE_RAD = Units.degreesToRadians(5);
+        public static final double MAGNETIC_LIMIT_SWITCH_DETRIGGER_ANGLE_RAD = Units.degreesToRadians(10);
+        public static final double TURRET_MAGNET_OFFSET_ANGLE_RAD = Units.degreesToRadians(27.7335249689);
+
+        public static final double FRONT_LEFT_LIMIT_SWITCH_POSITION_RADIANS = Units.degreesToRadians(45.0);
+        public static final double BACK_LEFT_LIMIT_SWITCH_POSITION_RADIANS = Units.degreesToRadians(135.0);
+        public static final double BACK_RIGHT_LIMIT_SWITCH_POSITION_RADIANS = Units.degreesToRadians(225.0);
+
         private Turret() {}
     }
 

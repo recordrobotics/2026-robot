@@ -3,6 +3,7 @@ package frc.robot.subsystems.io.real;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.TurretIO;
 
@@ -12,6 +13,10 @@ public class TurretReal implements TurretIO {
     private final double periodicDt;
 
     private final TalonFX turret;
+
+    private final DigitalInput frontLeftLimitSwitch = new DigitalInput(RobotMap.Turret.FRONT_LEFT_LIMIT_SWITCH_ID);
+    private final DigitalInput backLeftLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_LEFT_LIMIT_SWITCH_ID);
+    private final DigitalInput backRightLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_RIGHT_LIMIT_SWITCH_ID);
 
     public TurretReal(double periodicDt) {
         this.periodicDt = periodicDt;
@@ -61,7 +66,8 @@ public class TurretReal implements TurretIO {
 
     @Override
     public LimitSwitchStates getLimitSwitchStates() {
-        return LimitSwitchStates.NO_HITS;
+        return new LimitSwitchStates(
+                !frontLeftLimitSwitch.get(), !backLeftLimitSwitch.get(), !backRightLimitSwitch.get());
     }
 
     @Override

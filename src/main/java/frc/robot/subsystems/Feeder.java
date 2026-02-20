@@ -77,6 +77,16 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
         return targetState;
     }
 
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
+    public boolean isBottomBeamBroken() {
+        return io.isBottomBeamBroken();
+    }
+
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
+    public boolean isTopBeamBroken() {
+        return io.isTopBeamBroken();
+    }
+
     public boolean atGoal() {
         return SimpleMath.isWithinTolerance(getVelocityRps(), targetVelocityRps, VELOCITY_TOLERANCE_RPS);
     }
