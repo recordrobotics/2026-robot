@@ -20,12 +20,12 @@ import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.*;
-import frc.robot.subsystems.io.real.ClimberReal;
+import frc.robot.subsystems.io.stub.ClimberStub;
 import frc.robot.subsystems.io.real.FeederReal;
-import frc.robot.subsystems.io.real.IntakeReal;
+import frc.robot.subsystems.io.stub.IntakeStub;
 import frc.robot.subsystems.io.real.ShooterReal;
 import frc.robot.subsystems.io.real.SpindexerReal;
-import frc.robot.subsystems.io.real.TurretReal;
+import frc.robot.subsystems.io.stub.TurretStub;
 import frc.robot.subsystems.io.sim.ClimberSim;
 import frc.robot.subsystems.io.sim.FeederSim;
 import frc.robot.subsystems.io.sim.IntakeSim;
@@ -120,12 +120,12 @@ public final class RobotContainer {
         }
 
         if (Constants.RobotState.getMode() == Mode.REAL) {
-            intake = new Intake(new IntakeReal(ROBOT_PERIODIC));
-            turret = new Turret(new TurretReal(ROBOT_PERIODIC));
+            intake = new Intake(new IntakeStub());
+            turret = new Turret(new TurretStub());
             shooter = new Shooter(new ShooterReal(ROBOT_PERIODIC));
             spindexer = new Spindexer(new SpindexerReal(ROBOT_PERIODIC));
             feeder = new Feeder(new FeederReal(ROBOT_PERIODIC));
-            climber = new Climber(new ClimberReal(ROBOT_PERIODIC));
+            climber = new Climber(new ClimberStub());
         } else {
             if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
                 visionSim = new VisionSystemSim("main");

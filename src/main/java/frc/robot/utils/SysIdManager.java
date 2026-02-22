@@ -21,8 +21,7 @@ public final class SysIdManager {
      * @return the current SysIdProvider instance.
      */
     public static SysIdProvider getProvider() {
-        return new Turret.SysId();
-        // return SysIdProvider.NONE;
+        return SysIdProvider.NONE;
     }
 
     public interface SysIdProvider {

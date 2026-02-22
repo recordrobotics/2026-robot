@@ -24,7 +24,7 @@ import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.io.SwerveModuleIO;
-import frc.robot.subsystems.io.real.SwerveModuleReal;
+import frc.robot.subsystems.io.stub.SwerveModuleStub;
 import frc.robot.subsystems.io.sim.SwerveModuleSim;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
@@ -131,10 +131,10 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         if (Constants.RobotState.getMode() == Mode.REAL) {
             swerveDriveSimulation = null;
 
-            frontLeftIO = new SwerveModuleReal(Constants.Swerve.PERIODIC, frontLeftConstants);
-            frontRightIO = new SwerveModuleReal(Constants.Swerve.PERIODIC, frontRightConstants);
-            backLeftIO = new SwerveModuleReal(Constants.Swerve.PERIODIC, backLeftConstants);
-            backRightIO = new SwerveModuleReal(Constants.Swerve.PERIODIC, backRightConstants);
+            frontLeftIO = new SwerveModuleStub(Constants.Swerve.PERIODIC, frontLeftConstants);
+            frontRightIO = new SwerveModuleStub(Constants.Swerve.PERIODIC, frontRightConstants);
+            backLeftIO = new SwerveModuleStub(Constants.Swerve.PERIODIC, backLeftConstants);
+            backRightIO = new SwerveModuleStub(Constants.Swerve.PERIODIC, backRightConstants);
         } else {
             /* Create a swerve drive simulation */
             swerveDriveSimulation = new SwerveDriveSimulation(
