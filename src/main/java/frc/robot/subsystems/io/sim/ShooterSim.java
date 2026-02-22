@@ -21,8 +21,6 @@ import frc.robot.subsystems.io.ShooterIO;
 
 public class ShooterSim implements ShooterIO {
 
-    private static final double HOOD_ANGLE_OFFSET = Math.PI / 2;
-
     private final double periodicDt;
 
     private final TalonFX flywheelLeader;
@@ -41,10 +39,13 @@ public class ShooterSim implements ShooterIO {
             hoodMotor,
             Constants.Shooter.HOOD_GEAR_RATIO,
             0.107361364429, // distance from hood pinion to center of mass
-            Constants.Shooter.HOOD_MIN_POSITION_RADIANS + HOOD_ANGLE_OFFSET,
-            Constants.Shooter.HOOD_MAX_POSITION_RADIANS + HOOD_ANGLE_OFFSET,
+            Constants.Shooter.HOOD_MIN_POSITION_RADIANS
+                    + Units.rotationsToRadians(Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS),
+            Constants.Shooter.HOOD_MAX_POSITION_RADIANS
+                    + Units.rotationsToRadians(Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS),
             true,
-            Constants.Shooter.HOOD_STARTING_POSITION_RADIANS + HOOD_ANGLE_OFFSET,
+            Constants.Shooter.HOOD_STARTING_POSITION_RADIANS
+                    + Units.rotationsToRadians(Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS),
             0.0,
             0.0);
 
@@ -133,14 +134,16 @@ public class ShooterSim implements ShooterIO {
     @Override
     public void setHoodPositionRotations(double newValueRotations) {
         // Reset internal sim state
-        hoodSimModel.setState(Units.rotationsToRadians(newValueRotations) + HOOD_ANGLE_OFFSET, 0);
+        hoodSimModel.setState(
+                Units.rotationsToRadians(newValueRotations + Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS),
+                0);
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
         hoodSim.setRawRotorPosition(Constants.Shooter.HOOD_GEAR_RATIO
-                * Units.radiansToRotations(hoodSimModel.getAngleRads()
-                        - 2 * HOOD_ANGLE_OFFSET
-                        - Constants.Shooter.HOOD_STARTING_POSITION_RADIANS));
+                        * Units.radiansToRotations(
+                                hoodSimModel.getAngleRads() - Constants.Shooter.HOOD_STARTING_POSITION_RADIANS)
+                - Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS);
         hoodSim.setRotorVelocity(
                 Constants.Shooter.HOOD_GEAR_RATIO * Units.radiansToRotations(hoodSimModel.getVelocityRadPerSec()));
 
@@ -251,9 +254,9 @@ public class ShooterSim implements ShooterIO {
         flywheelSimModel.update(periodicDt);
 
         hoodSim.setRawRotorPosition(Constants.Shooter.HOOD_GEAR_RATIO
-                * Units.radiansToRotations(hoodSimModel.getAngleRads()
-                        - 2 * HOOD_ANGLE_OFFSET
-                        - Constants.Shooter.HOOD_STARTING_POSITION_RADIANS));
+                        * Units.radiansToRotations(
+                                hoodSimModel.getAngleRads() - Constants.Shooter.HOOD_STARTING_POSITION_RADIANS)
+                - Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS);
         hoodSim.setRotorVelocity(
                 Constants.Shooter.HOOD_GEAR_RATIO * Units.radiansToRotations(hoodSimModel.getVelocityRadPerSec()));
 

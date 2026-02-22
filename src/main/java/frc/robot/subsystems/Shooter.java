@@ -7,11 +7,11 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -34,13 +34,11 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     private static final double HOOD_POSITION_TOLERANCE = Units.degreesToRotations(2);
     private static final double HOOD_VELOCITY_TOLERANCE = Units.degreesToRotations(20);
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.0).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.5);
-    private static final Time SYSID_TIMEOUT = Seconds.of(1.3);
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(1.0).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.5);
+    private static final Time SYSID_TIMEOUT = Seconds.of(0.8);
 
     private static final double FLYWHEEL_VELOCITY_TOLERANCE_MPS = 10; // TODO
-
-    private static final Distance FLYWHEEL_WHEEL_DIAMETER = Inches.of(4);
 
     private final ShooterIO io;
     private final SysIdRoutine sysIdRoutineFlywheel;
@@ -67,6 +65,9 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         hoodSlot0Configs.kA = Constants.Shooter.HOOD_KA;
         hoodSlot0Configs.kP = Constants.Shooter.HOOD_KP;
         hoodSlot0Configs.kD = Constants.Shooter.HOOD_KD;
+        hoodSlot0Configs.kG = Constants.Shooter.HOOD_KG;
+        hoodSlot0Configs.GravityType = GravityTypeValue.Arm_Cosine;
+        hoodSlot0Configs.GravityArmPositionOffset = Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS;
 
         hoodConfig.MotionMagic.MotionMagicExpo_kV = Constants.Shooter.HOOD_MMEXPO_KV;
         hoodConfig.MotionMagic.MotionMagicExpo_kA = Constants.Shooter.HOOD_MMEXPO_KA;
@@ -110,8 +111,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-        flywheelConfig.Feedback.SensorToMechanismRatio =
-                Constants.Shooter.FLYWHEEL_GEAR_RATIO * Math.PI * FLYWHEEL_WHEEL_DIAMETER.in(Meters);
+        flywheelConfig.Feedback.SensorToMechanismRatio = 1.0 / Constants.Shooter.FLYWHEEL_METERS_PER_ROTATION;
         flywheelConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         io.applyFlywheelLeaderTalonFXConfig(flywheelConfig);
@@ -216,7 +216,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
     public double getFlywheelVoltage() {
-        return (Math.abs(io.getFlywheelLeaderVoltage()) + Math.abs(io.getFlywheelFollowerVoltage())) / 2.0;
+        return (io.getFlywheelLeaderVoltage() + io.getFlywheelFollowerVoltage()) / 2.0;
     }
 
     @Override

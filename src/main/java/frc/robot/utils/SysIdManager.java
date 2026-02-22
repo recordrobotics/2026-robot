@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.subsystems.Turret;
 
 public final class SysIdManager {
 
@@ -20,8 +21,8 @@ public final class SysIdManager {
      * @return the current SysIdProvider instance.
      */
     public static SysIdProvider getProvider() {
-        // return new Intake.SysIdWheel();
-        return SysIdProvider.NONE;
+        return new Turret.SysId();
+        // return SysIdProvider.NONE;
     }
 
     public interface SysIdProvider {

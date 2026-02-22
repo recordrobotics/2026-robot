@@ -33,9 +33,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     private static final double POSITION_TOLERANCE = Units.degreesToRotations(2);
     private static final double VELOCITY_TOLERANCE = Units.degreesToRotations(50);
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.0).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.5);
-    private static final Time SYSID_TIMEOUT = Seconds.of(1.3);
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(1.2).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
+    private static final Time SYSID_TIMEOUT = Seconds.of(0.8);
 
     private final TurretIO io;
     private final SysIdRoutine sysIdRoutine;
