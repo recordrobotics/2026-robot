@@ -171,5 +171,10 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
         public boolean isEnabled() {
             return true;
         }
+
+        @Override
+        public boolean isReversed() {
+            return false;
+        }
     }
 }

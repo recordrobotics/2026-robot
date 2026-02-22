@@ -499,6 +499,11 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         public boolean isEnabled() {
             return true;
         }
+
+        @Override
+        public boolean isReversed() {
+            return false;
+        }
     }
 
     public static class SysIdSpin implements SysIdProvider {
@@ -516,6 +521,11 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         public boolean isEnabled() {
             return true;
         }
+
+        @Override
+        public boolean isReversed() {
+            return false;
+        }
     }
 
     public static class SysIdForward implements SysIdProvider {
@@ -532,6 +542,11 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         @Override
         public boolean isEnabled() {
             return true;
+        }
+
+        @Override
+        public boolean isReversed() {
+            return false;
         }
     }
 }

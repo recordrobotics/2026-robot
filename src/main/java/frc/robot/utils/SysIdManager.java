@@ -20,6 +20,7 @@ public final class SysIdManager {
      * @return the current SysIdProvider instance.
      */
     public static SysIdProvider getProvider() {
+        // return new Intake.SysIdWheel();
         return SysIdProvider.NONE;
     }
 
@@ -41,6 +42,11 @@ public final class SysIdManager {
             public boolean isEnabled() {
                 return false;
             }
+
+            @Override
+            public boolean isReversed() {
+                return false;
+            }
         };
 
         Command sysIdQuasistatic(Direction direction);
@@ -49,12 +55,18 @@ public final class SysIdManager {
 
         boolean isEnabled();
 
+        boolean isReversed();
+
         default Command createCommand() {
             return new InstantCommand()
-                    .andThen(sysIdQuasistatic(Direction.kForward).andThen(new WaitCommand(IN_BETWEEN_STEP_DELAY)))
-                    .andThen(sysIdQuasistatic(Direction.kReverse).andThen(new WaitCommand(IN_BETWEEN_STEP_DELAY)))
-                    .andThen(sysIdDynamic(Direction.kForward).andThen(new WaitCommand(IN_BETWEEN_STEP_DELAY)))
-                    .andThen(sysIdDynamic(Direction.kReverse).andThen(new WaitCommand(IN_BETWEEN_STEP_DELAY)));
+                    .andThen(sysIdQuasistatic(isReversed() ? Direction.kReverse : Direction.kForward)
+                            .andThen(new WaitCommand(IN_BETWEEN_STEP_DELAY)))
+                    .andThen(sysIdQuasistatic(isReversed() ? Direction.kForward : Direction.kReverse)
+                            .andThen(new WaitCommand(IN_BETWEEN_STEP_DELAY)))
+                    .andThen(sysIdDynamic(isReversed() ? Direction.kReverse : Direction.kForward)
+                            .andThen(new WaitCommand(IN_BETWEEN_STEP_DELAY)))
+                    .andThen(sysIdDynamic(isReversed() ? Direction.kForward : Direction.kReverse)
+                            .andThen(new WaitCommand(IN_BETWEEN_STEP_DELAY)));
         }
     }
 }

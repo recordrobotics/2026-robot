@@ -12,7 +12,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -39,11 +38,11 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     private static final double ARM_VELOCITY_TOLERANCE = Units.degreesToRotations(50);
     private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 1.0; // TODO
 
-    private static final Distance ROLLER_DIAMETER = Inches.of(1.875);
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(0.8).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.2);
+    private static final Time SYSID_TIMEOUT = Seconds.of(0.8);
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.0).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.5);
-    private static final Time SYSID_TIMEOUT = Seconds.of(1.3);
+    private static final Time SYSID_WHEEL_TIMEOUT = Seconds.of(3.0);
 
     private final IntakeIO io;
     private final SysIdRoutine sysIdRoutineArm;
@@ -98,7 +97,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
                 Constants.Intake.ARM_SUPPLY_LOWER_CURRENT_LIMIT_TIME.in(Seconds);
 
         configLeader.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-                Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
+                Units.radiansToRotations(Constants.Intake.ARM_MAX_POSITION_RADIANS);
         configLeader.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
                 Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
         configLeader.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
@@ -134,8 +133,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         configWheel.CurrentLimits.SupplyCurrentLowerTime =
                 Constants.Intake.WHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME.in(Seconds);
 
-        configWheel.Feedback.SensorToMechanismRatio =
-                Constants.Intake.WHEEL_GEAR_RATIO * Math.PI * ROLLER_DIAMETER.in(Meter);
+        configWheel.Feedback.SensorToMechanismRatio = 1.0 / Constants.Intake.WHEEL_METERS_PER_ROTATION;
         configWheel.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         configWheel.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
@@ -149,13 +147,14 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
                         SYSID_STEP_VOLTAGE,
                         SYSID_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Arm/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setArmVoltage(v.in(Volts)), null, this));
+                new SysIdRoutine.Mechanism(
+                        v -> io.setArmVoltage(v.in(Volts) + 1.7 * Math.signum(v.in(Volts)) + 0.3), null, this));
 
         sysIdRoutineWheel = new SysIdRoutine(
                 new SysIdRoutine.Config(
                         null, // default 1 volt/second ramp rate
                         null, // default 7 volt step voltage
-                        null,
+                        SYSID_WHEEL_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Wheel/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(v -> io.setWheelVoltage(v.in(Volts)), null, this));
     }
@@ -243,7 +242,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
     public double getArmVoltage() {
-        return (Math.abs(io.getArmLeaderVoltage()) + Math.abs(io.getArmFollowerVoltage())) / 2.0;
+        return (io.getArmLeaderVoltage() + io.getArmFollowerVoltage()) / 2.0;
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
@@ -312,6 +311,11 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         public boolean isEnabled() {
             return true;
         }
+
+        @Override
+        public boolean isReversed() {
+            return false;
+        }
     }
 
     public static class SysIdWheel implements SysIdProvider {
@@ -328,6 +332,11 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         @Override
         public boolean isEnabled() {
             return true;
+        }
+
+        @Override
+        public boolean isReversed() {
+            return false;
         }
     }
 }

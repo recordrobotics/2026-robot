@@ -65,7 +65,7 @@ public class IntakeSim implements IntakeIO {
             Constants.Intake.ARM_GEAR_RATIO,
             0.253046091813, // distance from axis of rotation to center of mass
             Constants.Intake.ARM_DOWN_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
-            Constants.Intake.ARM_STARTING_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
+            Constants.Intake.ARM_MAX_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
             true,
             Constants.Intake.ARM_STARTING_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
             0.0,

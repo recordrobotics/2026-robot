@@ -274,6 +274,11 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         public boolean isEnabled() {
             return true;
         }
+
+        @Override
+        public boolean isReversed() {
+            return true;
+        }
     }
 
     public static class SysIdFlywheel implements SysIdProvider {
@@ -290,6 +295,11 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         @Override
         public boolean isEnabled() {
             return true;
+        }
+
+        @Override
+        public boolean isReversed() {
+            return false;
         }
     }
 }

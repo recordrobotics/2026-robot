@@ -187,3 +187,6 @@ simgui-window.json
 networktables.json
 
 src/main/java/frc/robot/BuildConstants.java
+
+# WPILogs
+*.wpilog

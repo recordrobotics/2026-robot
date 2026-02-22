@@ -178,5 +178,10 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
         public boolean isEnabled() {
             return true;
         }
+
+        @Override
+        public boolean isReversed() {
+            return false;
+        }
     }
 }

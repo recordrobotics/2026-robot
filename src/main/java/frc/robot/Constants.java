@@ -424,27 +424,28 @@ public final class Constants {
         public static final Time WHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
         public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(120);
 
-        public static final double ARM_MMEXPO_KV = 1.931;
-        public static final double ARM_MMEXPO_KA = 1.1;
+        public static final double ARM_MMEXPO_KV = 1.5;
+        public static final double ARM_MMEXPO_KA = 0.9;
 
-        public static final double ARM_KP = 68.721;
-        public static final double ARM_KD = 8.7176;
-        public static final double ARM_KG = 0.47407;
-        public static final double ARM_KS = 0.41583;
-        public static final double ARM_KV = 5.3;
-        public static final double ARM_KA = 0.1;
+        public static final double ARM_KP = 34;
+        public static final double ARM_KD = 6;
+        public static final double ARM_KG = 2.0;
+        public static final double ARM_KS = 0.01;
+        public static final double ARM_KV = 0.3;
+        public static final double ARM_KA = 0.07;
 
-        public static final double WHEEL_KP = 0.037121;
-        public static final double WHEEL_KS = 0.1709;
-        public static final double WHEEL_KV = 0.61705;
-        public static final double WHEEL_KA = 0.039556;
+        public static final double WHEEL_KP = 0.85;
+        public static final double WHEEL_KS = 0.035684;
+        public static final double WHEEL_KV = 0.60609;
+        public static final double WHEEL_KA = 0.01538;
 
-        public static final double WHEEL_MAX_ACCELERATION = 13.18;
-        public static final double WHEEL_MAX_JERK = 131.28;
+        public static final double WHEEL_MAX_ACCELERATION = 190;
+        public static final double WHEEL_MAX_JERK = 590;
 
         public static final double ARM_DOWN_POSITION_RADIANS = Units.degreesToRadians(0.0); // should always be 0
         public static final double ARM_RETRACTED_POSITION_RADIANS = Units.degreesToRadians(81.0);
-        public static final double ARM_STARTING_POSITION_RADIANS = Units.degreesToRadians(137.0);
+        public static final double ARM_MAX_POSITION_RADIANS = Units.degreesToRadians(137.0);
+        public static final double ARM_STARTING_POSITION_RADIANS = ARM_MAX_POSITION_RADIANS;
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS =
                 Constants.Swerve.MAX_MODULE_SPEED * 2; // surface speed of roller // TODO make correct
@@ -454,6 +455,10 @@ public final class Constants {
         public static final double ARM_GRAVITY_POSITION_OFFSET_RADIANS = 0; // TODO: add offset from SysId
 
         public static final double WHEEL_GEAR_RATIO = 1.0;
+
+        public static final Distance ROLLER_DIAMETER = Inches.of(1.875);
+
+        public static final double WHEEL_METERS_PER_ROTATION = ROLLER_DIAMETER.in(Meter) * Math.PI / WHEEL_GEAR_RATIO;
 
         private Intake() {}
     }
@@ -573,7 +578,7 @@ public final class Constants {
         public static final double MAX_ACCELERATION = 13.18;
         public static final double MAX_JERK = 131.28;
 
-        public static final double GEAR_RATIO = 1.2;
+        public static final double GEAR_RATIO = 1.0;
 
         public static final double INTAKE_VELOCITY_RPS = 58.0;
 

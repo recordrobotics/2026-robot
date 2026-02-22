@@ -161,5 +161,10 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
         public boolean isEnabled() {
             return true;
         }
+
+        @Override
+        public boolean isReversed() {
+            return false;
+        }
     }
 }

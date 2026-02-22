@@ -236,6 +236,11 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         public boolean isEnabled() {
             return true;
         }
+
+        @Override
+        public boolean isReversed() {
+            return false;
+        }
     }
 
     public static class SysIdLoaded implements SysIdProvider {
@@ -252,6 +257,11 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         @Override
         public boolean isEnabled() {
             return true;
+        }
+
+        @Override
+        public boolean isReversed() {
+            return false;
         }
     }
 }
