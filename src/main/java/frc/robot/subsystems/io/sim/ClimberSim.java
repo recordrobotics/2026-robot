@@ -68,7 +68,7 @@ public class ClimberSim implements ClimberIO {
     }
 
     @Override
-    public void setMotorVoltage(double outputVolts) {
+    public void setVoltage(double outputVolts) {
         motorClimber.setVoltage(outputVolts);
     }
 
@@ -78,12 +78,12 @@ public class ClimberSim implements ClimberIO {
     }
 
     @Override
-    public double getMotorVoltage() {
+    public double getVoltage() {
         return motorClimber.getMotorVoltage().getValueAsDouble();
     }
 
     @Override
-    public void setMotorPosition(double newValue) {
+    public void setPosition(double newValue) {
         // Reset internal sim state
         currentPhysicsSim.setState(newValue, 0);
 
@@ -99,27 +99,17 @@ public class ClimberSim implements ClimberIO {
     }
 
     @Override
-    public double getMotorPosition() {
+    public double getPosition() {
         return motorClimber.getPosition().getValueAsDouble();
     }
 
     @Override
-    public double getMotorVelocity() {
+    public double getVelocity() {
         return motorClimber.getVelocity().getValueAsDouble();
     }
 
     @Override
-    public void setMotorPercent(double newValue) {
-        motorClimber.set(newValue);
-    }
-
-    @Override
-    public double getMotorPercent() {
-        return motorClimber.get();
-    }
-
-    @Override
-    public double getMotorCurrentDraw() {
+    public double getCurrentDraw() {
         return motorClimber.getSupplyCurrent().getValueAsDouble();
     }
 

@@ -1,9 +1,6 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -13,7 +10,14 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.ShooterIO;
@@ -21,17 +25,26 @@ import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
+import frc.robot.utils.SysIdManager;
+import frc.robot.utils.SysIdManager.SysIdProvider;
+import org.littletonrobotics.junction.Logger;
 
 public final class Shooter extends KillableSubsystem implements PoweredSubsystem {
 
     private static final double HOOD_POSITION_TOLERANCE = Units.degreesToRotations(2);
     private static final double HOOD_VELOCITY_TOLERANCE = Units.degreesToRotations(20);
 
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.0).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.5);
+    private static final Time SYSID_TIMEOUT = Seconds.of(1.3);
+
     private static final double FLYWHEEL_VELOCITY_TOLERANCE_MPS = 10; // TODO
 
     private static final Distance FLYWHEEL_WHEEL_DIAMETER = Inches.of(4);
 
     private final ShooterIO io;
+    private final SysIdRoutine sysIdRoutineFlywheel;
+    private final SysIdRoutine sysIdRoutineHood;
     private final MotionMagicExpoVoltage hoodRequest;
     private final MotionMagicVelocityVoltage flywheelRequest;
     private final Follower flywheelFollowerRequest;
@@ -107,14 +120,45 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         io.setFlywheelFollowerMotionMagic(flywheelFollowerRequest);
 
         setTargetState(new ShooterState(Constants.Shooter.HOOD_STARTING_POSITION_RADIANS, 0.0));
+
+        sysIdRoutineFlywheel = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        null, // default 1 volt/second ramp rate
+                        null, // default 7 volt step voltage
+                        null,
+                        state -> Logger.recordOutput("Shooter/Flywheel/SysIdTestState", state.toString())),
+                new SysIdRoutine.Mechanism(v -> io.setFlywheelVoltage(v.in(Volts)), null, this));
+
+        sysIdRoutineHood = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        SYSID_RAMP_RATE,
+                        SYSID_STEP_VOLTAGE,
+                        SYSID_TIMEOUT,
+                        state -> Logger.recordOutput("Shooter/Hood/SysIdTestState", state.toString())),
+                new SysIdRoutine.Mechanism(v -> io.setHoodVoltage(v.in(Volts)), null, this));
     }
 
     public void setTargetState(ShooterState targetState) {
-        io.setHoodMotionMagic(hoodRequest.withPosition(Units.radiansToRotations(targetState.hoodAngle)));
-        io.setFlywheelMotionMagic(flywheelRequest.withVelocity(targetState.flywheelVelocityMps));
-
         hoodTargetPositionRotations = Units.radiansToRotations(targetState.hoodAngle);
         flywheelTargetVelocityMps = targetState.flywheelVelocityMps;
+
+        if (!isForceDisabled()) {
+            if (!(SysIdManager.getProvider() instanceof SysIdHood))
+                io.setHoodMotionMagic(hoodRequest.withPosition(hoodTargetPositionRotations));
+            if (!(SysIdManager.getProvider() instanceof SysIdFlywheel))
+                io.setFlywheelMotionMagic(flywheelRequest.withVelocity(flywheelTargetVelocityMps));
+        }
+    }
+
+    @Override
+    protected void onForceDisabledChange(boolean isNowForceDisabled) {
+        if (isNowForceDisabled) {
+            io.setHoodVoltage(0.0);
+            io.setFlywheelVoltage(0.0);
+        } else {
+            io.setHoodMotionMagic(hoodRequest.withPosition(hoodTargetPositionRotations));
+            io.setFlywheelMotionMagic(flywheelRequest.withVelocity(flywheelTargetVelocityMps));
+        }
     }
 
     @Override
@@ -141,6 +185,11 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
+    public double getHoodAngle() {
+        return Units.rotationsToRadians(io.getHoodPositionRotations());
+    }
+
+    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
     public double getHoodPositionRotations() {
         return io.getHoodPositionRotations();
     }
@@ -177,15 +226,25 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
                 + io.getHoodCurrentDrawAmps();
     }
 
-    @Override
-    public void simulationPeriodicManaged() {
-        io.simulationPeriodic();
+    public Command sysIdQuasistaticFlywheel(SysIdRoutine.Direction direction) {
+        return sysIdRoutineFlywheel.quasistatic(direction);
+    }
+
+    public Command sysIdDynamicFlywheel(SysIdRoutine.Direction direction) {
+        return sysIdRoutineFlywheel.dynamic(direction);
+    }
+
+    public Command sysIdQuasistaticHood(SysIdRoutine.Direction direction) {
+        return sysIdRoutineHood.quasistatic(direction);
+    }
+
+    public Command sysIdDynamicHood(SysIdRoutine.Direction direction) {
+        return sysIdRoutineHood.dynamic(direction);
     }
 
     @Override
-    public void kill() {
-        io.setFlywheelVoltage(0);
-        io.setHoodVoltage(0);
+    public void simulationPeriodicManaged() {
+        io.simulationPeriodic();
     }
 
     public void resetEncoders() {
@@ -199,4 +258,38 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     }
 
     public record ShooterState(double hoodAngle, double flywheelVelocityMps) {}
+
+    public static class SysIdHood implements SysIdProvider {
+        @Override
+        public Command sysIdQuasistatic(Direction direction) {
+            return RobotContainer.shooter.sysIdQuasistaticHood(direction);
+        }
+
+        @Override
+        public Command sysIdDynamic(Direction direction) {
+            return RobotContainer.shooter.sysIdDynamicHood(direction);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+    }
+
+    public static class SysIdFlywheel implements SysIdProvider {
+        @Override
+        public Command sysIdQuasistatic(Direction direction) {
+            return RobotContainer.shooter.sysIdQuasistaticFlywheel(direction);
+        }
+
+        @Override
+        public Command sysIdDynamic(Direction direction) {
+            return RobotContainer.shooter.sysIdDynamicFlywheel(direction);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+    }
 }

@@ -7,23 +7,19 @@ public interface ClimberIO extends AutoCloseable {
 
     void applyTalonFXConfig(TalonFXConfiguration configuration);
 
-    void setMotorVoltage(double outputVolts);
+    void setVoltage(double outputVolts);
 
-    double getMotorVoltage();
+    double getVoltage();
 
-    void setMotorPosition(double newValue);
+    void setPosition(double newValue);
 
     void setMotionMagic(MotionMagicExpoVoltage request);
 
-    double getMotorPosition();
+    double getPosition();
 
-    double getMotorVelocity();
+    double getVelocity();
 
-    void setMotorPercent(double newValue);
-
-    double getMotorPercent();
-
-    double getMotorCurrentDraw();
+    double getCurrentDraw();
 
     void simulationPeriodic();
 }

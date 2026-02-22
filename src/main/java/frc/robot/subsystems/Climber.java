@@ -16,7 +16,6 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -27,30 +26,33 @@ import frc.robot.subsystems.io.ClimberIO;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.EncoderResettableSubsystem;
-import frc.robot.utils.ManagedSubsystemBase;
+import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import java.util.Arrays;
 import org.littletonrobotics.junction.Logger;
 
-public final class Climber extends ManagedSubsystemBase implements PoweredSubsystem, EncoderResettableSubsystem {
+public final class Climber extends KillableSubsystem implements PoweredSubsystem, EncoderResettableSubsystem {
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(4.5).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(3.0);
-    private static final Time SYSID_TIMEOUT = Seconds.of(1.2);
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE_FREE =
+            Volts.of(4.5).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE_FREE = Volts.of(3.0);
+    private static final Time SYSID_TIMEOUT_FREE = Seconds.of(1.2);
+
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE_LOADED =
+            Volts.of(4.5).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE_LOADED = Volts.of(3.0);
+    private static final Time SYSID_TIMEOUT_LOADED = Seconds.of(1.2);
 
     private final ClimberIO io;
 
     private final MotionMagicExpoVoltage climberRequest;
 
-    private double positionCached = 0;
-    private double velocityCached = 0;
-    private double voltageCached = 0;
-
     private double setpoint;
 
-    private final SysIdRoutine sysIdRoutine;
+    private final SysIdRoutine sysIdRoutineFree;
+    private final SysIdRoutine sysIdRoutineLoaded;
 
     private boolean supportingRobot = false;
 
@@ -97,55 +99,54 @@ public final class Climber extends ManagedSubsystemBase implements PoweredSubsys
                         .withSupplyCurrentLimitEnable(true)
                         .withStatorCurrentLimitEnable(true)));
 
-        positionCached = io.getMotorPosition();
-
         climberRequest = new MotionMagicExpoVoltage(0).withSlot(0);
 
-        set(0);
+        setState(ClimberHeight.DOWN);
 
-        sysIdRoutine = new SysIdRoutine(
+        sysIdRoutineFree = new SysIdRoutine(
                 // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
                 new SysIdRoutine.Config(
-                        SYSID_RAMP_RATE,
-                        SYSID_STEP_VOLTAGE,
-                        SYSID_TIMEOUT,
-                        state -> Logger.recordOutput("Climber/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setMotorVoltage(v.in(Volts)), null, this));
+                        SYSID_RAMP_RATE_FREE,
+                        SYSID_STEP_VOLTAGE_FREE,
+                        SYSID_TIMEOUT_FREE,
+                        state -> Logger.recordOutput("Climber/Free/SysIdTestState", state.toString())),
+                new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
 
-        SmartDashboard.putNumber("Climber", 0);
+        sysIdRoutineLoaded = new SysIdRoutine(
+                // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
+                new SysIdRoutine.Config(
+                        SYSID_RAMP_RATE_LOADED,
+                        SYSID_STEP_VOLTAGE_LOADED,
+                        SYSID_TIMEOUT_LOADED,
+                        state -> Logger.recordOutput("Climber/Loaded/SysIdTestState", state.toString())),
+                new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
     }
 
     /** Height of the climber in meters */
     @AutoLogLevel(level = Level.SYSID)
     public double getCurrentHeight() {
-        return positionCached;
+        return io.getPosition();
     }
 
     @AutoLogLevel(level = Level.SYSID)
     public double getCurrentVelocity() {
-        return velocityCached;
+        return io.getVelocity();
     }
 
     @AutoLogLevel(level = Level.SYSID)
     public double getCurrentVoltage() {
-        return voltageCached;
+        return io.getVoltage();
     }
 
     @Override
     public void periodicManaged() {
-        positionCached = io.getMotorPosition();
-        velocityCached = io.getMotorVelocity();
-        if (Constants.RobotState.AUTO_LOG_LEVEL.isAtOrLowerThan(Level.SYSID)) {
-            voltageCached = io.getMotorVoltage();
-        }
-
         // Update mechanism
         RobotContainer.model.climberModel.update(getCurrentHeight());
 
-        if (io.getMotorCurrentDraw() > Constants.Climber.STATOR_CURRENT_AMPS_THRESHOLD
+        if (io.getCurrentDraw() > Constants.Climber.STATOR_CURRENT_AMPS_THRESHOLD
                 && !supportingRobot) { // TODO maybe debounce over time?
             supportingRobot = true;
-        } else if (io.getMotorCurrentDraw() < Constants.Climber.STATOR_CURRENT_AMPS_THRESHOLD
+        } else if (io.getCurrentDraw() < Constants.Climber.STATOR_CURRENT_AMPS_THRESHOLD
                 && supportingRobot) { // TODO maybe debounce over amps? (different threshold for up and down)
             supportingRobot = false;
         }
@@ -156,16 +157,23 @@ public final class Climber extends ManagedSubsystemBase implements PoweredSubsys
         io.simulationPeriodic();
     }
 
-    public void set(double heightMeters) {
-        setpoint = heightMeters;
+    public void setState(ClimberHeight height) {
+        setpoint = height.getHeight();
 
-        if (!(SysIdManager.getProvider() instanceof SysId)) {
-            io.setMotionMagic(climberRequest.withPosition(heightMeters).withSlot(supportingRobot ? 1 : 0));
+        if (!isForceDisabled()
+                && !(SysIdManager.getProvider() instanceof SysIdFree)
+                && !(SysIdManager.getProvider() instanceof SysIdLoaded)) {
+            io.setMotionMagic(climberRequest.withPosition(setpoint).withSlot(supportingRobot ? 1 : 0));
         }
     }
 
-    public void moveTo(ClimberHeight height) {
-        set(height.getHeight());
+    @Override
+    protected void onForceDisabledChange(boolean isNowForceDisabled) {
+        if (isNowForceDisabled) {
+            io.setVoltage(0.0);
+        } else {
+            io.setMotionMagic(climberRequest.withPosition(setpoint).withSlot(supportingRobot ? 1 : 0));
+        }
     }
 
     @AutoLogLevel(level = Level.REAL)
@@ -182,12 +190,20 @@ public final class Climber extends ManagedSubsystemBase implements PoweredSubsys
                 && Math.abs(getCurrentVelocity()) < Constants.Climber.AT_GOAL_VELOCITY_TOLERANCE;
     }
 
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return sysIdRoutine.quasistatic(direction);
+    public Command sysIdQuasistaticFree(SysIdRoutine.Direction direction) {
+        return sysIdRoutineFree.quasistatic(direction);
     }
 
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return sysIdRoutine.dynamic(direction);
+    public Command sysIdDynamicFree(SysIdRoutine.Direction direction) {
+        return sysIdRoutineFree.dynamic(direction);
+    }
+
+    public Command sysIdQuasistaticLoaded(SysIdRoutine.Direction direction) {
+        return sysIdRoutineLoaded.quasistatic(direction);
+    }
+
+    public Command sysIdDynamicLoaded(SysIdRoutine.Direction direction) {
+        return sysIdRoutineLoaded.dynamic(direction);
     }
 
     @Override
@@ -197,25 +213,40 @@ public final class Climber extends ManagedSubsystemBase implements PoweredSubsys
 
     @Override
     public double getCurrentDrawAmps() {
-        return io.getMotorCurrentDraw();
+        return io.getCurrentDraw();
     }
 
     @Override
     public void resetEncoders() {
-        io.setMotorPosition(0);
-
-        positionCached = 0;
+        io.setPosition(0);
     }
 
-    public static class SysId implements SysIdProvider {
+    public static class SysIdFree implements SysIdProvider {
         @Override
         public Command sysIdQuasistatic(Direction direction) {
-            return RobotContainer.climber.sysIdQuasistatic(direction);
+            return RobotContainer.climber.sysIdQuasistaticFree(direction);
         }
 
         @Override
         public Command sysIdDynamic(Direction direction) {
-            return RobotContainer.climber.sysIdDynamic(direction);
+            return RobotContainer.climber.sysIdDynamicFree(direction);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+    }
+
+    public static class SysIdLoaded implements SysIdProvider {
+        @Override
+        public Command sysIdQuasistatic(Direction direction) {
+            return RobotContainer.climber.sysIdQuasistaticLoaded(direction);
+        }
+
+        @Override
+        public Command sysIdDynamic(Direction direction) {
+            return RobotContainer.climber.sysIdDynamicLoaded(direction);
         }
 
         @Override

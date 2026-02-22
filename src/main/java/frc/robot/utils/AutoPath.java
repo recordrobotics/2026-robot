@@ -1,7 +1,6 @@
 package frc.robot.utils;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -9,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
@@ -32,9 +30,6 @@ public final class AutoPath {
         }
 
         // Registering named commands (so that the pathplanner can call them by name)
-
-        // Stop the robot's movement
-        NamedCommands.registerCommand("Stop", new InstantCommand(() -> RobotContainer.drivetrain.kill()));
 
         // Configures auto builder
         AutoBuilder.configure(

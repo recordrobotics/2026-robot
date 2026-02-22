@@ -18,39 +18,31 @@ public class ElevatorStub implements ClimberIO {
     public void applyTalonFXConfig(TalonFXConfiguration configuration) {}
 
     @Override
-    public void setMotorVoltage(double outputVolts) {}
+    public void setVoltage(double outputVolts) {}
 
     @Override
     public void setMotionMagic(MotionMagicExpoVoltage request) {}
 
     @Override
-    public double getMotorVoltage() {
+    public double getVoltage() {
         return 0;
     }
 
     @Override
-    public void setMotorPosition(double newValue) {}
+    public void setPosition(double newValue) {}
 
     @Override
-    public double getMotorPosition() {
+    public double getPosition() {
         return 0;
     }
 
     @Override
-    public double getMotorVelocity() {
+    public double getVelocity() {
         return 0;
     }
 
     @Override
-    public void setMotorPercent(double newValue) {}
-
-    @Override
-    public double getMotorPercent() {
-        return 0;
-    }
-
-    @Override
-    public double getMotorCurrentDraw() {
+    public double getCurrentDraw() {
         return 0;
     }
 

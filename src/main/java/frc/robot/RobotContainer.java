@@ -10,11 +10,11 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.RobotState.Mode;
 // Local imports
-import frc.robot.commands.KillSpecified;
 import frc.robot.commands.VibrateXbox;
 import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
@@ -35,6 +35,7 @@ import frc.robot.subsystems.io.sim.TurretSim;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
+import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.RuckigWarmup;
@@ -229,17 +230,28 @@ public final class RobotContainer {
 
         new Trigger(() -> DashboardUI.Overview.getControl().isClimbPressed()).onTrue(new InstantCommand(() -> {
             if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {
-                climber.moveTo(Constants.ClimberHeight.UP);
+                climber.setState(Constants.ClimberHeight.UP);
             } else {
-                climber.moveTo(Constants.ClimberHeight.DOWN);
+                climber.setState(Constants.ClimberHeight.DOWN);
             }
         }));
 
-        // Command to kill robot
+        // Kill subsystems trigger
+        /*
+         * All subsystems automatically re-enable after 2 periodic cycles unless holding kill trigger to prevent accidental disables
+         * When button is released all commands are canceled
+         */
         new Trigger(() -> DashboardUI.Overview.getControl().isKillTriggered())
-                .whileTrue(new KillSpecified(drivetrain, intake)
-                        .alongWith(new InstantCommand(
-                                () -> CommandScheduler.getInstance().cancelAll())));
+                .whileTrue(Commands.run(
+                        () -> KillableSubsystem.setForceDisabledForAll(
+                                true, 2, intake, shooter, climber, feeder, spindexer, turret),
+                        intake,
+                        shooter,
+                        climber,
+                        feeder,
+                        spindexer,
+                        turret))
+                .onFalse(Commands.runOnce(() -> CommandScheduler.getInstance().cancelAll()));
 
         new Trigger(() -> DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE) <= XBOX_RUMBLE_ENDGAME_TIME)
                 .onTrue(new VibrateXbox(RumbleType.kBothRumble, 1.0).withTimeout(2.0));

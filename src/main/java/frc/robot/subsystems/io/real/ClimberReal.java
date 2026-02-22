@@ -25,7 +25,7 @@ public class ClimberReal implements ClimberIO {
     }
 
     @Override
-    public void setMotorVoltage(double outputVolts) {
+    public void setVoltage(double outputVolts) {
         motor.setVoltage(outputVolts);
     }
 
@@ -35,37 +35,27 @@ public class ClimberReal implements ClimberIO {
     }
 
     @Override
-    public double getMotorVoltage() {
+    public double getVoltage() {
         return motor.getMotorVoltage().getValueAsDouble();
     }
 
     @Override
-    public void setMotorPosition(double newValue) {
+    public void setPosition(double newValue) {
         motor.setPosition(newValue);
     }
 
     @Override
-    public double getMotorPosition() {
+    public double getPosition() {
         return motor.getPosition().getValueAsDouble();
     }
 
     @Override
-    public double getMotorVelocity() {
+    public double getVelocity() {
         return motor.getVelocity().getValueAsDouble();
     }
 
     @Override
-    public void setMotorPercent(double newValue) {
-        motor.set(newValue);
-    }
-
-    @Override
-    public double getMotorPercent() {
-        return motor.get();
-    }
-
-    @Override
-    public double getMotorCurrentDraw() {
+    public double getCurrentDraw() {
         return motor.getSupplyCurrent().getValueAsDouble();
     }
 

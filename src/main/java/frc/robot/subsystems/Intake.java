@@ -1,10 +1,6 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meter;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -15,7 +11,14 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.IntakeIO;
@@ -23,18 +26,28 @@ import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
+import frc.robot.utils.SysIdManager;
+import frc.robot.utils.SysIdManager.SysIdProvider;
+import org.littletonrobotics.junction.Logger;
 
 public final class Intake extends KillableSubsystem implements PoweredSubsystem {
     // Arm Leader is on the left of the intake (right of the robot) and Arm Follower is on the right of the intake (left
     // of the robot)
 
     private static final double ARM_POSITION_TOLERANCE = Units.degreesToRotations(5);
+    private static final double ARM_POSITION_TOLERANCE_WHEEL_START = Units.degreesToRotations(6);
     private static final double ARM_VELOCITY_TOLERANCE = Units.degreesToRotations(50);
     private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 1.0; // TODO
 
     private static final Distance ROLLER_DIAMETER = Inches.of(1.875);
 
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.0).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.5);
+    private static final Time SYSID_TIMEOUT = Seconds.of(1.3);
+
     private final IntakeIO io;
+    private final SysIdRoutine sysIdRoutineArm;
+    private final SysIdRoutine sysIdRoutineWheel;
 
     private final MotionMagicExpoVoltage armLeaderRequest;
     private final Follower armFollowerRequest;
@@ -42,6 +55,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
 
     private double armTargetRotations = Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
     private double wheelTargetVelocityMps = 0.0;
+    private double actualWheelTargetVelocityMps = 0.0;
     private IntakeState targetState = IntakeState.STARTING;
 
     public enum IntakeState {
@@ -128,14 +142,34 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         io.applyWheelTalonFXConfig(configWheel);
 
         setState(targetState);
+
+        sysIdRoutineArm = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        SYSID_RAMP_RATE,
+                        SYSID_STEP_VOLTAGE,
+                        SYSID_TIMEOUT,
+                        state -> Logger.recordOutput("Intake/Arm/SysIdTestState", state.toString())),
+                new SysIdRoutine.Mechanism(v -> io.setArmVoltage(v.in(Volts)), null, this));
+
+        sysIdRoutineWheel = new SysIdRoutine(
+                new SysIdRoutine.Config(
+                        null, // default 1 volt/second ramp rate
+                        null, // default 7 volt step voltage
+                        null,
+                        state -> Logger.recordOutput("Intake/Wheel/SysIdTestState", state.toString())),
+                new SysIdRoutine.Mechanism(v -> io.setWheelVoltage(v.in(Volts)), null, this));
     }
 
     @Override
     public void periodicManaged() {
         RobotContainer.model.intakeModel.update(Units.rotationsToRadians(getArmPositionRotations()));
+
+        updateWheel();
     }
 
     public void setState(IntakeState state) {
+        targetState = state;
+
         armTargetRotations = switch (state) {
             case INTAKE -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
             case EJECT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
@@ -147,9 +181,35 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
             case EJECT -> Constants.Intake.WHEEL_EJECT_VELOCITY_MPS;
             case STARTING, RETRACTED -> 0.0;
         };
-        io.setArmLeaderMotionMagic(armLeaderRequest.withPosition(armTargetRotations)); // follower will follow this
-        io.setWheelMotionMagic(wheelRequest.withVelocity(wheelTargetVelocityMps));
-        targetState = state;
+
+        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdArm))
+            io.setArmLeaderMotionMagic(armLeaderRequest.withPosition(armTargetRotations)); // follower will follow this
+
+        updateWheel();
+    }
+
+    @Override
+    protected void onForceDisabledChange(boolean isNowForceDisabled) {
+        if (isNowForceDisabled) {
+            io.setArmVoltage(0.0);
+            io.setWheelVoltage(0.0);
+        } else {
+            io.setArmLeaderMotionMagic(armLeaderRequest.withPosition(armTargetRotations)); // follower will follow this
+            io.setWheelMotionMagic(wheelRequest.withVelocity(actualWheelTargetVelocityMps));
+        }
+    }
+
+    private void updateWheel() {
+        boolean armNearGoal = SimpleMath.isWithinTolerance(
+                getArmPositionRotations(), armTargetRotations, ARM_POSITION_TOLERANCE_WHEEL_START);
+
+        if (armNearGoal || Math.abs(wheelTargetVelocityMps) < Math.abs(actualWheelTargetVelocityMps)) {
+            actualWheelTargetVelocityMps = wheelTargetVelocityMps;
+
+            if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdWheel)) {
+                io.setWheelMotionMagic(wheelRequest.withVelocity(actualWheelTargetVelocityMps));
+            }
+        }
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.DEBUG_REAL)
@@ -215,15 +275,59 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         io.simulationPeriodic();
     }
 
-    @Override
-    public void kill() {
-        io.setArmVoltage(0);
-        io.setWheelVoltage(0);
+    public Command sysIdQuasistaticWheel(SysIdRoutine.Direction direction) {
+        return sysIdRoutineWheel.quasistatic(direction);
+    }
+
+    public Command sysIdDynamicWheel(SysIdRoutine.Direction direction) {
+        return sysIdRoutineWheel.dynamic(direction);
+    }
+
+    public Command sysIdQuasistaticArm(SysIdRoutine.Direction direction) {
+        return sysIdRoutineArm.quasistatic(direction);
+    }
+
+    public Command sysIdDynamicArm(SysIdRoutine.Direction direction) {
+        return sysIdRoutineArm.dynamic(direction);
     }
 
     /** frees up all hardware allocations */
     @Override
     public void close() {
         io.close();
+    }
+
+    public static class SysIdArm implements SysIdProvider {
+        @Override
+        public Command sysIdQuasistatic(Direction direction) {
+            return RobotContainer.intake.sysIdQuasistaticArm(direction);
+        }
+
+        @Override
+        public Command sysIdDynamic(Direction direction) {
+            return RobotContainer.intake.sysIdDynamicArm(direction);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+    }
+
+    public static class SysIdWheel implements SysIdProvider {
+        @Override
+        public Command sysIdQuasistatic(Direction direction) {
+            return RobotContainer.intake.sysIdQuasistaticWheel(direction);
+        }
+
+        @Override
+        public Command sysIdDynamic(Direction direction) {
+            return RobotContainer.intake.sysIdDynamicWheel(direction);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
     }
 }

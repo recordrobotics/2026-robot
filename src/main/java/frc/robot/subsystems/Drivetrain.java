@@ -28,7 +28,7 @@ import frc.robot.subsystems.io.real.SwerveModuleReal;
 import frc.robot.subsystems.io.sim.SwerveModuleSim;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
-import frc.robot.utils.KillableSubsystem;
+import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.ModuleConstants;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
 import frc.robot.utils.PoweredSubsystem;
@@ -47,7 +47,7 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.Logger;
 
 /** Represents a swerve drive style drivetrain. */
-public final class Drivetrain extends KillableSubsystem implements PoweredSubsystem {
+public final class Drivetrain extends ManagedSubsystemBase implements PoweredSubsystem {
 
     private static final int FL = 0;
     private static final int FR = 1;
@@ -369,21 +369,6 @@ public final class Drivetrain extends KillableSubsystem implements PoweredSubsys
                 frontRight.getTurnWheelVelocity(),
                 backLeft.getTurnWheelVelocity(),
                 backRight.getTurnWheelVelocity());
-    }
-
-    /**
-     * Sets the PID target to zero and immediately stops all swerve modules.
-     *
-     * <p>This method commands the drivetrain to stop by setting the drive speeds to zero, thus
-     * ensuring that the robot comes to a halt. It also directly stops each swerve module by setting
-     * their motor outputs to zero.
-     */
-    @Override
-    public void kill() {
-        frontLeft.stop();
-        frontRight.stop();
-        backLeft.stop();
-        backRight.stop();
     }
 
     /**
