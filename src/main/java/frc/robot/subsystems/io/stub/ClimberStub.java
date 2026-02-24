@@ -2,29 +2,20 @@ package frc.robot.subsystems.io.stub;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ClimberIO;
 
 public class ClimberStub implements ClimberIO {
 
-    public ClimberStub() {
-    }
+    public ClimberStub() {}
 
     @Override
-    public void applyTalonFXConfig(TalonFXConfiguration configuration) {
- 
-    }
+    public void applyTalonFXConfig(TalonFXConfiguration configuration) {}
 
     @Override
-    public void setVoltage(double outputVolts) {
-       
-    }
+    public void setVoltage(double outputVolts) {}
 
     @Override
-    public void setMotionMagic(MotionMagicExpoVoltage request) {
-        
-    }
+    public void setMotionMagic(MotionMagicExpoVoltage request) {}
 
     @Override
     public double getVoltage() {
@@ -32,8 +23,7 @@ public class ClimberStub implements ClimberIO {
     }
 
     @Override
-    public void setPosition(double newValue) {
-    }
+    public void setPosition(double newValue) {}
 
     @Override
     public double getPosition() {
@@ -51,9 +41,7 @@ public class ClimberStub implements ClimberIO {
     }
 
     @Override
-    public void close() {
-    
-    }
+    public void close() {}
 
     @Override
     public void simulationPeriodic() {

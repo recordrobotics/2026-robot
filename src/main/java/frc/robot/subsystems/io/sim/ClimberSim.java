@@ -5,14 +5,15 @@ import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
-import com.pathplanner.lib.util.FlippingUtil;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import frc.robot.Constants;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ClimberIO;
+import frc.robot.utils.SimpleMath;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 
 public class ClimberSim implements ClimberIO {
@@ -26,24 +27,24 @@ public class ClimberSim implements ClimberIO {
     private AbstractDriveTrainSimulation drivetrainSim;
 
     private final ElevatorSim physicsSimNotSupportingRobot = new ElevatorSim(
-            DCMotor.getKrakenX60(2),
+            DCMotor.getKrakenX60(1),
             Constants.Climber.GEAR_RATIO,
-            Constants.Climber.MASS_KG,
+            Constants.Climber.CARRIAGE_MASS_KG,
             Constants.Climber.SPROCKET_EFFECTIVE_RADIUS,
             0,
-            Constants.Climber.MAX_HEIGHT,
+            Constants.Climber.MAX_HEIGHT_METERS,
             true,
             0,
             0.0003,
             0.0003);
 
     private final ElevatorSim physicsSimSupportingRobot = new ElevatorSim(
-            DCMotor.getKrakenX60(2),
+            DCMotor.getKrakenX60(1),
             Constants.Climber.GEAR_RATIO,
-            Constants.Frame.ROBOT_MASS_KG,
+            Constants.Frame.ROBOT_MASS_KG - Constants.Climber.CARRIAGE_MASS_KG,
             Constants.Climber.SPROCKET_EFFECTIVE_RADIUS,
             0,
-            Constants.Climber.MAX_HEIGHT,
+            Constants.Climber.MAX_HEIGHT_METERS,
             true,
             0,
             0.0003,
@@ -59,7 +60,7 @@ public class ClimberSim implements ClimberIO {
 
         motorClimberSim = motorClimber.getSimState();
 
-        motorClimberSim.Orientation = ChassisReference.Clockwise_Positive;
+        motorClimberSim.Orientation = ChassisReference.Clockwise_Positive; // correct
     }
 
     @Override
@@ -118,17 +119,36 @@ public class ClimberSim implements ClimberIO {
         motorClimber.close();
     }
 
+    private Pose3d getSimulatedClimberPose() {
+        edu.wpi.first.math.geometry.Pose2d climberPose2d =
+                drivetrainSim.getSimulatedDriveTrainPose().transformBy(Constants.Climber.ROBOT_TO_CLIMBER_OFFSET);
+        return SimpleMath.withHeight(
+                climberPose2d, currentPhysicsSim.getPositionMeters() + Constants.Climber.CLIMBER_BASE_HEIGHT_METERS);
+    }
+
+    private boolean isClimbing() {
+        Pose3d climberPose = getSimulatedClimberPose();
+        for (Translation3d towerEndPose : Constants.Climber.END_OF_TOWER_POSITIONS) {
+            if (climberPose.getTranslation().getDistance(towerEndPose)
+                    < Constants.Climber.END_OF_TOWER_POSITION_TOLERANCE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void simulationPeriodic() {
-        if (drivetrainSim.getSimulatedDriveTrainPose().getTranslation().getDistance(new Translation2d(1.076, 3.744)) < 1
-                || drivetrainSim
-                                .getSimulatedDriveTrainPose()
-                                .getTranslation()
-                                .getDistance(FlippingUtil.flipFieldPosition(new Translation2d(1.076, 3.744)))
-                        < 1) { // TODO use constants // TODO make smarter, use each upright as its own point
+        if (isClimbing() && currentPhysicsSim == physicsSimNotSupportingRobot) {
             currentPhysicsSim = physicsSimSupportingRobot;
-        } else {
+            currentPhysicsSim.setState(
+                    physicsSimNotSupportingRobot.getPositionMeters(),
+                    physicsSimNotSupportingRobot.getVelocityMetersPerSecond());
+        } else if (!isClimbing() && currentPhysicsSim == physicsSimSupportingRobot) {
             currentPhysicsSim = physicsSimNotSupportingRobot;
+            currentPhysicsSim.setState(
+                    physicsSimSupportingRobot.getPositionMeters(),
+                    physicsSimSupportingRobot.getVelocityMetersPerSecond());
         }
 
         motorClimberSim.setSupplyVoltage(RobotController.getBatteryVoltage());

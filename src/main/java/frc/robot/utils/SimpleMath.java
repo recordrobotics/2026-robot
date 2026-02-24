@@ -270,4 +270,29 @@ public final class SimpleMath {
                 currentPose.getY() + dy,
                 currentPose.getRotation().plus(new Rotation2d(deltatheta)));
     }
+
+    public static Translation2d fromCenterFieldRelativeTranslation2d(Translation2d centerFieldRelative) {
+        /*
+        Transforms a translation relative to the center of the field to a translation relative to the right corner of the blue alliance wall (origin of the field coordinate system).
+        also the center coordinate system is rotated 180 degrees from the field coordinate system, so we also need to flip the x and y coordinates
+        */
+        return new Translation2d(
+                FlippingUtil.fieldSizeX / 2 - centerFieldRelative.getX(),
+                FlippingUtil.fieldSizeY / 2 - centerFieldRelative.getY());
+    }
+
+    public static Translation3d fromCenterFieldRelativeTranslation3d(Translation3d centerFieldRelative) {
+        /*
+        Transforms a translation relative to the center of the field to a translation relative to the right corner of the blue alliance wall (origin of the field coordinate system).
+        also the center coordinate system is rotated 180 degrees from the field coordinate system, so we also need to flip the x and y coordinates
+        */
+        return new Translation3d(
+                FlippingUtil.fieldSizeX / 2 - centerFieldRelative.getX(),
+                FlippingUtil.fieldSizeY / 2 - centerFieldRelative.getY(),
+                centerFieldRelative.getZ());
+    }
+
+    public static Pose3d withHeight(Pose2d pose, double height) {
+        return new Pose3d(new Translation3d(pose.getX(), pose.getY(), height), new Rotation3d(pose.getRotation()));
+    }
 }

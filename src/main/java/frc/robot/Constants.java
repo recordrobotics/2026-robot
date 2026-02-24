@@ -15,6 +15,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -29,6 +30,7 @@ import frc.robot.utils.ModuleConstants.DriveMotorType;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
 import frc.robot.utils.ModuleConstants.MotorLocation;
 import frc.robot.utils.ModuleConstants.TurnMotorType;
+import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.wrappers.ImmutableCurrent;
 import frc.robot.utils.wrappers.ImmutableTime;
@@ -36,6 +38,7 @@ import frc.robot.utils.wrappers.Pose2d;
 import frc.robot.utils.wrappers.Translation2d;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import org.ironmaple.simulation.drivesims.COTS;
 
 /**
@@ -638,37 +641,56 @@ public final class Constants {
         public static final double MMEXPO_KA_0 = 1.5; // TODO make correct
         public static final double MMEXPO_KA_1 = 1.5; // TODO make correct
 
-        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(60); // TODO make correct
-        public static final Current SUPPLY_CURRENT_LOWER_LIMIT = Amps.of(30); // TODO make correct
-        public static final Current STATOR_CURRENT_LIMIT = Amps.of(100); // TODO make correct
+        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current SUPPLY_CURRENT_LOWER_LIMIT = Amps.of(40);
+        public static final Current STATOR_CURRENT_LIMIT = Amps.of(120);
+        public static final double STATOR_CURRENT_AMPS_THRESHOLD = // tuned in sim, TODO make correct irl
+                4.3; // less than this, not supporting weight of robot, greater than this, supporting weight of robot
 
-        public static final double GEAR_RATIO = 13.4321; // TODO make correct
+        public static final double GEAR_RATIO = 48;
         public static final double SPROCKET_EFFECTIVE_RADIUS = Units.inchesToMeters(
-                0.8783343); // TODO make correct // MUST BE EFFECTIVE RADIUS, NOT PHYSICAL RADIUS. This is the radius at
-        // which it contacts
-        // the rack, which is not the same as the physical radius of the sprocket due to the
-        // sprocket entering into the rack.
+                0.75); // MUST BE EFFECTIVE RADIUS, NOT PHYSICAL RADIUS. This is the radius at which it contacts the
+        // rack, which is not the same as the physical radius of the sprocket due to the sprocket
+        // entering into the rack.
         public static final double METERS_PER_ROTATION = SPROCKET_EFFECTIVE_RADIUS
                 * 2
                 * Math.PI
-                / GEAR_RATIO; // TODO make correct // 2 * pi * r / gear ratio because same as getting distance a wheel
-        // moved, just vertically
+                / GEAR_RATIO; // 2 * pi * r / gear ratio because same as getting distance a wheelmoved, just vertically
 
         public static final double AT_GOAL_POSITION_TOLERANCE = 0.03; // TODO make correct
         public static final double AT_GOAL_VELOCITY_TOLERANCE = 0.63514; // TODO make correct
 
-        public static final Pose2d ROOT_MECHANISM_POSE =
-                new Pose2d(0.15, 0, Rotation2d.fromDegrees(0)); // TODO make correct
-        public static final double MIN_LENGTH = 0.65; // TODO make correct
-        public static final double MAX_HEIGHT = 1.339; // TODO make correct
+        public static final double MAX_HEIGHT_METERS = Units.inchesToMeters(8.0);
 
-        public static final Distance MANUAL_CONTROL_MARGIN =
-                Meters.of(0.1); // bruh what is this // TODO make correct // TODO make correct
+        public static final double CARRIAGE_MASS_KG = 0.706915816;
 
-        public static final double STATOR_CURRENT_AMPS_THRESHOLD =
-                5; // TODO make correct // less than this, not supporting weight of robot, greater than this, supporting
-        // weight of robot
-        public static final double MASS_KG = 1.0; // TODO make correct
+        public static final List<Translation3d> END_OF_TOWER_POSITIONS = List.of(
+                // always in the center of the round tower rung, NOT THE TOP OF THE RUNG
+                // blue
+                SimpleMath.fromCenterFieldRelativeTranslation3d(new Translation3d(7.208488, 0.8112125, 0.685800)),
+                SimpleMath.fromCenterFieldRelativeTranslation3d(new Translation3d(7.208488, -0.2333625, 0.685800)),
+                // red
+                SimpleMath.fromCenterFieldRelativeTranslation3d(new Translation3d(-7.208488, -0.8112125, 0.685800)),
+                SimpleMath.fromCenterFieldRelativeTranslation3d(new Translation3d(-7.208488, 0.2333625, 0.685800)));
+
+        public static final double END_OF_TOWER_POSITION_TOLERANCE = Units.inchesToMeters(
+                        2.9375) // half of the width of the part of the rung that sticks out
+                + Units.inchesToMeters(1.0); // a little bit extra because sim doesn't have bumper gap yet TODO remove
+
+        public static final Predicate<Translation3d> AT_END_OF_TOWER_POSITION_PREDICATE = pos -> {
+            for (Translation3d endPos : END_OF_TOWER_POSITIONS) {
+                if (pos.getDistance(endPos) < END_OF_TOWER_POSITION_TOLERANCE) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        public static final Transform2d ROBOT_TO_CLIMBER_OFFSET = new Transform2d(
+                0.292100,
+                -0.119634,
+                new Rotation2d()); // TODO this is centered on climber, should be centered on hook, make correct
+        public static final double CLIMBER_BASE_HEIGHT_METERS = 0.502432;
 
         private Climber() {}
     }
@@ -690,7 +712,7 @@ public final class Constants {
          * RUNNING TESTS IN PARALLEL IS NOT SUPPORTED
          * </p>
          *
-         * Example: {@code ./gradlew test --tests "*ReefAutoScoreTests`$Blue4"}
+         * Example for running just one test: {@code ./gradlew test --tests "INSERT_TEST_NAME_HERE"}
          */
         public static final boolean UNIT_TESTS_ENABLE_ADVANTAGE_SCOPE = false;
 

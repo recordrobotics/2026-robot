@@ -59,11 +59,16 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     public Climber(ClimberIO io) {
         this.io = io;
 
-        TalonFXConfiguration climberConfig = new TalonFXConfiguration();
-        climberConfig.Feedback.SensorToMechanismRatio = 1.0 / Constants.Climber.METERS_PER_ROTATION;
+        TalonFXConfiguration config = new TalonFXConfiguration();
+        config.Feedback.SensorToMechanismRatio = 1.0 / Constants.Climber.METERS_PER_ROTATION;
+
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.Climber.MAX_HEIGHT_METERS;
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0.0;
+        config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
         // slot 0 gains for when climber is not supporting weight of robot
-        Slot0Configs slot0ConfigsClimber = climberConfig.Slot0;
+        Slot0Configs slot0ConfigsClimber = config.Slot0;
         slot0ConfigsClimber.kS = Constants.Climber.KS;
         slot0ConfigsClimber.kV = Constants.Climber.KV_0;
         slot0ConfigsClimber.kA = Constants.Climber.KA_0;
@@ -73,7 +78,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         slot0ConfigsClimber.GravityType = GravityTypeValue.Elevator_Static;
 
         // slot 1 gains for when climber is supporting weight of robot
-        Slot1Configs slot1ConfigsClimber = climberConfig.Slot1;
+        Slot1Configs slot1ConfigsClimber = config.Slot1;
         slot1ConfigsClimber.kS = Constants.Climber.KS;
         slot1ConfigsClimber.kV = Constants.Climber.KV_1;
         slot1ConfigsClimber.kA = Constants.Climber.KA_1;
@@ -83,12 +88,11 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         slot1ConfigsClimber.GravityType = GravityTypeValue.Elevator_Static;
 
         // set Motion Magic settings
-        MotionMagicConfigs motionMagicConfigsClimber = climberConfig.MotionMagic;
+        MotionMagicConfigs motionMagicConfigsClimber = config.MotionMagic;
         motionMagicConfigsClimber.MotionMagicExpo_kV = Constants.Climber.MMEXPO_KV_0;
         motionMagicConfigsClimber.MotionMagicExpo_kA = Constants.Climber.MMEXPO_KA_0;
 
-        io.applyTalonFXConfig(climberConfig
-                .withMotorOutput(new MotorOutputConfigs()
+        io.applyTalonFXConfig(config.withMotorOutput(new MotorOutputConfigs()
                         .withInverted(InvertedValue.Clockwise_Positive)
                         .withNeutralMode(NeutralModeValue.Brake))
                 .withCurrentLimits(new CurrentLimitsConfigs()
