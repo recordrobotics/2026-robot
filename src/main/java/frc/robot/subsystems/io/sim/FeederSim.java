@@ -133,6 +133,10 @@ public class FeederSim implements FeederIO {
                 * Units.radiansToRotations(feederSimModel.getAngularAccelerationRadPerSecSq()));
     }
 
+    public boolean isOuttaking() {
+        return getVelocityRotationsPerSecond() >= Constants.Feeder.INTAKE_VELOCITY_RPS / 2.0;
+    }
+
     @Override
     public void close() {
         feeder.close();

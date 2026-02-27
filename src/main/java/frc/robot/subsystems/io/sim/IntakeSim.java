@@ -11,40 +11,33 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
-import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.RobotModel.FuelManager;
 import frc.robot.subsystems.io.IntakeIO;
 import frc.robot.utils.IntakeSimulationUtils;
-import java.util.Random;
 import org.dyn4j.geometry.Rectangle;
 import org.ironmaple.simulation.IntakeSimulation;
-import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
-import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 
 public class IntakeSim implements IntakeIO {
 
     private static final Distance WIDTH = Inches.of(21.25);
     private static final Distance LENGTH_EXTENDED = Inches.of(8.419554);
+    private static final Translation3d ROLLER_ORIGIN = new Translation3d(-0.594994, 0.329377, 0.163443);
 
-    private static final Random RANDOM = new Random();
-
-    private static final double CORAL_GROUND_TOUCH_HEIGHT = 0.1; // meters
+    private static final double EJECT_BPS = 4.5;
 
     private final double periodicDt;
 
@@ -79,10 +72,7 @@ public class IntakeSim implements IntakeIO {
 
     private final IntakeSimulation intakeSimulation;
 
-    private int fuelCount = 0;
-    private double intakeTimeAccumulatorMillis = 0.0;
-
-    private AbstractDriveTrainSimulation drivetrainSim;
+    private double lastEjectTime = 0.0;
 
     public IntakeSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
@@ -107,9 +97,18 @@ public class IntakeSim implements IntakeIO {
         Rectangle intakeRect = IntakeSimulationUtils.getIntakeRectangle(
                 drivetrainSim, WIDTH.in(Meters), LENGTH_EXTENDED.in(Meters), IntakeSimulation.IntakeSide.BACK);
 
-        intakeSimulation =
-                new IntakeSimulation("Fuel", drivetrainSim, intakeRect, Constants.Intake.MAX_INTAKE_CAPACITY);
-        this.drivetrainSim = drivetrainSim;
+        intakeSimulation = new IntakeSimulation("Fuel", drivetrainSim, intakeRect, FuelManager.getNodeCount());
+        intakeSimulation.setCustomIntakeCondition(gm -> {
+            boolean passed = getWheelVelocityMps() > Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS - 2.0;
+            if (passed) {
+                try {
+                    RobotContainer.model.fuelManager.intakeFuel(gm.getPose3d());
+                } catch (IllegalStateException e) {
+                    return false; // no available intake nodes, so fail the intake condition instead of crashing
+                }
+            }
+            return passed;
+        });
     }
 
     public IntakeSimulation getIntakeSimulation() {
@@ -272,31 +271,10 @@ public class IntakeSim implements IntakeIO {
         armLeader.close();
     }
 
-    public boolean addFuel() {
-        return intakeSimulation.addGamePieceToIntake();
-    }
-
-    public boolean removeFuel() {
-        return intakeSimulation.obtainGamePieceFromIntake();
-    }
-
-    private static Pair<Translation3d, Translation3d> getEjectionData(
-            AbstractDriveTrainSimulation drivetrainSimulation) {
-        Pose3d basePose = new Pose3d(drivetrainSimulation.getSimulatedDriveTrainPose());
-        Translation3d pose = basePose.transformBy(new Transform3d(
-                        Meters.of(-0.5), Meters.of(-0.5 + RANDOM.nextDouble()), Meters.of(0.1), Rotation3d.kZero))
-                .getTranslation();
-        Translation3d velocity = basePose.transformBy(
-                        new Transform3d(Meters.of(-1.0), Meters.of(0.0), Meters.of(0.0), Rotation3d.kZero))
-                .getTranslation();
-        return new Pair<>(pose, velocity);
-    }
-
     @Override
     public void simulationPeriodic() {
         updateMotorSimulations();
         handleIntakeSimulation();
-        updateGamePieceState();
     }
 
     private void updateMotorSimulations() {
@@ -336,43 +314,32 @@ public class IntakeSim implements IntakeIO {
     }
 
     private void handleIntakeSimulation() {
-        if (RobotContainer.intake.getTargetState() == Intake.IntakeState.INTAKE
-                && RobotContainer.intake.atGoal()
-                && (fuelCount < Constants.Intake.MAX_INTAKE_CAPACITY
-                        || /* TODO RobotContainer.hopper.getFuelCount() */ 0
-                                < Constants.Hopper.MAX_HOPPER_CAPACITY)) { // intake or hopper has more room
+        if (Units.rotationsToRadians(RobotContainer.intake.getArmPositionRotations())
+                < Constants.Intake.ARM_DOWN_POSITION_RADIANS + Units.degreesToRadians(5.0)) {
             intakeSimulation.startIntake();
-        } else if (RobotContainer.intake.getTargetState() == Intake.IntakeState.EJECT
-                && RobotContainer.intake.atGoal()
-                && fuelCount > 0) {
-            // Limit fuel ejection rate to Constants.Intake.EJECT_FUEL_PER_SECOND
-            intakeTimeAccumulatorMillis += periodicDt;
-            while (intakeTimeAccumulatorMillis >= 1000.0 / Constants.Intake.EJECT_FUEL_PER_SECOND && fuelCount > 0) {
-                createProjectile();
-                intakeTimeAccumulatorMillis -= 1000.0 / Constants.Intake.EJECT_FUEL_PER_SECOND;
-                fuelCount--;
+            if (getWheelVelocityMps() < Constants.Intake.WHEEL_EJECT_VELOCITY_MPS + 2.0) {
+                double timeSinceLastEject = Timer.getTimestamp() - lastEjectTime;
+                if (timeSinceLastEject > 1.0 / EJECT_BPS) {
+                    RobotContainer.model.fuelManager.ejectFuel().ifPresent(fuel -> {
+                        fuel.rotateAround(
+                                () -> ROLLER_ORIGIN,
+                                () -> new Translation3d(0, 1, 0),
+                                new Translation2d(
+                                                fuel.getPose().getX(),
+                                                fuel.getPose().getZ())
+                                        .getDistance(new Translation2d(ROLLER_ORIGIN.getX(), ROLLER_ORIGIN.getZ())),
+                                () -> Math.PI / 2,
+                                () -> -wheelSimModel.getAngularVelocityRadPerSec(),
+                                () -> RobotContainer.model.fuelManager.toProjectile(
+                                        fuel, RobotContainer.drivetrain.getSwerveDriveSimulation(), null));
+                    });
+                    lastEjectTime = Timer.getTimestamp();
+                }
             }
         } else {
             intakeSimulation.stopIntake();
         }
-    }
 
-    private void createProjectile() {
-        Pair<Translation3d, Translation3d> ejectionData = getEjectionData(drivetrainSim);
-
-        SimulatedArena.getInstance()
-                .addGamePieceProjectile(new GamePieceProjectile(
-                                RebuiltFuelOnField.REBUILT_FUEL_INFO,
-                                ejectionData.getFirst().toTranslation2d(),
-                                ejectionData.getSecond().toTranslation2d(),
-                                ejectionData.getFirst().getZ(),
-                                ejectionData.getSecond().getZ(),
-                                Rotation3d.kZero)
-                        .withTouchGroundHeight(CORAL_GROUND_TOUCH_HEIGHT)
-                        .enableBecomesGamePieceOnFieldAfterTouchGround());
-    }
-
-    private void updateGamePieceState() {
-        fuelCount += intakeSimulation.getGamePiecesAmount();
+        intakeSimulation.setGamePiecesCount(RobotContainer.model.fuelManager.getFuelCount());
     }
 }

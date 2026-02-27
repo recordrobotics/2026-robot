@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.FeederIO;
+import frc.robot.subsystems.io.sim.FeederSim;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PoweredSubsystem;
@@ -73,6 +74,14 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
                         null,
                         state -> Logger.recordOutput("Feeder/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
+    }
+
+    public FeederSim getSimIO() {
+        if (io instanceof FeederSim sim) {
+            return sim;
+        }
+
+        return null;
     }
 
     public void setState(FeederState newState) {

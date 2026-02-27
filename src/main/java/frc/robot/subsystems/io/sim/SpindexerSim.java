@@ -73,6 +73,10 @@ public class SpindexerSim implements SpindexerIO {
         return spindexer.getStatorCurrent().getValueAsDouble();
     }
 
+    public boolean isOuttaking() {
+        return getVelocityRotationsPerSecond() >= Constants.Spindexer.INTAKE_VELOCITY_RPS / 2.0;
+    }
+
     @Override
     public void simulationPeriodic() {
         spindexerSimState.setSupplyVoltage(RobotController.getBatteryVoltage());

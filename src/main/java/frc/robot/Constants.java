@@ -412,8 +412,7 @@ public final class Constants {
     }
 
     public static final class Intake {
-        public static final int MAX_INTAKE_CAPACITY =
-                8; // number of fuel that can remain above intake without falling into hopper with intake extended
+
         // TODO
         public static final double EJECT_FUEL_PER_SECOND = 10.0;
 
@@ -451,7 +450,7 @@ public final class Constants {
         public static final double ARM_STARTING_POSITION_RADIANS =
                 SysIdManager.getProvider() instanceof frc.robot.subsystems.Intake.SysIdArm
                         ? ARM_DOWN_POSITION_RADIANS
-                        : ARM_MAX_POSITION_RADIANS;
+                        : ARM_DOWN_POSITION_RADIANS;
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS =
                 Constants.Swerve.MAX_MODULE_SPEED * 2; // surface speed of roller // TODO make correct
@@ -467,15 +466,6 @@ public final class Constants {
         public static final double WHEEL_METERS_PER_ROTATION = ROLLER_DIAMETER.in(Meter) * Math.PI / WHEEL_GEAR_RATIO;
 
         private Intake() {}
-    }
-
-    public static final class Hopper {
-        public static final int MAX_ROBOT_CAPACITY =
-                50; // number of fuel that can fit in the whole robot with intake extended
-        public static final int MAX_HOPPER_CAPACITY =
-                MAX_ROBOT_CAPACITY - Intake.MAX_INTAKE_CAPACITY; // number of fuel that can fit in the hopper alone
-
-        private Hopper() {}
     }
 
     public static final class Turret {

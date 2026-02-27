@@ -41,4 +41,21 @@ public final class ProjectileSimulationUtils {
 
         return shooterGroundVelocity.plus(new Translation2d(groundSpeedMPS, chassisFacing));
     }
+
+    public static Translation2d calculateInitialProjectileVelocityMPS(
+            Translation2d shooterPositionOnRobot,
+            ChassisSpeeds chassisSpeeds,
+            Rotation2d chassisFacing,
+            Translation2d groundSpeedMPS) {
+        final Translation2d chassisTranslationalVelocity =
+                new Translation2d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+        final Translation2d shooterGroundVelocityDueToChassisRotation = shooterPositionOnRobot
+                .rotateBy(chassisFacing)
+                .rotateBy(Rotation2d.fromDegrees(90))
+                .times(chassisSpeeds.omegaRadiansPerSecond);
+        final Translation2d shooterGroundVelocity =
+                chassisTranslationalVelocity.plus(shooterGroundVelocityDueToChassisRotation);
+
+        return shooterGroundVelocity.plus(groundSpeedMPS.rotateBy(chassisFacing));
+    }
 }

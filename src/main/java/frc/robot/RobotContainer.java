@@ -91,6 +91,7 @@ public final class RobotContainer {
     public static Climber climber;
     public static RobotModel model;
     public static FieldStateTracker fieldStateTracker;
+    public static ShootOrchestrator shootOrchestrator;
     public static VisionSystemSim visionSim;
 
     private static Alert noEncoderResetAlert;
@@ -169,6 +170,7 @@ public final class RobotContainer {
                 DashboardUI.Autonomous.getStartingLocation().getPose());
         pdp = new PowerDistributionPanel();
         fieldStateTracker = new FieldStateTracker();
+        shootOrchestrator = new ShootOrchestrator();
 
         model = new RobotModel();
 
@@ -235,6 +237,10 @@ public final class RobotContainer {
                 climber.setState(Constants.ClimberHeight.DOWN);
             }
         }));
+
+        new Trigger(() -> DashboardUI.Overview.getControl().isShootPressed())
+                .whileTrue(new InstantCommand(() -> shootOrchestrator.setEnableShooting(true)))
+                .whileFalse(new InstantCommand(() -> shootOrchestrator.setEnableShooting(false)));
 
         // Kill subsystems trigger
         /*

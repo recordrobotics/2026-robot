@@ -172,4 +172,9 @@ public class JoystickXboxSimple implements AbstractControl {
     public boolean isClimbPressed() {
         return joystick.getRawButton(7);
     }
+
+    @Override
+    public boolean isShootPressed() {
+        return joystick.getRawButton(1);
+    }
 }
