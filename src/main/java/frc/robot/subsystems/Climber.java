@@ -36,13 +36,13 @@ import org.littletonrobotics.junction.Logger;
 public final class Climber extends KillableSubsystem implements PoweredSubsystem, EncoderResettableSubsystem {
 
     private static final Velocity<VoltageUnit> SYSID_RAMP_RATE_FREE =
-            Volts.of(4.5).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE_FREE = Volts.of(3.0);
+            Volts.of(7.5).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE_FREE = Volts.of(5.2);
     private static final Time SYSID_TIMEOUT_FREE = Seconds.of(1.2);
 
     private static final Velocity<VoltageUnit> SYSID_RAMP_RATE_LOADED =
-            Volts.of(4.5).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE_LOADED = Volts.of(3.0);
+            Volts.of(7.5).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE_LOADED = Volts.of(5.2);
     private static final Time SYSID_TIMEOUT_LOADED = Seconds.of(1.2);
 
     private final ClimberIO io;

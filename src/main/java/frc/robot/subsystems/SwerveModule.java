@@ -262,6 +262,8 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
             turnVoltageCached = io.getTurnMotorVoltage();
         }
 
+        updateAbsEncoderAlert();
+
         if (Math.abs(driveVelocityCached) > STATIONARY_DRIVE_VELOCITY_THRESHOLD
                 || Math.abs(turnVelocityCached) > STATIONARY_TURN_VELOCITY_THRESHOLD) {
             hasResetAbs = false;

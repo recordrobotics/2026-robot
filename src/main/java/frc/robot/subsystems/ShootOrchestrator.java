@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Feeder.FeederState;
@@ -89,7 +90,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
         Translation2d velocity2d = ProjectileSimulationUtils.calculateInitialProjectileVelocityMPS(
                 fuelReleasePose.toPose2d().getTranslation(),
-                RobotContainer.drivetrain.getSwerveDriveSimulation().getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                ChassisSpeeds.fromRobotRelativeSpeeds(
+                        RobotContainer.drivetrain.getChassisSpeeds(), robotPose.getRotation()),
                 robotPose.getRotation(),
                 velocity.toTranslation2d());
         velocity = new Translation3d(velocity2d.getX(), velocity2d.getY(), velocity.getZ());
@@ -128,9 +130,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
             Translation2d velocity2d = ProjectileSimulationUtils.calculateInitialProjectileVelocityMPS(
                     fuelReleasePose.toPose2d().getTranslation(),
-                    RobotContainer.drivetrain
-                            .getSwerveDriveSimulation()
-                            .getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                    ChassisSpeeds.fromRobotRelativeSpeeds(
+                            RobotContainer.drivetrain.getChassisSpeeds(), robotPose.getRotation()),
                     robotPose.getRotation(),
                     velocity.toTranslation2d());
             velocity = new Translation3d(velocity2d.getX(), velocity2d.getY(), velocity.getZ());

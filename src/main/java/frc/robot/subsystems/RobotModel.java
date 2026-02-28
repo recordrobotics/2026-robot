@@ -14,6 +14,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Game.IGamePosition;
+import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
@@ -64,7 +65,9 @@ public final class RobotModel extends ManagedSubsystemBase {
     @Override
     public void periodicManaged() {
         updatePoses(intakeModel, shooterModel, climberModel);
-        fuelManager.update();
+        if (Constants.RobotState.getMode() != Mode.REAL) {
+            fuelManager.update();
+        }
 
         if (Constants.RobotState.AUTO_LOG_LEVEL.isAtOrLowerThan(Level.DEBUG_SIM)) {
             Logger.recordOutput("IGamePositions", IGamePosition.aggregatePositions());

@@ -613,23 +613,23 @@ public final class Constants {
     }
 
     public static final class Climber {
-        public static final double KV_0 = 6.8; // TODO make correct
-        public static final double KV_1 = 6.8; // TODO make correct
-        public static final double KA_0 = 0.21006; // TODO make correct
-        public static final double KA_1 = 0.21006; // TODO make correct
-        public static final double KG_0 = 0.20027; // TODO make correct
-        public static final double KG_1 = 0.20027; // TODO make correct
-        public static final double KS = 0.016248; // TODO make correct
+        public static final double KV_0 = 46.657;
+        public static final double KV_1 = 46.657;  // TODO make correct
+        public static final double KA_0 = 0.88771;
+        public static final double KA_1 = 0.88771; // TODO make correct
+        public static final double KG_0 = 0.033723;
+        public static final double KG_1 = 0.033723; // TODO make correct
+        public static final double KS = 0.077735;
 
-        public static final double KP_0 = 68.424; // TODO make correct
-        public static final double KP_1 = 68.424; // TODO make correct
-        public static final double KD_0 = 9.2646; // TODO make correct
-        public static final double KD_1 = 9.2646; // TODO make correct
+        public static final double KP_0 = 47.973;
+        public static final double KP_1 = 47.973; // TODO make correct
+        public static final double KD_0 = 34.1;
+        public static final double KD_1 = 34.1; // TODO make correct
 
-        public static final double MMEXPO_KV_0 = 5.8; // TODO make correct
-        public static final double MMEXPO_KV_1 = 5.8; // TODO make correct
-        public static final double MMEXPO_KA_0 = 1.5; // TODO make correct
-        public static final double MMEXPO_KA_1 = 1.5; // TODO make correct
+        public static final double MMEXPO_KV_0 = KV_0;
+        public static final double MMEXPO_KV_1 = KV_0;
+        public static final double MMEXPO_KA_0 = 10;
+        public static final double MMEXPO_KA_1 = 10;
 
         public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
         public static final Current SUPPLY_CURRENT_LOWER_LIMIT = Amps.of(40);
