@@ -64,6 +64,7 @@ public class SwerveModuleSim implements SwerveModuleIO {
         turningMotorSim = turningMotor.getSimState();
         absoluteTurningMotorEncoderSim = absoluteTurningMotorEncoder.getSimState();
 
+        driveMotorSim.Orientation = ChassisReference.Clockwise_Positive;
         turningMotorSim.Orientation = ChassisReference.Clockwise_Positive;
 
         driveMotorSim.setMotorType(MotorType.KrakenX60);

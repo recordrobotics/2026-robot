@@ -5,7 +5,7 @@
         "encoderChannel": 10,
         "encoderOffset": {
             "falcon": 0.3251340081283502,
-            "kraken": 0.10302734375
+            "kraken": -0.89306640625
         }
     },
     "front-right": {
@@ -14,7 +14,7 @@
         "encoderChannel": 11,
         "encoderOffset": {
             "falcon": 0.9130740228268506,
-            "kraken": 0.318115234375
+            "kraken": -0.683349609375
         }
     },
     "back-left": {
@@ -23,7 +23,7 @@
         "encoderChannel": 12,
         "encoderOffset": {
             "falcon": 0.6786708669667717,
-            "kraken": 0.3515625
+            "kraken": -0.654052734375
         }
     },
     "back-right": {
@@ -32,7 +32,7 @@
         "encoderChannel": 13,
         "encoderOffset": {
             "falcon": 0.7195320179883005,
-            "kraken": -0.33984375
+            "kraken": -0.346923828125
         }
     }
 }

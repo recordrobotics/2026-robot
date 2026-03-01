@@ -130,7 +130,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
     public PoseSensorFusion(Pose2d initialPose) {
         nav = new NavSensor(
                 Constants.RobotState.getMode() == Mode.REAL
-                        ? new NavSensorReal()
+                        ? new NavSensorReal(false)
                         : new NavSensorSim(RobotContainer.drivetrain
                                 .getSwerveDriveSimulation()
                                 .getGyroSimulation()));

@@ -6,6 +6,11 @@ import frc.robot.subsystems.io.NavSensorIO;
 
 public class NavSensorReal implements NavSensorIO {
     private final AHRS nav = new AHRS(NavXComType.kUSB1);
+    private final boolean inverted;
+
+    public NavSensorReal(boolean inverted) {
+        this.inverted = inverted;
+    }
 
     @Override
     public void reset() {
@@ -19,7 +24,7 @@ public class NavSensorReal implements NavSensorIO {
 
     @Override
     public double getAngle() {
-        return -nav.getAngle();
+        return inverted ? -nav.getAngle() : nav.getAngle();
     }
 
     @Override
@@ -34,7 +39,7 @@ public class NavSensorReal implements NavSensorIO {
 
     @Override
     public double getYawRate() {
-        return -nav.getRate();
+        return inverted ? -nav.getRate() : nav.getRate();
     }
 
     @Override

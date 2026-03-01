@@ -94,7 +94,9 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
         motionMagicConfigsDrive.MotionMagicJerk = Constants.Swerve.DRIVE_MAX_JERK;
 
         io.applyDriveTalonFXConfig(driveConfig
-                .withMotorOutput(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake))
+                .withMotorOutput(new MotorOutputConfigs()
+                        .withInverted(InvertedValue.Clockwise_Positive)
+                        .withNeutralMode(NeutralModeValue.Brake))
                 .withCurrentLimits(new CurrentLimitsConfigs()
                         .withSupplyCurrentLimit(m.driveMotorSupplyCurrentLimit())
                         .withStatorCurrentLimit(m.driveMotorStatorCurrentLimit())
@@ -140,6 +142,7 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
         CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
         encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
         encoderConfig.MagnetSensor.MagnetOffset = m.turningEncoderOffset();
+        encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
 
         io.applyTurningEncoderConfig(encoderConfig);
 
@@ -245,7 +248,10 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
      */
     public void setDesiredState(SwerveModuleState desiredState) {
         // Optimize the reference state to avoid spinning further than 90 degrees
-        desiredState.optimize(getTurnWheelRotation2d());
+        if (!(SysIdManager.getProvider() instanceof Drivetrain.SysIdSpin)
+                && !(SysIdManager.getProvider() instanceof Drivetrain.SysIdForward)) {
+            desiredState.optimize(getTurnWheelRotation2d());
+        }
 
         targetTurnPosition = desiredState.angle.getRotations();
         targetDriveVelocity = desiredState.speedMetersPerSecond;

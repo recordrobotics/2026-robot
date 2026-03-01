@@ -332,16 +332,16 @@ public final class Constants {
         public static final double FALCON_TURN_KP = 67.02;
         public static final double FALCON_TURN_KD = 3.2831;
 
-        public static final double KRAKEN_DRIVE_KS = 0.13192;
-        public static final double KRAKEN_DRIVE_KV = 2.7547;
-        public static final double KRAKEN_DRIVE_KA = 0.24758;
-        public static final double KRAKEN_DRIVE_KP = 4.6957;
+        public static final double KRAKEN_DRIVE_KS = 0.16364;
+        public static final double KRAKEN_DRIVE_KV = 2.4345;
+        public static final double KRAKEN_DRIVE_KA = 0.23572;
+        public static final double KRAKEN_DRIVE_KP = 3.8703;
 
-        public static final double KRAKEN_TURN_KV = 1.2993;
-        public static final double KRAKEN_TURN_KA = 0.058972;
-        public static final double KRAKEN_TURN_KS = 0.51562;
-        public static final double KRAKEN_TURN_KP = 55.543;
-        public static final double KRAKEN_TURN_KD = 2.3952;
+        public static final double KRAKEN_TURN_KV = 1.3101;
+        public static final double KRAKEN_TURN_KA = 0.063814;
+        public static final double KRAKEN_TURN_KS = 0.62704;
+        public static final double KRAKEN_TURN_KP = 68.174;
+        public static final double KRAKEN_TURN_KD = 3.2858;
 
         // Wheel diameter
         public static final double WHEEL_DIAMETER = Units.inchesToMeters(4);
@@ -614,7 +614,7 @@ public final class Constants {
 
     public static final class Climber {
         public static final double KV_0 = 46.657;
-        public static final double KV_1 = 46.657;  // TODO make correct
+        public static final double KV_1 = 46.657; // TODO make correct
         public static final double KA_0 = 0.88771;
         public static final double KA_1 = 0.88771; // TODO make correct
         public static final double KG_0 = 0.033723;
