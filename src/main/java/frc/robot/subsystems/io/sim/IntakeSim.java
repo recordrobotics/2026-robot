@@ -313,6 +313,11 @@ public class IntakeSim implements IntakeIO {
                 * Units.radiansToRotations(wheelSimModel.getAngularAccelerationRadPerSecSq()));
     }
 
+    public boolean isExtendingHopperSpaceAvailable() {
+        return Units.rotationsToRadians(RobotContainer.intake.getArmPositionRotations())
+                < Constants.Intake.ARM_DOWN_POSITION_RADIANS + Units.degreesToRadians(5.0);
+    }
+
     private void handleIntakeSimulation() {
         if (Units.rotationsToRadians(RobotContainer.intake.getArmPositionRotations())
                 < Constants.Intake.ARM_DOWN_POSITION_RADIANS + Units.degreesToRadians(5.0)) {

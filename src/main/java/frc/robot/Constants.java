@@ -243,9 +243,6 @@ public final class Constants {
         public static final double XBOX_SPIN_ROT_THRESHOLD = 0.1;
         public static final double XBOX_SPIN_ROT_SENSITIVITY = 1.0;
 
-        // How many seconds ahead of robot position does autoscore/autoalgae use to find target
-        public static final double SCORE_TARGET_LOOKAHEAD = 0.35;
-
         private Control() {}
     }
 
@@ -344,11 +341,10 @@ public final class Constants {
         public static final double KRAKEN_TURN_KD = 3.2858;
 
         // Wheel diameter
-        public static final double WHEEL_DIAMETER = Units.inchesToMeters(4);
+        public static final double WHEEL_DIAMETER = Units.inchesToMeters(4); // TODO: measure
 
         // Turn max velocity
-        // Calculated from motor rpm 5000 / 60 (rps) / gear ratio (15.43)
-        public static final double TURN_MAX_ANGULAR_VELOCITY = 5; // ROTATIONS / SECOND
+        public static final double TURN_MAX_ANGULAR_VELOCITY = 5; // ROTATIONS / SECOND // TODO: measure
 
         public static final double DRIVE_MAX_ACCELERATION = 13.18;
         public static final double DRIVE_MAX_JERK = 131.28;
@@ -357,7 +353,7 @@ public final class Constants {
         public static final double TURN_MMEXPO_KA = 0.02;
 
         /** The max speed the robot can travel safely */
-        public static final double MAX_MODULE_SPEED = 4.35;
+        public static final double MAX_MODULE_SPEED = 4.35; // TODO: measure
 
         public static final RobotConfig PP_DEFAULT_CONFIG = new RobotConfig(
                 Constants.Frame.ROBOT_MASS_KG,

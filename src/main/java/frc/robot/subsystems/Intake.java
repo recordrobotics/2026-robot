@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.IntakeIO;
+import frc.robot.subsystems.io.sim.IntakeSim;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PoweredSubsystem;
@@ -157,6 +158,14 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
                         SYSID_WHEEL_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Wheel/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(v -> io.setWheelVoltage(v.in(Volts)), null, this));
+    }
+
+    public IntakeSim getSimIO() {
+        if (io instanceof IntakeSim sim) {
+            return sim;
+        }
+
+        return null;
     }
 
     @Override

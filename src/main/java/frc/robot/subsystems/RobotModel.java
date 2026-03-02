@@ -710,6 +710,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         private static final Random RANDOM = new Random();
         private static final double FUEL_TOUCH_GROUND_HEIGHT = Inches.of(3).in(Meters);
         private static final double SHOOT_BPS = 5.4;
+        private static final double GRAVITY_BPS = 5.4;
 
         private final ManagedFuelNode[] fuelNodes =
                 Arrays.stream(ROBOT_FUEL_NODES).map(ManagedFuelNode::new).toArray(ManagedFuelNode[]::new);
@@ -717,6 +718,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         private final List<FuelObject> fuelObjects = new ArrayList<>();
         private final List<FuelObject> fuelObjectsToRemove = new ArrayList<>();
         private double lastShootTime = 0;
+        private double lastGravityTime = 0;
 
         public FuelManager() {
             // nothing to do
@@ -808,7 +810,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                         ManagedFuelNode::outtakePreviousNodes,
                         ManagedFuelNode::outtakeNextNodes,
                         new ArrayList<>(),
-                        true,
                         false);
                 if (!node.isOccupied()) {
                     break;
@@ -826,7 +827,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                         ManagedFuelNode::outtakePreviousNodes,
                         ManagedFuelNode::outtakeNextNodes,
                         new ArrayList<>(),
-                        true,
                         false);
                 if (!node.isOccupied()) {
                     break;
@@ -858,7 +858,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                     ManagedFuelNode::outtakePreviousNodes,
                     ManagedFuelNode::outtakeNextNodes,
                     new ArrayList<>(),
-                    false,
                     true);
         }
 
@@ -873,7 +872,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                         ManagedFuelNode::outtakePreviousNodes,
                         ManagedFuelNode::outtakeNextNodes,
                         new ArrayList<>(),
-                        false,
                         true);
 
                 return Optional.empty();
@@ -895,7 +893,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                     ManagedFuelNode::intakeNextNodes,
                     ManagedFuelNode::intakePreviousNodes,
                     new ArrayList<>(),
-                    false,
                     true);
         }
 
@@ -922,7 +919,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                         ManagedFuelNode::intakeNextNodes,
                         ManagedFuelNode::intakePreviousNodes,
                         new ArrayList<>(),
-                        false,
                         true);
 
                 return Optional.empty();
@@ -956,7 +952,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                 Function<ManagedFuelNode, ImmutableIntArray> previousNodesExtractor,
                 Function<ManagedFuelNode, ImmutableIntArray> nextNodesExtractor,
                 Collection<Integer> visitedNodes,
-                boolean spiked,
                 boolean moveAngular) {
             if (visitedNodes.contains(nodeIndex)) {
                 return; // prevent infinite loops in case of cycles in the graph
@@ -975,12 +970,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                 }
 
                 backPropagateFrom(
-                        previousNodeIndex,
-                        previousNodesExtractor,
-                        nextNodesExtractor,
-                        visitedNodes,
-                        spiked,
-                        moveAngular);
+                        previousNodeIndex, previousNodesExtractor, nextNodesExtractor, visitedNodes, moveAngular);
             });
         }
 
@@ -1105,6 +1095,24 @@ public final class RobotModel extends ManagedSubsystemBase {
             fuelObjects.forEach(fuelObject -> fuelObject.update(0.02));
 
             double currentTime = Timer.getTimestamp();
+
+            if (currentTime - lastGravityTime >= 1.0 / GRAVITY_BPS) {
+                lastGravityTime = currentTime;
+
+                for (int i = 0; i < INTAKE_NODES.length; i++) {
+                    if (!RobotContainer.intake.getSimIO().isExtendingHopperSpaceAvailable()) {
+                        forwardPropagateFrom(
+                                INTAKE_NODES[i], ManagedFuelNode::intakeNextNodes, new ArrayList<>(), true);
+                        backPropagateFrom(
+                                OUTTAKE_NODE,
+                                ManagedFuelNode::outtakePreviousNodes,
+                                ManagedFuelNode::outtakeNextNodes,
+                                new ArrayList<>(),
+                                false);
+                    }
+                }
+            }
+
             if (RobotContainer.spindexer.getSimIO().isOuttaking()
                     && RobotContainer.feeder.getSimIO().isOuttaking()
                     && currentTime - lastShootTime >= 1.0 / SHOOT_BPS) {
