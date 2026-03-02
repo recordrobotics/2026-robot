@@ -230,12 +230,9 @@ public final class RobotModel extends ManagedSubsystemBase {
         public static class FuelObject {
             private Pose3d pose;
             private Transform3d velocity = new Transform3d();
-            private Transform3d acceleration = new Transform3d();
 
             private ManagedFuelNode currentNode;
             private Pose3d animationTargetPose;
-            private double animationStartTime;
-            private boolean spiked;
             private double animationSpeed;
 
             private boolean isRotating;
@@ -258,10 +255,8 @@ public final class RobotModel extends ManagedSubsystemBase {
                 return pose;
             }
 
-            public void animateTo(Pose3d newPose, boolean spiked, double speed, Runnable onComplete) {
+            public void animateTo(Pose3d newPose, double speed, Runnable onComplete) {
                 animationTargetPose = newPose;
-                animationStartTime = Timer.getTimestamp();
-                this.spiked = spiked;
                 isRotating = false;
                 this.animationCompleteCallback = onComplete;
                 this.animationSpeed = speed;
@@ -360,30 +355,8 @@ public final class RobotModel extends ManagedSubsystemBase {
                 } else {
                     if (animationTargetPose != null) {
                         Transform3d toTarget = new Transform3d(pose, animationTargetPose);
-                        double elapsedTime = Timer.getTimestamp() - animationStartTime;
-
-                        double minP = 20;
-                        double maxP = 80;
-                        double transitionTime = 0.04;
-                        double P = spiked
-                                ? MathUtil.clamp(
-                                        1 / (elapsedTime / transitionTime + 1 / (maxP - minP)) + minP, minP, maxP)
-                                : minP;
-
-                        if (!spiked && pose.getZ() > 0.22) {
-                            P /= 10 * (pose.getZ() - 0.232295 + 0.01);
-                        } else if (spiked && pose.getX() < -0.4) {
-                            P /= 40 * (0.4 - Math.min(0.4, Math.abs(pose.getX())) + 0.02);
-                        } else if (spiked) {
-                            P /= 0.8;
-                        }
-
-                        acceleration = toTarget.times(P)
-                                .plus(velocity.times(spiked ? 10 : 5).inverse());
 
                         velocity = toTarget.times(animationSpeed);
-
-                        // velocity = velocity.plus(acceleration.times(dt));
 
                         // limit velocity to prevent overshooting
                         double maxVelocity = 1;
@@ -400,7 +373,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                         if (pose.getTranslation().getDistance(animationTargetPose.getTranslation()) < 0.001) {
                             pose = animationTargetPose;
                             velocity = Transform3d.kZero;
-                            acceleration = Transform3d.kZero;
                             if (animationCompleteCallback != null) {
                                 Runnable tempCallback = animationCompleteCallback;
                                 animationCompleteCallback = null;
@@ -409,7 +381,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                             }
                         }
                     } else {
-                        acceleration = Transform3d.kZero;
+
                         velocity = Transform3d.kZero;
                     }
                 }
@@ -735,16 +707,22 @@ public final class RobotModel extends ManagedSubsystemBase {
 
         private static final int OUTTAKE_NODE = 10;
         private static final int[] INTAKE_NODES = new int[] {22, 23, 24, 25};
+        private static final Random RANDOM = new Random();
+        private static final double FUEL_TOUCH_GROUND_HEIGHT = Inches.of(3).in(Meters);
+        private static final double SHOOT_BPS = 5.4;
 
         private final ManagedFuelNode[] fuelNodes =
                 Arrays.stream(ROBOT_FUEL_NODES).map(ManagedFuelNode::new).toArray(ManagedFuelNode[]::new);
 
         private final List<FuelObject> fuelObjects = new ArrayList<>();
         private final List<FuelObject> fuelObjectsToRemove = new ArrayList<>();
+        private double lastShootTime = 0;
 
         public FuelManager() {
-            // fillFuel();
+            // nothing to do
         }
+
+        // TODO make setToPreLoad() method that fills the fuel nodes according to the pre-load configuration
 
         public int getFuelCount() {
             return fuelObjects.size();
@@ -824,7 +802,7 @@ public final class RobotModel extends ManagedSubsystemBase {
 
         public void intakeFuel(Pose3d initialPose, ManagedFuelNode node) {
             for (int i = 0; i < 500; i++) { // multiple iterations to ensure fuel leaves the intake
-                forwardPropagateFrom(getIndex(node), ManagedFuelNode::allForwardNodes, new ArrayList<>(), true, true);
+                forwardPropagateFrom(getIndex(node), ManagedFuelNode::allForwardNodes, new ArrayList<>(), true);
                 backPropagateFrom(
                         OUTTAKE_NODE,
                         ManagedFuelNode::outtakePreviousNodes,
@@ -838,11 +816,11 @@ public final class RobotModel extends ManagedSubsystemBase {
             }
 
             FuelObject fuel = new FuelObject(initialPose, node);
-            fuel.animateTo(node.node.pose, true, 9, null);
+            fuel.animateTo(node.node.pose, 9, null);
             fuelObjects.add(fuel);
 
             for (int i = 0; i < 500; i++) { // multiple iterations to ensure fuel leaves the intake
-                forwardPropagateFrom(getIndex(node), ManagedFuelNode::allForwardNodes, new ArrayList<>(), true, true);
+                forwardPropagateFrom(getIndex(node), ManagedFuelNode::allForwardNodes, new ArrayList<>(), true);
                 backPropagateFrom(
                         OUTTAKE_NODE,
                         ManagedFuelNode::outtakePreviousNodes,
@@ -921,8 +899,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                     true);
         }
 
-        private static final Random RANDOM = new Random();
-
         public void remove(FuelObject fuel) {
             fuelObjectsToRemove.add(fuel);
         }
@@ -957,7 +933,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                 int nodeIndex,
                 Function<ManagedFuelNode, ImmutableIntArray> nextNodesExtractor,
                 Collection<Integer> visitedNodes,
-                boolean spiked,
                 boolean moveAngular) {
             if (visitedNodes.contains(nodeIndex)) {
                 return; // prevent infinite loops in case of cycles in the graph
@@ -967,13 +942,12 @@ public final class RobotModel extends ManagedSubsystemBase {
             List<Integer> nextNodeIndices = reorderNodes(nextNodesExtractor.apply(fuelNodes[nodeIndex - 1]));
             randomizeNodes(nextNodeIndices);
 
-            nextNodeIndices.forEach(nextNodeIndex -> {
-                forwardPropagateFrom(nextNodeIndex, nextNodesExtractor, visitedNodes, spiked, moveAngular);
-            });
+            nextNodeIndices.forEach(nextNodeIndex ->
+                    forwardPropagateFrom(nextNodeIndex, nextNodesExtractor, visitedNodes, moveAngular));
 
             ManagedFuelNode nextNode = fuelNodes[nodeIndex - 1];
             if (nextNode.isOccupied() && (moveAngular || nextNode.node.outtakeAnimation != AnimationType.ANGULAR)) {
-                findNextNode(nextNode, nextNodesExtractor).ifPresent(next -> moveFuel(nextNode, next, spiked));
+                findNextNode(nextNode, nextNodesExtractor).ifPresent(next -> moveFuel(nextNode, next));
             }
         }
 
@@ -997,7 +971,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                 if (previousNode.isOccupied()
                         && (moveAngular || previousNode.node.outtakeAnimation != AnimationType.ANGULAR)) {
                     findNextNode(previousNode, nextNodesExtractor)
-                            .ifPresent(nextNode -> moveFuel(previousNode, nextNode, spiked));
+                            .ifPresent(nextNode -> moveFuel(previousNode, nextNode));
                 }
 
                 backPropagateFrom(
@@ -1057,8 +1031,6 @@ public final class RobotModel extends ManagedSubsystemBase {
             return Optional.empty();
         }
 
-        private static final double FUEL_TOUCH_GROUND_HEIGHT = Inches.of(3).in(Meters);
-
         public void toProjectile(
                 FuelObject fuel, AbstractDriveTrainSimulation drivetrainSim, Translation3d velocityOverride) {
             remove(fuel);
@@ -1085,7 +1057,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                             .enableBecomesGamePieceOnFieldAfterTouchGround());
         }
 
-        public void moveFuel(ManagedFuelNode fromNode, ManagedFuelNode toNode, boolean spiked) {
+        public void moveFuel(ManagedFuelNode fromNode, ManagedFuelNode toNode) {
             if (fromNode.occupyingObject == null) {
                 throw new IllegalStateException("Cannot move fuel from an unoccupied node");
             }
@@ -1098,7 +1070,7 @@ public final class RobotModel extends ManagedSubsystemBase {
             fromNode.occupyingObject = null;
             toNode.occupyingObject = fuel;
             fuel.currentNode = toNode;
-            fuel.animateTo(toNode.node.pose, spiked, 9, null);
+            fuel.animateTo(toNode.node.pose, 9, null);
         }
 
         public List<Pose3d> getFuelPoses() {
@@ -1111,8 +1083,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                             new Transform3d(fuelObject.pose.getTranslation(), fuelObject.pose.getRotation())))
                     .toList());
         }
-
-        int lastTriggerIndex = 0;
 
         public Translation3d getShooterFuelReleasePosition() {
             Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
@@ -1131,9 +1101,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                     .getTranslation();
         }
 
-        private static final double SHOOT_BPS = 5.4;
-        private double lastShootTime = 0;
-
         public void update() {
             fuelObjects.forEach(fuelObject -> fuelObject.update(0.02));
 
@@ -1143,46 +1110,51 @@ public final class RobotModel extends ManagedSubsystemBase {
                     && currentTime - lastShootTime >= 1.0 / SHOOT_BPS) {
                 lastShootTime = currentTime;
 
-                outtakeFuel().ifPresent(fuel -> {
-                    fuel.rotateAround(
-                            () -> new Translation3d(0.046038, -0.006424, 0.317031),
-                            () -> new Translation3d(0, -1, 0),
-                            0.317031 - 0.230662,
-                            () -> Math.PI / 2,
-                            () -> 20.0,
-                            () -> {
-                                Translation3d shooterOrigin = new Translation3d(0.210586, 0.239469, 0.455638);
-                                Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
-                                fuel.animateTo(new Pose3d(shooterBallStart, Rotation3d.kZero), false, 88, () -> {
-                                    fuel.rotateAround(
-                                            () -> shooterOrigin.rotateAround(
-                                                    shooterBallStart,
-                                                    new Rotation3d(Rotation2d.fromRotations(
-                                                            RobotContainer.turret.getPositionRotations()))),
-                                            () -> new Translation3d(0, 1, 0)
-                                                    .rotateBy(new Rotation3d(Rotation2d.fromRotations(
-                                                            RobotContainer.turret.getPositionRotations()))),
-                                            0.113106,
-                                            () -> Math.PI - RobotContainer.shooter.getHoodAngle() - Math.PI / 4,
-                                            () -> 10.0,
-                                            () -> toProjectile(
-                                                    fuel,
-                                                    RobotContainer.drivetrain.getSwerveDriveSimulation(),
-                                                    new Translation3d(
-                                                                    ShootOrchestrator.fuelVelocityFromShooterMPS(
-                                                                            RobotContainer.shooter
-                                                                                    .getFlywheelVelocityMps()),
-                                                                    0,
-                                                                    0)
-                                                            .rotateBy(new Rotation3d(
-                                                                    0,
-                                                                    -RobotContainer.shooter.getHoodAngle(),
-                                                                    Units.rotationsToRadians(
+                outtakeFuel()
+                        .ifPresent(fuel -> fuel.rotateAround(
+                                () -> new Translation3d(0.046038, -0.006424, 0.317031),
+                                () -> new Translation3d(0, -1, 0),
+                                0.317031 - 0.230662,
+                                () -> Math.PI / 2,
+                                () -> 20.0,
+                                () -> {
+                                    Translation3d shooterOrigin = new Translation3d(0.210586, 0.239469, 0.455638);
+                                    Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
+                                    fuel.animateTo(
+                                            new Pose3d(shooterBallStart, Rotation3d.kZero),
+                                            88,
+                                            () -> fuel.rotateAround(
+                                                    () -> shooterOrigin.rotateAround(
+                                                            shooterBallStart,
+                                                            new Rotation3d(
+                                                                    Rotation2d.fromRotations(
                                                                             RobotContainer.turret
-                                                                                    .getPositionRotations())))));
-                                });
-                            });
-                });
+                                                                                    .getPositionRotations()))),
+                                                    () -> new Translation3d(0, 1, 0)
+                                                            .rotateBy(new Rotation3d(Rotation2d.fromRotations(
+                                                                    RobotContainer.turret.getPositionRotations()))),
+                                                    0.113106,
+                                                    () -> Math.PI - RobotContainer.shooter.getHoodAngle() - Math.PI / 4,
+                                                    () -> 10.0,
+                                                    () -> toProjectile(
+                                                            fuel,
+                                                            RobotContainer.drivetrain.getSwerveDriveSimulation(),
+                                                            new Translation3d(
+                                                                            ShootOrchestrator
+                                                                                    .fuelVelocityFromShooterMPS(
+                                                                                            RobotContainer.shooter
+                                                                                                    .getFlywheelVelocityMps()),
+                                                                            0,
+                                                                            0)
+                                                                    .rotateBy(
+                                                                            new Rotation3d(
+                                                                                    0,
+                                                                                    -RobotContainer.shooter
+                                                                                            .getHoodAngle(),
+                                                                                    Units.rotationsToRadians(
+                                                                                            RobotContainer.turret
+                                                                                                    .getPositionRotations()))))));
+                                }));
             }
 
             fuelObjectsToRemove.forEach(fuelObjects::remove);

@@ -450,7 +450,7 @@ public final class Constants {
         public static final double ARM_STARTING_POSITION_RADIANS =
                 SysIdManager.getProvider() instanceof frc.robot.subsystems.Intake.SysIdArm
                         ? ARM_DOWN_POSITION_RADIANS
-                        : ARM_DOWN_POSITION_RADIANS;
+                        : ARM_MAX_POSITION_RADIANS;
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS =
                 Constants.Swerve.MAX_MODULE_SPEED * 2; // surface speed of roller // TODO make correct

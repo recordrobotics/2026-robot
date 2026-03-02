@@ -26,6 +26,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private static final double HUB_Z = Units.feetToMeters(6);
     private static final double HUB_RADIUS = Units.inchesToMeters(20);
 
+    Translation3d[] trajectory = new Translation3d[48];
+
     private Translation3d target;
     private boolean shootingEnabled = false;
 
@@ -58,11 +60,12 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         double maxHeight = Units.feetToMeters(8);
         double height = maxHeight - fuelReleasePose.getTranslation().getZ();
 
-        double G = GamePieceProjectile.GRAVITY;
-
-        double timeOfFlight = (Math.sqrt(2 * G * height) + Math.sqrt(2 * G * (maxHeight - targetHeight))) / G;
-        double velocity = Math.sqrt((groundDistance * groundDistance) / (timeOfFlight * timeOfFlight) + 2 * G * height);
-        double angle = Math.atan(timeOfFlight * Math.sqrt(2 * G * height) / groundDistance);
+        double timeOfFlight = (Math.sqrt(2 * GamePieceProjectile.GRAVITY * height)
+                        + Math.sqrt(2 * GamePieceProjectile.GRAVITY * (maxHeight - targetHeight)))
+                / GamePieceProjectile.GRAVITY;
+        double velocity = Math.sqrt((groundDistance * groundDistance) / (timeOfFlight * timeOfFlight)
+                + 2 * GamePieceProjectile.GRAVITY * height);
+        double angle = Math.atan(timeOfFlight * Math.sqrt(2 * GamePieceProjectile.GRAVITY * height) / groundDistance);
 
         if (Double.isNaN(velocity) || Double.isNaN(angle)) {
             return Optional.empty();
@@ -77,8 +80,6 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     public static double shooterMPSFromFuelVelocity(double fuelVelocity) {
         return fuelVelocity / 0.8;
     }
-
-    Translation3d[] trajectory = new Translation3d[48];
 
     private void updateTrajectory(Pose2d robotPose, Pose3d fuelReleasePose) {
         Translation3d velocity = new Translation3d(
@@ -107,6 +108,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
+    @Override
     public void periodicManaged() {
         Pose2d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition();
         Pose3d fuelReleasePose = new Pose3d(robotPose)
