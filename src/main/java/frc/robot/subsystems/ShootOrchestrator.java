@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,10 +10,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Feeder.FeederState;
 import frc.robot.subsystems.Shooter.ShooterState;
 import frc.robot.subsystems.Spindexer.SpindexerState;
+import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.ProjectileSimulationUtils;
 import java.util.Optional;
@@ -21,18 +24,28 @@ import org.littletonrobotics.junction.Logger;
 
 public class ShootOrchestrator extends ManagedSubsystemBase {
 
-    private static final double HUB_X = 4.625594;
-    private static final double HUB_Y = 4.03463;
-    private static final double HUB_Z = Units.feetToMeters(6);
-    private static final double HUB_RADIUS = Units.inchesToMeters(20);
+    private static final Translation3d HUB_POSITION = new Translation3d(4.625594, 4.03463, Units.feetToMeters(6));
+    private static final double HUB_RADIUS_METERS = Units.inchesToMeters(20);
+    private static final Translation3d BLUE_PASSING_TARGET_HP_SIDE = new Translation3d(2.752, 1.664, 0.0);
+    private static final Translation3d BLUE_PASSING_TARGET_DEPOT_SIDE = new Translation3d(
+            BLUE_PASSING_TARGET_HP_SIDE.getX(), FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_HP_SIDE.getY(), 0.0);
+    private static final Translation3d RED_PASSING_TARGET_HP_SIDE = new Translation3d(
+            FlippingUtil.fieldSizeX - BLUE_PASSING_TARGET_HP_SIDE.getX(),
+            FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_HP_SIDE.getY(),
+            0.0);
+    private static final Translation3d RED_PASSING_TARGET_DEPOT_SIDE = new Translation3d(
+            FlippingUtil.fieldSizeX - BLUE_PASSING_TARGET_DEPOT_SIDE.getX(),
+            FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_DEPOT_SIDE.getY(),
+            0.0);
+    private static final double PASSING_ACCEPTABLE_RADIUS_METERS = BLUE_PASSING_TARGET_HP_SIDE.getY();
 
     Translation3d[] trajectory = new Translation3d[48];
-
+    private boolean aimingAtHub = false;
     private Translation3d target;
     private boolean shootingEnabled = false;
 
     public ShootOrchestrator() {
-        setTarget(new Translation3d(HUB_X, HUB_Y, HUB_Z));
+        // nothing to do
     }
 
     public void setEnableShooting(boolean enable) {
@@ -108,8 +121,35 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
+    private void setAutomatedTarget() {
+        if (DriverStationUtils.getCurrentAlliance() == Alliance.Blue
+                ? RobotContainer.poseSensorFusion.getEstimatedPosition().getX() > 4 /* TODO make correct */
+                : RobotContainer.poseSensorFusion.getEstimatedPosition().getX()
+                        < FlippingUtil.fieldSizeX
+                                - 4 /* TODO make correct */) { // return closest passing target based on alliance and
+            // position on field
+            aimingAtHub = false;
+            if (DriverStationUtils.getCurrentAlliance() == Alliance.Blue) {
+                setTarget(
+                        RobotContainer.poseSensorFusion.getEstimatedPosition().getY() < FlippingUtil.fieldSizeY / 2
+                                ? BLUE_PASSING_TARGET_HP_SIDE
+                                : BLUE_PASSING_TARGET_DEPOT_SIDE);
+            } else {
+                setTarget(
+                        RobotContainer.poseSensorFusion.getEstimatedPosition().getY() < FlippingUtil.fieldSizeY / 2
+                                ? RED_PASSING_TARGET_HP_SIDE
+                                : RED_PASSING_TARGET_DEPOT_SIDE);
+            }
+        } else {
+            setTarget(HUB_POSITION);
+            aimingAtHub = true;
+        }
+    }
+
     @Override
     public void periodicManaged() {
+        setAutomatedTarget();
+
         Pose2d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition();
         Pose3d fuelReleasePose = new Pose3d(robotPose)
                 .transformBy(new Transform3d(
@@ -155,7 +195,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             double distanceFromTarget = stepPose.toTranslation2d().getDistance(target.toTranslation2d());
             Logger.recordOutput("ShootOrchestrator/DistanceFromTarget", distanceFromTarget);
 
-            boolean onTarget = distanceFromTarget < HUB_RADIUS;
+            boolean onTarget =
+                    distanceFromTarget < (aimingAtHub ? HUB_RADIUS_METERS : PASSING_ACCEPTABLE_RADIUS_METERS);
             RobotContainer.spindexer.setState((onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF);
             RobotContainer.feeder.setState((onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF);
         }

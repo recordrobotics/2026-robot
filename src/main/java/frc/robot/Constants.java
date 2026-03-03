@@ -201,7 +201,7 @@ public final class Constants {
             MAPLE_SIM;
         }
 
-        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.PHOTON_SIM_INACCURATE;
+        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.MAPLE_CLEAN;
 
         public static final ObjectDetectionSimulationMode OBJECT_DETECTION_SIMULATION_MODE =
                 ObjectDetectionSimulationMode.MAPLE_SIM;
