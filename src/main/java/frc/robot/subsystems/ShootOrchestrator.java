@@ -24,7 +24,11 @@ import org.littletonrobotics.junction.Logger;
 
 public class ShootOrchestrator extends ManagedSubsystemBase {
 
-    private static final Translation3d HUB_POSITION = new Translation3d(4.625594, 4.03463, Units.feetToMeters(6));
+    private static final Translation3d BLUE_HUB_POSITION = new Translation3d(4.625594, 4.03463, Units.feetToMeters(6));
+    private static final Translation3d RED_HUB_POSITION = new Translation3d(
+            FlippingUtil.fieldSizeX - BLUE_HUB_POSITION.getX(),
+            FlippingUtil.fieldSizeY - BLUE_HUB_POSITION.getY(),
+            BLUE_HUB_POSITION.getZ());
     private static final double HUB_RADIUS_METERS = Units.inchesToMeters(20);
     private static final Translation3d BLUE_PASSING_TARGET_HP_SIDE = new Translation3d(2.752, 1.664, 0.0);
     private static final Translation3d BLUE_PASSING_TARGET_DEPOT_SIDE = new Translation3d(
@@ -136,12 +140,12 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                                 : BLUE_PASSING_TARGET_DEPOT_SIDE);
             } else {
                 setTarget(
-                        RobotContainer.poseSensorFusion.getEstimatedPosition().getY() < FlippingUtil.fieldSizeY / 2
+                        RobotContainer.poseSensorFusion.getEstimatedPosition().getY() > FlippingUtil.fieldSizeY / 2
                                 ? RED_PASSING_TARGET_HP_SIDE
                                 : RED_PASSING_TARGET_DEPOT_SIDE);
             }
         } else {
-            setTarget(HUB_POSITION);
+            setTarget(DriverStationUtils.getCurrentAlliance() == Alliance.Blue ? BLUE_HUB_POSITION : RED_HUB_POSITION);
             aimingAtHub = true;
         }
     }
