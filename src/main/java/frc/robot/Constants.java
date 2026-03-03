@@ -500,18 +500,18 @@ public final class Constants {
     }
 
     public static final class Shooter {
-        public static final double HOOD_KP = 60.0;
-        public static final double HOOD_KD = 1.4521;
-        public static final double HOOD_KS = 0.019928;
-        public static final double HOOD_KV = 2.15;
-        public static final double HOOD_KA = 0.0083786;
-        public static final double HOOD_KG = 0.073816;
-        public static final double HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS = 0.31136;
+        public static final double HOOD_KP = 31.295;
+        public static final double HOOD_KD = 2.1075;
+        public static final double HOOD_KS = 0.12011;
+        public static final double HOOD_KV = 2.7761;
+        public static final double HOOD_KA = 0.013839;
+        public static final double HOOD_KG = 0.084491;
+        public static final double HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS = 0.4676;
 
-        public static final double FLYWHEEL_KP = 0.69738;
-        public static final double FLYWHEEL_KS = 0.0021623;
-        public static final double FLYWHEEL_KV = 0.37395;
-        public static final double FLYWHEEL_KA = 0.047355;
+        public static final double FLYWHEEL_KP = 0.0016119;
+        public static final double FLYWHEEL_KS = 0.10324;
+        public static final double FLYWHEEL_KV = 0.35945;
+        public static final double FLYWHEEL_KA = 0.01697;
 
         public static final Current HOOD_SUPPLY_CURRENT_LIMIT = Amps.of(70);
         public static final Current HOOD_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
@@ -523,7 +523,7 @@ public final class Constants {
         public static final Time FLYWHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
         public static final Current FLYWHEEL_STATOR_CURRENT_LIMIT = Amps.of(120);
 
-        public static final double HOOD_MMEXPO_KV = 3.3;
+        public static final double HOOD_MMEXPO_KV = HOOD_KV;
         public static final double HOOD_MMEXPO_KA = 0.3;
 
         public static final double FLYWHEEL_MAX_ACCELERATION = 50;
@@ -538,18 +538,19 @@ public final class Constants {
         public static final double FLYWHEEL_METERS_PER_ROTATION =
                 FLYWHEEL_WHEEL_DIAMETER.in(Meter) * Math.PI / FLYWHEEL_GEAR_RATIO;
 
-        public static final double HOOD_STARTING_POSITION_RADIANS = Units.degreesToRadians(76);
+        // TODO: cad is cooked - fix
+        public static final double HOOD_STARTING_POSITION_RADIANS = Units.degreesToRadians(68.90625);
         public static final double HOOD_MAX_POSITION_RADIANS = HOOD_STARTING_POSITION_RADIANS;
-        public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(50);
+        public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(40.90625);
 
         private Shooter() {}
     }
 
     public static final class Spindexer {
-        public static final double KP = 0.024286;
-        public static final double KS = 0.0037243;
-        public static final double KV = 0.23855;
-        public static final double KA = 0.004786;
+        public static final double KP = 0.0023175;
+        public static final double KS = 0.073451;
+        public static final double KV = 0.23114;
+        public static final double KA = 0.011727;
 
         public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
@@ -567,10 +568,10 @@ public final class Constants {
     }
 
     public static final class Feeder {
-        public static final double KP = 0.027146;
-        public static final double KS = 0.0084082;
-        public static final double KV = 0.11927;
-        public static final double KA = 0.0032071;
+        public static final double KP = 0.0062925;
+        public static final double KS = 0.12382;
+        public static final double KV = 0.11573;
+        public static final double KA = 0.0026933;
 
         public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);

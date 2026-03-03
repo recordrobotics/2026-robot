@@ -34,9 +34,9 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     private static final double HOOD_POSITION_TOLERANCE = Units.degreesToRotations(2);
     private static final double HOOD_VELOCITY_TOLERANCE = Units.degreesToRotations(20);
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(1.0).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.5);
-    private static final Time SYSID_TIMEOUT = Seconds.of(0.8);
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(1.3).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.4);
+    private static final Time SYSID_TIMEOUT = Seconds.of(0.9);
 
     private static final double FLYWHEEL_VELOCITY_TOLERANCE_MPS = 10; // TODO
 
