@@ -32,6 +32,7 @@ import frc.robot.subsystems.io.sim.SpindexerSim;
 import frc.robot.subsystems.io.sim.TurretSim;
 import frc.robot.subsystems.io.stub.IntakeStub;
 import frc.robot.subsystems.io.stub.TurretStub;
+import frc.robot.subsystems.shoot_orchestrator.ShootOrchestrator;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
