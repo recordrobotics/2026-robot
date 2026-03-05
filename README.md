@@ -81,5 +81,12 @@ An example keybinding is provided in [`.vscode/keybindings.json`](.vscode/keybin
 2. Type and select **Preferences: Open Keyboard Shortcuts (JSON)**.
 3. This is where you can define the custom keybinds (**this applies for your whole vscode user not just this repo**)
 
+---
+
+## Spotless Pre-Push Hook
+
+Run this command to set up a git hook that will format your code with spotless before you push: `./gradlew spotlessInstallGitPrePushHook`
+
+
 -------------------------------------------------
 [Record Robotics](https://www.recordrobotics.org/)

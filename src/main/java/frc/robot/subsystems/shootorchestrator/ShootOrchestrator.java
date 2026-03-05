@@ -50,9 +50,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         DISABLED
     }
 
+    Translation3d[] trajectory = new Translation3d[48];
+
     private FeedMode feedMode = FeedMode.ALWAYS;
 
-    Translation3d[] trajectory = new Translation3d[48];
     private boolean aimingAtHub = false;
     private Translation3d target;
     private boolean shootingEnabled = false;
