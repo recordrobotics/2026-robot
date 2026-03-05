@@ -18,7 +18,7 @@ public interface AbstractControl {
 
     boolean isClimbPressed();
 
-    boolean isShootPressed(); // replace with invert shoot
+    boolean isShooterInvertPressed(); // replace with invert shoot
 
     // Movement
     DrivetrainControl getDrivetrainControl();

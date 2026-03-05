@@ -23,6 +23,7 @@ import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
 import org.littletonrobotics.junction.Logger;
 
 public class ShootOrchestrator extends ManagedSubsystemBase {
+    public static final double ALLIANCE_ZONE_THRESHOLD_X = 4.0; // TODO make correct
 
     private static final Translation3d BLUE_HUB_POSITION = new Translation3d(4.625594, 4.03463, Units.feetToMeters(6));
     private static final Translation3d RED_HUB_POSITION = new Translation3d(
@@ -125,12 +126,15 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
-    private void setAutomatedTarget() {
-        if (DriverStationUtils.getCurrentAlliance() == Alliance.Blue
-                ? RobotContainer.poseSensorFusion.getEstimatedPosition().getX() > 4 /* TODO make correct */
+    public static boolean isInAllianceZone() {
+        return DriverStationUtils.getCurrentAlliance() == Alliance.Blue
+                ? RobotContainer.poseSensorFusion.getEstimatedPosition().getX() < ALLIANCE_ZONE_THRESHOLD_X
                 : RobotContainer.poseSensorFusion.getEstimatedPosition().getX()
-                        < FlippingUtil.fieldSizeX
-                                - 4 /* TODO make correct */) { // return closest passing target based on alliance and
+                        > FlippingUtil.fieldSizeX - ALLIANCE_ZONE_THRESHOLD_X;
+    }
+
+    private void setAutomatedTarget() {
+        if (!isInAllianceZone()) { // return closest passing target based on alliance and
             // position on field
             aimingAtHub = false;
             if (DriverStationUtils.getCurrentAlliance() == Alliance.Blue) {

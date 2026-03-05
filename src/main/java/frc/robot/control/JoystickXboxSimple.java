@@ -174,7 +174,7 @@ public class JoystickXboxSimple implements AbstractControl {
     }
 
     @Override
-    public boolean isShootPressed() {
+    public boolean isShooterInvertPressed() {
         return joystick.getRawButton(1);
     }
 }

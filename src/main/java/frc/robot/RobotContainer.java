@@ -226,6 +226,14 @@ public final class RobotContainer {
         }
     }
 
+    private static boolean shouldBeShooting() {
+        if (ShootOrchestrator.isInAllianceZone()) {
+            return !DashboardUI.Overview.getControl().isShooterInvertPressed();
+        } else {
+            return DashboardUI.Overview.getControl().isShooterInvertPressed();
+        }
+    }
+
     private static void configureTriggers() {
         new Trigger(() -> DashboardUI.Overview.getControl().isIntakePressed())
                 .whileTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE)))
@@ -239,7 +247,7 @@ public final class RobotContainer {
             }
         }));
 
-        new Trigger(() -> DashboardUI.Overview.getControl().isShootPressed())
+        new Trigger(RobotContainer::shouldBeShooting)
                 .whileTrue(new InstantCommand(() -> shootOrchestrator.setEnableShooting(true)))
                 .whileFalse(new InstantCommand(() -> shootOrchestrator.setEnableShooting(false)));
 
