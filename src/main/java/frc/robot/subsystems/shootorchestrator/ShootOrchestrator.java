@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shoot_orchestrator;
+package frc.robot.subsystems.shootorchestrator;
 
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;

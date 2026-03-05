@@ -16,7 +16,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Game.IGamePosition;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.shoot_orchestrator.ShootOrchestrator;
+import frc.robot.subsystems.shootorchestrator.ShootOrchestrator;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.ConsoleLogger;

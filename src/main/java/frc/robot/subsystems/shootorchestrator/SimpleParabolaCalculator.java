@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shoot_orchestrator;
+package frc.robot.subsystems.shootorchestrator;
 
 import frc.robot.Constants;
 

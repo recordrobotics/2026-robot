@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shoot_orchestrator;
+package frc.robot.subsystems.shootorchestrator;
 
 public interface ShotCalculator {
     record ForwardReturnType(
