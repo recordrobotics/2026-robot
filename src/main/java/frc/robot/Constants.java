@@ -84,6 +84,9 @@ public final class Constants {
             }
         }
 
+        public static final double HUB_RIM_HEIGHT_METERS = Units.feetToMeters(6);
+        public static final double FUEL_DIAMETER_METERS = Units.inchesToMeters(5.906);
+
         private Game() {}
     }
 
