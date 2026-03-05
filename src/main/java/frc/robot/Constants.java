@@ -358,6 +358,9 @@ public final class Constants {
         /** The max speed the robot can travel safely */
         public static final double MAX_MODULE_SPEED = 4.35; // TODO: measure
 
+        // Offset rotation origin for testing turret feedforward
+        public static final Translation2d TURRET_OFFSET = Translation2d.kZero; // new Translation2d(0.127, 0.127);
+
         public static final RobotConfig PP_DEFAULT_CONFIG = new RobotConfig(
                 Constants.Frame.ROBOT_MASS_KG,
                 Constants.Frame.ROBOT_MOI,
@@ -369,10 +372,10 @@ public final class Constants {
                         Constants.Swerve.KRAKEN_DRIVE_GEAR_RATIO,
                         Constants.Swerve.KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT.in(Amps),
                         1),
-                FRONT_LEFT_WHEEL_LOCATION,
-                FRONT_RIGHT_WHEEL_LOCATION,
-                BACK_LEFT_WHEEL_LOCATION,
-                BACK_RIGHT_WHEEL_LOCATION);
+                FRONT_LEFT_WHEEL_LOCATION.minus(TURRET_OFFSET),
+                FRONT_RIGHT_WHEEL_LOCATION.minus(TURRET_OFFSET),
+                BACK_LEFT_WHEEL_LOCATION.minus(TURRET_OFFSET),
+                BACK_RIGHT_WHEEL_LOCATION.minus(TURRET_OFFSET));
 
         public static final PPHolonomicDriveController PP_DRIVE_CONTROLLER = new PPHolonomicDriveController(
                 new PIDConstants(1.5, 0.0, 0.0), // Translation PID constants
@@ -470,9 +473,12 @@ public final class Constants {
     public static final class Turret {
         public static final double KP = 50;
         public static final double KD = 3.811;
-        public static final double KS = 0.023206;
-        public static final double KV = 1.4012;
-        public static final double KA = 0.11063;
+        public static final double KS = 0.009;
+        public static final double KV = 1.00571757805;
+        public static final double KA_MM = 0.01;
+        public static final double KA = 0.1;
+        public static final double KVP = 0.2;
+        public static final double FF_MUL = 4.8;
 
         public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);

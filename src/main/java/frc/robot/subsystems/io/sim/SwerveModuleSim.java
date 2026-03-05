@@ -1,5 +1,8 @@
 package frc.robot.subsystems.io.sim;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
@@ -17,6 +20,7 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.ModuleConstants;
+import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
@@ -36,6 +40,8 @@ public class SwerveModuleSim implements SwerveModuleIO {
 
         private final TalonFXSimState talonFXSimState;
 
+        private AngularVelocity lastVelocity = RotationsPerSecond.of(0);
+
         public TalonFXMotorControllerSim(TalonFX talonFX) {
             this.id = talonFX.getDeviceID();
             this.talonFXSimState = talonFX.getSimState();
@@ -49,6 +55,10 @@ public class SwerveModuleSim implements SwerveModuleIO {
                 AngularVelocity encoderVelocity) {
             talonFXSimState.setRawRotorPosition(encoderAngle);
             talonFXSimState.setRotorVelocity(encoderVelocity);
+            talonFXSimState.setRotorAcceleration(
+                    (encoderVelocity.in(RotationsPerSecond) - lastVelocity.in(RotationsPerSecond))
+                            / SimulatedArena.getSimulationDt().in(Seconds));
+            lastVelocity = encoderVelocity;
             talonFXSimState.setSupplyVoltage(SimulatedBattery.getBatteryVoltage());
 
             return talonFXSimState.getMotorVoltageMeasure();

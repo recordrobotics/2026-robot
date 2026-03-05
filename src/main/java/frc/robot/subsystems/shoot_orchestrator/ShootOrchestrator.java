@@ -44,6 +44,14 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             0.0);
     private static final double PASSING_ACCEPTABLE_RADIUS_METERS = BLUE_PASSING_TARGET_HP_SIDE.getY();
 
+    public enum FeedMode {
+        AUTO,
+        ALWAYS,
+        DISABLED
+    }
+
+    private FeedMode feedMode = FeedMode.ALWAYS;
+
     Translation3d[] trajectory = new Translation3d[48];
     private boolean aimingAtHub = false;
     private Translation3d target;
@@ -109,8 +117,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
         Translation2d velocity2d = ProjectileSimulationUtils.calculateInitialProjectileVelocityMPS(
                 fuelReleasePose.toPose2d().getTranslation(),
-                ChassisSpeeds.fromRobotRelativeSpeeds(
-                        RobotContainer.drivetrain.getChassisSpeeds(), robotPose.getRotation()),
+                new ChassisSpeeds(),
                 robotPose.getRotation(),
                 velocity.toTranslation2d());
         velocity = new Translation3d(velocity2d.getX(), velocity2d.getY(), velocity.getZ());
@@ -168,8 +175,6 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                     .minus(fuelReleasePose.getTranslation().toTranslation2d());
             Rotation2d fieldTargetRotation = new Rotation2d(Math.atan2(relativeTarget.getY(), relativeTarget.getX()));
             Rotation2d turretTargetRotation = fieldTargetRotation.minus(robotPose.getRotation());
-            RobotContainer.turret.setTarget(turretTargetRotation.getRadians());
-            RobotContainer.shooter.setTargetState(getShooterState().orElse(new ShooterState(0, 0)));
 
             Translation3d velocity = new Translation3d(
                             fuelVelocityFromShooterMPS(RobotContainer.shooter.getFlywheelVelocityMps()), 0, 0)
@@ -185,6 +190,12 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                     robotPose.getRotation(),
                     velocity.toTranslation2d());
             velocity = new Translation3d(velocity2d.getX(), velocity2d.getY(), velocity.getZ());
+
+            RobotContainer.turret.setTarget(
+                    turretTargetRotation.getRadians(),
+                    -RobotContainer.drivetrain.getChassisSpeeds().omegaRadiansPerSecond,
+                    -RobotContainer.drivetrain.getChassisAcceleration().omegaRadiansPerSecond);
+            RobotContainer.shooter.setTargetState(getShooterState().orElse(new ShooterState(0, 0)));
 
             Translation3d stepPose = fuelReleasePose.getTranslation();
             double dt = 0.02;
@@ -203,8 +214,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             double distanceFromTarget = stepPose.toTranslation2d().getDistance(target.toTranslation2d());
             Logger.recordOutput("ShootOrchestrator/DistanceFromTarget", distanceFromTarget);
 
-            boolean onTarget =
-                    distanceFromTarget < (aimingAtHub ? HUB_RADIUS_METERS : PASSING_ACCEPTABLE_RADIUS_METERS);
+            boolean onTarget = true;
+            // distanceFromTarget < (aimingAtHub ? HUB_RADIUS_METERS : PASSING_ACCEPTABLE_RADIUS_METERS);
             RobotContainer.spindexer.setState((onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF);
             RobotContainer.feeder.setState((onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF);
         }
