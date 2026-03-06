@@ -16,7 +16,6 @@ import frc.robot.Constants;
 import frc.robot.Constants.Game.IGamePosition;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.shootorchestrator.ShootOrchestrator;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.ConsoleLogger;
@@ -1149,8 +1148,10 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                             fuel,
                                                             RobotContainer.drivetrain.getSwerveDriveSimulation(),
                                                             new Translation3d(
-                                                                            ShootOrchestrator
-                                                                                    .fuelVelocityFromShooterMPS(
+                                                                            RobotContainer.shootOrchestrator
+                                                                                    .getTarget()
+                                                                                    .shotCalculator()
+                                                                                    .flywheelToFuelVelocity(
                                                                                             RobotContainer.shooter
                                                                                                     .getFlywheelVelocityMps()),
                                                                             0,

@@ -1,14 +1,18 @@
 package frc.robot.subsystems.shootorchestrator;
 
 import com.pathplanner.lib.util.FlippingUtil;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.RobotContainer;
@@ -16,10 +20,10 @@ import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.Feeder.FeederState;
 import frc.robot.subsystems.Shooter.ShooterState;
 import frc.robot.subsystems.Spindexer.SpindexerState;
+import frc.robot.subsystems.shootorchestrator.ShotCalculator.ShotCalculation;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.ProjectileSimulationUtils;
-import java.util.Optional;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
 import org.littletonrobotics.junction.Logger;
 
@@ -45,6 +49,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             0.0);
     private static final double PASSING_ACCEPTABLE_RADIUS_METERS = BLUE_PASSING_TARGET_HP_SIDE.getY();
 
+    private static final ShotCalculator hubCalculator = new HubRegressionCalculator();
+    private static final ShotCalculator passingCalculator = new HubRegressionCalculator();
+
     public enum FeedMode {
         AUTO,
         ALWAYS,
@@ -55,9 +62,13 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     private FeedMode feedMode = FeedMode.ALWAYS;
 
-    private boolean aimingAtHub = false;
-    private Translation3d target;
+    private ShotTarget target;
     private boolean shootingEnabled = false;
+
+    private double lastShotYaw = 0;
+    private boolean hasLastShotYaw = false;
+
+    public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
 
     public ShootOrchestrator() {
         // nothing to do
@@ -67,51 +78,26 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         this.shootingEnabled = enable;
     }
 
-    public final void setTarget(Translation3d target) {
+    public final void setTarget(ShotTarget target) {
         this.target = target;
     }
 
-    public Translation3d getTarget() {
+    public ShotTarget getTarget() {
         return target;
     }
 
-    public Optional<ShooterState> getShooterState() {
-        Pose2d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition();
-        Pose3d fuelReleasePose = new Pose3d(robotPose)
-                .transformBy(new Transform3d(
-                        RobotContainer.model.fuelManager.getShooterFuelReleasePosition(), Rotation3d.kZero));
-        Translation2d relativeTarget =
-                target.toTranslation2d().minus(fuelReleasePose.getTranslation().toTranslation2d());
-
-        double groundDistance = relativeTarget.getNorm();
-        double targetHeight = target.getZ();
-        double maxHeight = Units.feetToMeters(8);
-        double height = maxHeight - fuelReleasePose.getTranslation().getZ();
-
-        double timeOfFlight = (Math.sqrt(2 * GamePieceProjectile.GRAVITY * height)
-                        + Math.sqrt(2 * GamePieceProjectile.GRAVITY * (maxHeight - targetHeight)))
-                / GamePieceProjectile.GRAVITY;
-        double velocity = Math.sqrt((groundDistance * groundDistance) / (timeOfFlight * timeOfFlight)
-                + 2 * GamePieceProjectile.GRAVITY * height);
-        double angle = Math.atan(timeOfFlight * Math.sqrt(2 * GamePieceProjectile.GRAVITY * height) / groundDistance);
-
-        if (Double.isNaN(velocity) || Double.isNaN(angle)) {
-            return Optional.empty();
-        }
-        return Optional.of(new ShooterState(angle, shootingEnabled ? shooterMPSFromFuelVelocity(velocity) : 0));
-    }
-
-    public static double fuelVelocityFromShooterMPS(double shooterMPS) {
-        return shooterMPS * 0.8;
-    }
-
-    public static double shooterMPSFromFuelVelocity(double fuelVelocity) {
-        return fuelVelocity / 0.8;
-    }
-
     private void updateTrajectory(Pose2d robotPose, Pose3d fuelReleasePose) {
+        if (target == null) {
+            for (int i = 0; i < trajectory.length; i++) {
+                trajectory[i] = fuelReleasePose.getTranslation();
+            }
+            return;
+        }
+
         Translation3d velocity = new Translation3d(
-                        fuelVelocityFromShooterMPS(RobotContainer.shooter.getFlywheelVelocityMps()), 0, 0)
+                        target.shotCalculator.flywheelToFuelVelocity(RobotContainer.shooter.getFlywheelVelocityMps()),
+                        0,
+                        0)
                 .rotateBy(new Rotation3d(
                         0,
                         -RobotContainer.shooter.getHoodAngle(),
@@ -119,7 +105,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
         Translation2d velocity2d = ProjectileSimulationUtils.calculateInitialProjectileVelocityMPS(
                 fuelReleasePose.toPose2d().getTranslation(),
-                new ChassisSpeeds(),
+                RobotContainer.drivetrain.getChassisSpeeds(),
                 robotPose.getRotation(),
                 velocity.toTranslation2d());
         velocity = new Translation3d(velocity2d.getX(), velocity2d.getY(), velocity.getZ());
@@ -145,21 +131,23 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private void setAutomatedTarget() {
         if (!isInAllianceZone()) { // return closest passing target based on alliance and
             // position on field
-            aimingAtHub = false;
             if (DriverStationUtils.getCurrentAlliance() == Alliance.Blue) {
-                setTarget(
+                setTarget(new ShotTarget(
                         RobotContainer.poseSensorFusion.getEstimatedPosition().getY() < FlippingUtil.fieldSizeY / 2
                                 ? BLUE_PASSING_TARGET_HP_SIDE
-                                : BLUE_PASSING_TARGET_DEPOT_SIDE);
+                                : BLUE_PASSING_TARGET_DEPOT_SIDE,
+                        passingCalculator));
             } else {
-                setTarget(
+                setTarget(new ShotTarget(
                         RobotContainer.poseSensorFusion.getEstimatedPosition().getY() > FlippingUtil.fieldSizeY / 2
                                 ? RED_PASSING_TARGET_HP_SIDE
-                                : RED_PASSING_TARGET_DEPOT_SIDE);
+                                : RED_PASSING_TARGET_DEPOT_SIDE,
+                        passingCalculator));
             }
         } else {
-            setTarget(DriverStationUtils.getCurrentAlliance() == Alliance.Blue ? BLUE_HUB_POSITION : RED_HUB_POSITION);
-            aimingAtHub = true;
+            setTarget(new ShotTarget(
+                    DriverStationUtils.getCurrentAlliance() == Alliance.Blue ? BLUE_HUB_POSITION : RED_HUB_POSITION,
+                    hubCalculator));
         }
     }
 
@@ -168,68 +156,76 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         setAutomatedTarget();
 
         Pose2d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition();
-        Pose3d fuelReleasePose = new Pose3d(robotPose)
-                .transformBy(new Transform3d(
-                        RobotContainer.model.fuelManager.getShooterFuelReleasePosition(), Rotation3d.kZero));
+        Translation3d fuelReleaseOffset = RobotContainer.model.fuelManager.getShooterFuelReleasePosition();
+        Pose3d fuelReleasePose =
+                new Pose3d(robotPose).transformBy(new Transform3d(fuelReleaseOffset, Rotation3d.kZero));
+
+        ChassisSpeeds robotSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
+                RobotContainer.drivetrain.getChassisSpeeds(), robotPose.getRotation());
+
+        double omega = robotSpeeds.omegaRadiansPerSecond;
+        double releaseVx = robotSpeeds.vxMetersPerSecond - omega * fuelReleaseOffset.getY();
+        double releaseVy = robotSpeeds.vyMetersPerSecond + omega * fuelReleaseOffset.getX();
+        Transform2d fuelReleaseVelocity = new Transform2d(releaseVx, releaseVy, new Rotation2d(omega));
+        Vector<N2> fuelReleaseVelocityVector =
+                fuelReleaseVelocity.getTranslation().toVector();
 
         if (target != null) {
-            Translation2d relativeTarget = target.toTranslation2d()
+            Translation2d relativeTarget = target.position
+                    .toTranslation2d()
                     .minus(fuelReleasePose.getTranslation().toTranslation2d());
-            Rotation2d fieldTargetRotation = new Rotation2d(Math.atan2(relativeTarget.getY(), relativeTarget.getX()));
-            Rotation2d turretTargetRotation = fieldTargetRotation.minus(robotPose.getRotation());
 
-            Translation3d velocity = new Translation3d(
-                            fuelVelocityFromShooterMPS(RobotContainer.shooter.getFlywheelVelocityMps()), 0, 0)
-                    .rotateBy(new Rotation3d(
-                            0,
-                            -RobotContainer.shooter.getHoodAngle(),
-                            Units.rotationsToRadians(RobotContainer.turret.getPositionRotations())));
+            double distanceToTarget = relativeTarget.getNorm();
+            Vector<N2> normTargetVector = relativeTarget.toVector().div(distanceToTarget);
+            double radialVelocity = fuelReleaseVelocityVector.dot(normTargetVector);
 
-            Translation2d velocity2d = ProjectileSimulationUtils.calculateInitialProjectileVelocityMPS(
-                    fuelReleasePose.toPose2d().getTranslation(),
-                    ChassisSpeeds.fromRobotRelativeSpeeds(
-                            RobotContainer.drivetrain.getChassisSpeeds(), robotPose.getRotation()),
-                    robotPose.getRotation(),
-                    velocity.toTranslation2d());
-            velocity = new Translation3d(velocity2d.getX(), velocity2d.getY(), velocity.getZ());
+            Vector<N2> tangentialVelocity = fuelReleaseVelocityVector.minus(normTargetVector.times(radialVelocity));
+
+            ShotCalculation shotCalculation = target.shotCalculator.calculateShot(distanceToTarget, radialVelocity);
+
+            double targetYaw = Math.atan2(relativeTarget.getY(), relativeTarget.getX());
+            double targetPitch = shotCalculation.shootAngleRadians();
+            double targetSpeed = shotCalculation.fuelVelocityMagnitudeMps();
+
+            Vector<N3> shotVector = new Translation3d(targetSpeed, 0.0, 0.0)
+                    .rotateBy(new Rotation3d(0.0, -targetPitch, targetYaw))
+                    .toVector()
+                    .minus(new Translation3d(new Translation2d(tangentialVelocity)).toVector());
+
+            double shotYaw = Math.atan2(shotVector.get(1), shotVector.get(0));
+
+            double shotYawVelocity = hasLastShotYaw ? (shotYaw - lastShotYaw) / 0.02 : 0;
+            lastShotYaw = shotYaw;
+            hasLastShotYaw = true;
 
             RobotContainer.turret.setTarget(
-                    turretTargetRotation.getRadians(),
-                    -RobotContainer.drivetrain.getChassisSpeeds().omegaRadiansPerSecond,
+                    shotYaw - robotPose.getRotation().getRadians(),
+                    shotYawVelocity - RobotContainer.drivetrain.getChassisSpeeds().omegaRadiansPerSecond,
                     -RobotContainer.drivetrain.getChassisAcceleration().omegaRadiansPerSecond);
-            RobotContainer.shooter.setTargetState(getShooterState().orElse(new ShooterState(0, 0)));
 
-            Translation3d stepPose = fuelReleasePose.getTranslation();
-            double dt = 0.02;
-            int maxSteps = 500;
-            int steps = 0;
-            boolean movedUp = false;
-            while ((!movedUp || stepPose.getZ() > target.getZ()) && stepPose.getZ() > 0 && steps < maxSteps) {
-                stepPose = stepPose.plus(velocity.times(dt));
-                velocity = velocity.plus(new Translation3d(0, 0, -GamePieceProjectile.GRAVITY).times(dt));
-                if (stepPose.getZ() > target.getZ()) {
-                    movedUp = true;
-                }
-                steps++;
+            if (shootingEnabled) {
+                double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)));
+                RobotContainer.shooter.setTargetState(
+                        new ShooterState(shotPitch, target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm())));
+            } else {
+                RobotContainer.shooter.setTargetState(new ShooterState(0, 0));
             }
 
-            double distanceFromTarget = stepPose.toTranslation2d().getDistance(target.toTranslation2d());
-            Logger.recordOutput("ShootOrchestrator/DistanceFromTarget", distanceFromTarget);
-
             boolean onTarget = true;
-            // distanceFromTarget < (aimingAtHub ? HUB_RADIUS_METERS : PASSING_ACCEPTABLE_RADIUS_METERS);
+            SpindexerState spindexerState = (onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF;
+
             RobotContainer.spindexer.setState(
                     DashboardUI.Overview.getControl().isUnstuckSpindexerPressed()
                             ? SpindexerState.UNSTUCK
-                            : (onTarget && shootingEnabled)
-                                    ? SpindexerState.ON
-                                    : SpindexerState.OFF); // nested ternery hehe
+                            : spindexerState);
             RobotContainer.feeder.setState((onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF);
         }
 
         updateTrajectory(robotPose, fuelReleasePose);
 
-        Logger.recordOutput("ShootOrchestrator/Target", new Pose3d(target, Rotation3d.kZero));
+        Logger.recordOutput(
+                "ShootOrchestrator/Target",
+                target == null ? Pose3d.kZero : new Pose3d(target.position, Rotation3d.kZero));
         Logger.recordOutput("ShootOrchestrator/Trajectory", trajectory);
         Logger.recordOutput("ShootOrchestrator/ShootingEnabled", shootingEnabled);
     }

@@ -517,7 +517,7 @@ public final class Constants {
         public static final double HOOD_KG = 0.084491;
         public static final double HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS = 0.4676;
 
-        public static final double FLYWHEEL_KP = 0.0016119;
+        public static final double FLYWHEEL_KP = 1.5;
         public static final double FLYWHEEL_KS = 0.10324;
         public static final double FLYWHEEL_KV = 0.35945;
         public static final double FLYWHEEL_KA = 0.01697;
