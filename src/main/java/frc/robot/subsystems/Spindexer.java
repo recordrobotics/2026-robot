@@ -35,7 +35,8 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
 
     public enum SpindexerState {
         OFF,
-        ON
+        ON,
+        UNSTUCK
     }
 
     public Spindexer(SpindexerIO io) {
@@ -87,11 +88,11 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
     public void setState(SpindexerState newState) {
         targetState = newState;
 
-        if (targetState == SpindexerState.OFF) {
-            targetVelocityRps = 0.0;
-        } else if (targetState == SpindexerState.ON) {
-            targetVelocityRps = Constants.Spindexer.INTAKE_VELOCITY_RPS;
-        }
+        targetVelocityRps = switch (targetState) {
+            case OFF -> 0.0;
+            case ON -> Constants.Spindexer.INTAKE_VELOCITY_RPS;
+            case UNSTUCK -> Constants.Spindexer.UNSTUCK_VELOCITY_RPS;
+        };
 
         if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
             io.setMotionMagic(request.withVelocity(targetVelocityRps));

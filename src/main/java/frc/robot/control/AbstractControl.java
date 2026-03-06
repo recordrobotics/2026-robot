@@ -13,12 +13,13 @@ public interface AbstractControl {
 
     void update();
 
-    // TODO temporary, replace with AI
-    boolean isIntakePressed();
+    boolean isForceIntakePressed();
 
     boolean isClimbPressed();
 
-    boolean isShooterInvertPressed(); // replace with invert shoot
+    boolean isShooterInvertPressed();
+
+    boolean isUnstuckSpindexerPressed();
 
     // Movement
     DrivetrainControl getDrivetrainControl();

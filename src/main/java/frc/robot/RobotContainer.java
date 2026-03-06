@@ -234,7 +234,7 @@ public final class RobotContainer {
     }
 
     private static void configureTriggers() {
-        new Trigger(() -> DashboardUI.Overview.getControl().isIntakePressed())
+        new Trigger(() -> DashboardUI.Overview.getControl().isForceIntakePressed())
                 .whileTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE)))
                 .whileFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED)));
 
@@ -250,7 +250,7 @@ public final class RobotContainer {
                                 CLIMBER_AUTORAISE_DISTANCE_METERS,
                                 poseSensorFusion.getEstimatedPosition(),
                                 climber.getCurrentHeight())
-                        && DriverStationUtils.getTeleopMatchTime().orElse(1000)
+                        && DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE)
                                 < CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING) // boolean must be in this order to
                 // avoid lazy class loading caused
                 // by short circuiting // TODO make

@@ -164,7 +164,7 @@ public class JoystickXboxSimple implements AbstractControl {
     }
 
     @Override
-    public boolean isIntakePressed() {
+    public boolean isForceIntakePressed() {
         return joystick.getRawButton(2);
     }
 
@@ -176,5 +176,10 @@ public class JoystickXboxSimple implements AbstractControl {
     @Override
     public boolean isShooterInvertPressed() {
         return joystick.getRawButton(1);
+    }
+
+    @Override
+    public boolean isUnstuckSpindexerPressed() {
+        return joystick.getRawButton(3);
     }
 }

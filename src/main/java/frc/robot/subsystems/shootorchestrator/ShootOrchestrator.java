@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.RobotContainer;
+import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.Feeder.FeederState;
 import frc.robot.subsystems.Shooter.ShooterState;
 import frc.robot.subsystems.Spindexer.SpindexerState;
@@ -30,7 +31,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             FlippingUtil.fieldSizeX - BLUE_HUB_POSITION.getX(),
             FlippingUtil.fieldSizeY - BLUE_HUB_POSITION.getY(),
             BLUE_HUB_POSITION.getZ());
-    private static final double HUB_RADIUS_METERS = Units.inchesToMeters(20);
+    private static final double HUB_RADIUS_METERS = Units.inchesToMeters(20); // TODO use hexagon?
     private static final Translation3d BLUE_PASSING_TARGET_HP_SIDE = new Translation3d(2.752, 1.664, 0.0);
     private static final Translation3d BLUE_PASSING_TARGET_DEPOT_SIDE = new Translation3d(
             BLUE_PASSING_TARGET_HP_SIDE.getX(), FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_HP_SIDE.getY(), 0.0);
@@ -217,7 +218,12 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
             boolean onTarget = true;
             // distanceFromTarget < (aimingAtHub ? HUB_RADIUS_METERS : PASSING_ACCEPTABLE_RADIUS_METERS);
-            RobotContainer.spindexer.setState((onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF);
+            RobotContainer.spindexer.setState(
+                    DashboardUI.Overview.getControl().isUnstuckSpindexerPressed()
+                            ? SpindexerState.UNSTUCK
+                            : (onTarget && shootingEnabled)
+                                    ? SpindexerState.ON
+                                    : SpindexerState.OFF); // nested ternery hehe
             RobotContainer.feeder.setState((onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF);
         }
 

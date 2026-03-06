@@ -252,7 +252,7 @@ public class TestControlBridge implements AbstractControl {
     }
 
     @Override
-    public boolean isIntakePressed() {
+    public boolean isForceIntakePressed() {
         return false; // TODO
     }
 
@@ -263,6 +263,11 @@ public class TestControlBridge implements AbstractControl {
 
     @Override
     public boolean isShooterInvertPressed() {
+        return false; // TODO
+    }
+
+    @Override
+    public boolean isUnstuckSpindexerPressed() {
         return false; // TODO
     }
 }
