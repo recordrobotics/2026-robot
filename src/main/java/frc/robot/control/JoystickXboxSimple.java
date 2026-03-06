@@ -165,7 +165,7 @@ public class JoystickXboxSimple implements AbstractControl {
 
     @Override
     public boolean isIntakePressed() {
-        return joystick.getRawButton(3);
+        return joystick.getRawButton(2);
     }
 
     @Override
