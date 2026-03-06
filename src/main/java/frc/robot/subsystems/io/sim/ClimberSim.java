@@ -5,6 +5,7 @@ import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -119,18 +120,16 @@ public class ClimberSim implements ClimberIO {
         motorClimber.close();
     }
 
-    private Pose3d getSimulatedClimberPose() {
-        edu.wpi.first.math.geometry.Pose2d climberPose2d =
-                drivetrainSim.getSimulatedDriveTrainPose().transformBy(Constants.Climber.ROBOT_TO_CLIMBER_OFFSET);
-        return SimpleMath.withHeight(
-                climberPose2d, currentPhysicsSim.getPositionMeters() + Constants.Climber.CLIMBER_BASE_HEIGHT_METERS);
+    public static Pose3d getSimulatedClimberPose(Pose2d robotPose, double climberHeightMeters) {
+        Pose2d climberPose2d = robotPose.transformBy(Constants.Climber.ROBOT_TO_CLIMBER_OFFSET);
+        return SimpleMath.withHeight(climberPose2d, climberHeightMeters + Constants.Climber.CLIMBER_BASE_HEIGHT_METERS);
     }
 
-    private boolean isClimbing() {
-        Pose3d climberPose = getSimulatedClimberPose();
+    public static boolean isWithinDistanceOfClimbing(
+            double distanceMeters, Pose2d robotPose, double climberHeightMeters) {
+        Pose3d climberPose = getSimulatedClimberPose(robotPose, climberHeightMeters);
         for (Translation3d towerEndPose : Constants.Climber.END_OF_TOWER_POSITIONS) {
-            if (climberPose.getTranslation().getDistance(towerEndPose)
-                    < Constants.Climber.END_OF_TOWER_POSITION_TOLERANCE) {
+            if (climberPose.getTranslation().getDistance(towerEndPose) < distanceMeters) {
                 return true;
             }
         }
@@ -139,12 +138,20 @@ public class ClimberSim implements ClimberIO {
 
     @Override
     public void simulationPeriodic() {
-        if (isClimbing() && currentPhysicsSim == physicsSimNotSupportingRobot) {
+        if (isWithinDistanceOfClimbing(
+                        Constants.Climber.END_OF_TOWER_POSITION_TOLERANCE,
+                        drivetrainSim.getSimulatedDriveTrainPose(),
+                        currentPhysicsSim.getPositionMeters())
+                && currentPhysicsSim == physicsSimNotSupportingRobot) {
             currentPhysicsSim = physicsSimSupportingRobot;
             currentPhysicsSim.setState(
                     physicsSimNotSupportingRobot.getPositionMeters(),
                     physicsSimNotSupportingRobot.getVelocityMetersPerSecond());
-        } else if (!isClimbing() && currentPhysicsSim == physicsSimSupportingRobot) {
+        } else if (!isWithinDistanceOfClimbing(
+                        Constants.Climber.END_OF_TOWER_POSITION_TOLERANCE,
+                        drivetrainSim.getSimulatedDriveTrainPose(),
+                        currentPhysicsSim.getPositionMeters())
+                && currentPhysicsSim == physicsSimSupportingRobot) {
             currentPhysicsSim = physicsSimNotSupportingRobot;
             currentPhysicsSim.setState(
                     physicsSimSupportingRobot.getPositionMeters(),

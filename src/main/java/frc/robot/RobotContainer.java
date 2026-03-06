@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 // WPILib imports
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.RobotState.Mode;
 // Local imports
-import frc.robot.commands.VibrateXbox;
 import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
 import frc.robot.dashboard.DashboardUI;
@@ -71,10 +69,11 @@ public final class RobotContainer {
     public static final double FMS_AUTO_RESET_ENCODERS_MIN_TIME = 13;
 
     /**
-     * The time remaining in the match after which we should go to climb
-     * the FMS plays a sound at 30 seconds, we don't need that much time
+     * The time remaining in the match after which the climber will automatically raise if near the tower
      */
-    public static final double XBOX_RUMBLE_ENDGAME_TIME = 15.0; // seconds
+    public static final double CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING = 15.0;
+
+    public static final double CLIMBER_AUTORAISE_DISTANCE_METERS = 1.0;
 
     public static final ImmutableIntArray NON_HUB_TAG_IDS =
             ImmutableIntArray.of(1, 12, 13, 14, 15, 16, 7, 6, 17, 28, 29, 30, 31, 32, 23, 22);
@@ -247,6 +246,19 @@ public final class RobotContainer {
             }
         }));
 
+        new Trigger(() -> ClimberSim.isWithinDistanceOfClimbing(
+                                CLIMBER_AUTORAISE_DISTANCE_METERS,
+                                poseSensorFusion.getEstimatedPosition(),
+                                climber.getCurrentHeight())
+                        && DriverStationUtils.getTeleopMatchTime().orElse(1000)
+                                < CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING) // boolean must be in this order to
+                // avoid lazy class loading caused
+                // by short circuiting // TODO make
+                // it not trigger at the start of
+                // non-match teleop
+                .onTrue(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.UP)))
+                .onFalse(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.DOWN)));
+
         new Trigger(RobotContainer::shouldBeShooting)
                 .whileTrue(new InstantCommand(() -> shootOrchestrator.setEnableShooting(true)))
                 .whileFalse(new InstantCommand(() -> shootOrchestrator.setEnableShooting(false)));
@@ -267,9 +279,6 @@ public final class RobotContainer {
                         spindexer,
                         turret))
                 .onFalse(Commands.runOnce(() -> CommandScheduler.getInstance().cancelAll()));
-
-        new Trigger(() -> DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE) <= XBOX_RUMBLE_ENDGAME_TIME)
-                .onTrue(new VibrateXbox(RumbleType.kBothRumble, 1.0).withTimeout(2.0));
 
         // Reset pose trigger
         new Trigger(() -> DashboardUI.Overview.getControl().isPoseResetTriggered())
