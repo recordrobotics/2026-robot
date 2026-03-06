@@ -548,10 +548,9 @@ public final class Constants {
         public static final double FLYWHEEL_METERS_PER_ROTATION =
                 FLYWHEEL_WHEEL_DIAMETER.in(Meter) * Math.PI / FLYWHEEL_GEAR_RATIO;
 
-        // TODO: cad is cooked - fix
-        public static final double HOOD_STARTING_POSITION_RADIANS = Units.degreesToRadians(68.90625);
+        public static final double HOOD_STARTING_POSITION_RADIANS = Units.degreesToRadians(68.906250);
         public static final double HOOD_MAX_POSITION_RADIANS = HOOD_STARTING_POSITION_RADIANS;
-        public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(40.90625);
+        public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(35.871753);
 
         private Shooter() {}
     }
