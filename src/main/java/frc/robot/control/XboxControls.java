@@ -4,16 +4,16 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.modifiers.DrivetrainControl;
 
 @SuppressWarnings({"java:S109"})
-public class JoystickControls implements AbstractControl {
+public class XboxControls implements AbstractControl {
 
-    private Joystick joystick;
+    private XboxController xbox;
 
     private Transform2d lastVelocity = new Transform2d();
     private Transform2d lastAcceleration = new Transform2d();
@@ -21,18 +21,26 @@ public class JoystickControls implements AbstractControl {
     private Transform2d acceleration = new Transform2d();
     private Transform2d jerk = new Transform2d();
 
-    public JoystickControls(int joystickPort) {
-        joystick = new Joystick(joystickPort);
+    public XboxControls(int xboxPort) {
+        xbox = new XboxController(xboxPort);
+    }
+
+    private Pair<Double, Double> getXYStickOutput() {
+        return new Pair<>(xbox.getLeftX(), xbox.getLeftY());
+    }
+
+    private double getSpinStickOutput() {
+        return xbox.getRightX();
     }
 
     @Override
     public void update() {
         Pair<Double, Double> xy = getXYOriented();
 
-        double x = xy.getFirst() * getDirectionalSpeedLevel();
-        double y = xy.getSecond() * getDirectionalSpeedLevel();
+        double x = xy.getFirst() * Constants.Swerve.MAX_MODULE_SPEED;
+        double y = xy.getSecond() * Constants.Swerve.MAX_MODULE_SPEED;
 
-        velocity = new Transform2d(x, y, new Rotation2d(getSpin() * getSpinSpeedLevel()));
+        velocity = new Transform2d(x, y, new Rotation2d(getSpin() * Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS));
         acceleration = new Transform2d(
                         velocity.getTranslation()
                                 .minus(lastVelocity.getTranslation())
@@ -76,11 +84,11 @@ public class JoystickControls implements AbstractControl {
     }
 
     public Pair<Double, Double> getXYRaw() {
+        Pair<Double, Double> xy = getXYStickOutput();
         double unsquaredX = SimpleMath.applyThresholdAndSensitivity(
-                joystick.getX(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
+                xy.getFirst(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
         double unsquaredY = SimpleMath.applyThresholdAndSensitivity(
-                joystick.getY(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
-
+                xy.getSecond(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
         // Squares the inputs while preserving the sign to allow for finer control at low speeds
         double x = Math.copySign(Math.pow(unsquaredX, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredX);
         double y = Math.copySign(Math.pow(unsquaredY, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredY);
@@ -96,74 +104,50 @@ public class JoystickControls implements AbstractControl {
     public Double getSpin() {
         // Gets raw twist value
         double unsquaredSpin = SimpleMath.applyThresholdAndSensitivity(
-                -SimpleMath.remap(joystick.getTwist(), -1.0, 1.0, -1.0, 1.0),
+                -SimpleMath.remap(getSpinStickOutput(), -1.0, 1.0, -1.0, 1.0),
                 Constants.Control.JOYSTICK_SPIN_THRESHOLD,
                 Constants.Control.JOYSTICK_SPIN_SENSITIVITY);
         // Squares the input while preserving the sign to allow for finer control at low speeds
-        return Math.copySign(Math.pow(unsquaredSpin, Constants.Control.JOYSTICK_SPIN_EXPONENT), unsquaredSpin);
-    }
-
-    public Double getDirectionalSpeedLevel() {
-        // Remaps speed meter from -1 -> 1 to 0.5 -> 4, then returns
-        double speed = SimpleMath.remap(
-                joystick.getRawAxis(3),
-                1,
-                -1,
-                Constants.Control.DIRECTIONAL_SPEED_METER_LOW,
-                Constants.Swerve.MAX_MODULE_SPEED);
-
-        return speed;
-    }
-
-    public Double getSpinSpeedLevel() {
-        // Remaps speed meter from -1 -> 1 to 0.5 -> MAX, then returns
-        double speed = SimpleMath.remap(
-                joystick.getRawAxis(3),
-                1,
-                -1,
-                Constants.Control.SPIN_SPEED_METER_LOW,
-                Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS / 2);
-
-        return speed;
+        return Math.copySign(Math.pow(unsquaredSpin, Constants.Control.JOYSTICK_SPIN_EXPONENT), unsquaredSpin) / 2;
     }
 
     @Override
     public boolean isPoseResetTriggered() {
-        return joystick.getRawButtonPressed(5);
+        return xbox.getRawButtonPressed(7);
     }
 
     @Override
     public boolean isKillTriggered() {
-        return joystick.getRawButton(4);
+        return xbox.getRawButton(8);
     }
 
     @Override
     public void vibrate(RumbleType type, double value) {
-        // Joystick does not support rumble, so this method is empty
+        xbox.setRumble(type, value);
     }
 
     @Override
     public boolean isForceIntakePressed() {
-        return joystick.getRawButton(2);
+        return xbox.getLeftTriggerAxis() > 0.75;
     }
 
     @Override
     public boolean isClimbPressed() {
-        return joystick.getRawButton(7);
+        return xbox.getAButton();
     }
 
     @Override
     public boolean isShooterInvertPressed() {
-        return joystick.getRawButton(1);
+        return xbox.getRightTriggerAxis() > 0.75;
     }
 
     @Override
     public boolean isUnstuckSpindexerPressed() {
-        return joystick.getRawButton(3);
+        return xbox.getRightBumperButton();
     }
 
     @Override
     public String toDisplayName() {
-        return "Joystick";
+        return "Xbox";
     }
 }

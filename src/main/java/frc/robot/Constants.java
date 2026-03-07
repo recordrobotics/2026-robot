@@ -226,25 +226,23 @@ public final class Constants {
 
         // Sensitivity for speed meter
         public static final double DIRECTIONAL_SPEED_METER_LOW = 0.25;
-        public static final double DIRECTIONAL_SPEED_METER_HIGH = 4.7;
         public static final double SPIN_SPEED_METER_LOW = 0.5;
-        public static final double SPIN_SPEED_METER_HIGH = 2.4;
 
         // Sensitivies for directional controls (XY) and spin (theta)
-        public static final double JOYSTICK_DIRECTIONAL_SENSITIVITY = 1;
-        public static final double JOYSTICK_SPIN_SENSITIVITY = 2;
-        public static final double JOYSTICK_X_THRESHOLD = 0.25;
-        public static final double JOYSTICK_Y_THRESHOLD = 0.25;
+        public static final double JOYSTICK_XY_SENSITIVITY = 1;
+        public static final double JOYSTICK_SPIN_SENSITIVITY = 1;
+        public static final double JOYSTICK_XY_THRESHOLD = 0.25;
         public static final double JOYSTICK_SPIN_THRESHOLD = 0.3;
+        public static final double JOYSTICK_XY_EXPONENT = 2;
+        public static final double JOYSTICK_SPIN_EXPONENT = 2;
 
-        // Thresholds for directional controls (XY) and spin (theta)
-        public static final double XBOX_DIRECTIONAL_SENSITIVITY = 1;
-        public static final double XBOX_X_THRESHOLD = 0.15;
-        public static final double XBOX_Y_THRESHOLD = 0.15;
-        public static final double XBOX_SPIN_THRESHOLD = 0.3;
-
-        public static final double XBOX_SPIN_ROT_THRESHOLD = 0.1;
-        public static final double XBOX_SPIN_ROT_SENSITIVITY = 1.0;
+        // Sensitivies for directional controls (XY) and spin (theta)
+        public static final double XBOX_XY_SENSITIVITY = 1;
+        public static final double XBOX_SPIN_SENSITIVITY = 2;
+        public static final double XBOX_XY_THRESHOLD = 0.1;
+        public static final double XBOX_SPIN_THRESHOLD = 0.1;
+        public static final double XBOX_XY_EXPONENT = 3;
+        public static final double XBOX_SPIN_EXPONENT = 5;
 
         private Control() {}
     }
@@ -384,6 +382,9 @@ public final class Constants {
 
         public static final DriveMotorType driveMotorType = DriveMotorType.KRAKEN;
         public static final TurnMotorType turnMotorType = TurnMotorType.KRAKEN;
+
+        public static final Double MAX_ANGULAR_SPEED_RADIANS =
+                Constants.Swerve.MAX_MODULE_SPEED / Constants.Swerve.WHEEL_BASE_RADIUS; // trust
 
         private Swerve() {}
 

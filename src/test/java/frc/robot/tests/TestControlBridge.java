@@ -102,12 +102,12 @@ public class TestControlBridge implements AbstractControl {
     public Pair<Double, Double> getXYRaw() {
         double x = SimpleMath.applyThresholdAndSensitivity(
                 axisStates.getOrDefault(Axis.X, 0.0),
-                Constants.Control.JOYSTICK_X_THRESHOLD,
-                Constants.Control.JOYSTICK_DIRECTIONAL_SENSITIVITY);
+                Constants.Control.JOYSTICK_XY_THRESHOLD,
+                Constants.Control.JOYSTICK_XY_SENSITIVITY);
         double y = SimpleMath.applyThresholdAndSensitivity(
                 axisStates.getOrDefault(Axis.Y, 0.0),
-                Constants.Control.JOYSTICK_Y_THRESHOLD,
-                Constants.Control.JOYSTICK_DIRECTIONAL_SENSITIVITY);
+                Constants.Control.JOYSTICK_XY_THRESHOLD,
+                Constants.Control.JOYSTICK_XY_SENSITIVITY);
 
         return new Pair<>(x, y);
     }
@@ -136,7 +136,7 @@ public class TestControlBridge implements AbstractControl {
                 1,
                 -1,
                 Constants.Control.DIRECTIONAL_SPEED_METER_LOW,
-                Constants.Control.DIRECTIONAL_SPEED_METER_HIGH);
+                Constants.Swerve.MAX_MODULE_SPEED);
 
         if (isHalfSpeedTriggered()) {
             speed /= HALF_SPEED_DIRECTIONAL_DIVIDER;
@@ -152,7 +152,7 @@ public class TestControlBridge implements AbstractControl {
                 1,
                 -1,
                 Constants.Control.SPIN_SPEED_METER_LOW,
-                Constants.Control.SPIN_SPEED_METER_HIGH);
+                Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS);
 
         if (isHalfSpeedTriggered()) {
             speed /= HALF_SPEED_SPIN_DIVIDER;
@@ -164,11 +164,6 @@ public class TestControlBridge implements AbstractControl {
     @Override
     public boolean isPoseResetTriggered() {
         return getButton(Button.POSE_RESET);
-    }
-
-    @Override
-    public boolean isLimelightResetTriggered() {
-        return getButton(Button.LIMELIGHT_RESET);
     }
 
     @Override
@@ -249,6 +244,12 @@ public class TestControlBridge implements AbstractControl {
         TWIST,
         SPEED_LEVEL,
         POV
+    }
+
+    @Override
+    public String toDisplayName() {
+        throw new UnsupportedOperationException(
+                "TestControlBridge should only be used for automated tests, never as a control scheme.");
     }
 
     @Override
