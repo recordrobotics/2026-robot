@@ -57,10 +57,13 @@ public class IntakeSim implements IntakeIO {
             armMotor,
             Constants.Intake.ARM_GEAR_RATIO,
             0.253046091813, // distance from axis of rotation to center of mass
-            Constants.Intake.ARM_DOWN_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
-            Constants.Intake.ARM_MAX_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
+            Constants.Intake.ARM_DOWN_POSITION_RADIANS
+                    + Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS),
+            Constants.Intake.ARM_MAX_POSITION_RADIANS
+                    + Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS),
             true,
-            Constants.Intake.ARM_STARTING_POSITION_RADIANS + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS,
+            Constants.Intake.ARM_STARTING_POSITION_RADIANS
+                    + Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS),
             0.0,
             0.0);
 
@@ -167,20 +170,22 @@ public class IntakeSim implements IntakeIO {
     public void setArmPositionRotations(double newValueRotations) {
         // Reset internal sim state
         armSimModel.setState(
-                Units.rotationsToRadians(newValueRotations) + Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS, 0);
+                Units.rotationsToRadians(newValueRotations)
+                        + Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS),
+                0);
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
         armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
                 * Units.radiansToRotations(armSimModel.getAngleRads()
-                        - Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS
+                        - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
                         - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimLeader.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
                 * Units.radiansToRotations(armSimModel.getAngleRads()
-                        - Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS
+                        - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
                         - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimFollower.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
@@ -294,14 +299,14 @@ public class IntakeSim implements IntakeIO {
 
         armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
                 * Units.radiansToRotations(armSimModel.getAngleRads()
-                        - Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS
+                        - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
                         - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimLeader.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
 
         armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
                 * Units.radiansToRotations(armSimModel.getAngleRads()
-                        - Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS
+                        - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
                         - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armSimFollower.setRotorVelocity(
                 Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));

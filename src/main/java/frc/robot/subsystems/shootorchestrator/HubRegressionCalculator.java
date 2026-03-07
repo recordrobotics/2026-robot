@@ -2,14 +2,16 @@ package frc.robot.subsystems.shootorchestrator;
 
 public class HubRegressionCalculator implements ShotCalculator {
 
+    private static final double FLYWHEEL_TO_FUEL_RATIO = 0.44;
+
     @Override
     public double fuelToFlywheelVelocity(double fuelVelocityMps) {
-        return fuelVelocityMps / 0.8;
+        return fuelVelocityMps / FLYWHEEL_TO_FUEL_RATIO;
     }
 
     @Override
     public double flywheelToFuelVelocity(double flywheelVelocityMps) {
-        return flywheelVelocityMps * 0.8;
+        return flywheelVelocityMps * FLYWHEEL_TO_FUEL_RATIO;
     }
 
     @Override

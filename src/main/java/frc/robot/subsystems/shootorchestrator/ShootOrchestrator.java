@@ -15,6 +15,9 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.Feeder.FeederState;
@@ -52,6 +55,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private static final ShotCalculator hubCalculator = new HubRegressionCalculator();
     private static final ShotCalculator passingCalculator = new HubRegressionCalculator();
 
+    private static final double BOTTOM_BEAM_TIME_TO_BALL_HIT = 0.06;
+    private static final double TOP_BEAM_TIME_TO_BALL_HIT = 0.04;
+
     public enum FeedMode {
         AUTO,
         ALWAYS,
@@ -68,10 +74,17 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private double lastShotYaw = 0;
     private boolean hasLastShotYaw = false;
 
+    private double timeAtBallHit = 0;
+    private double shooterFeedforward = 0;
+
     public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
 
     public ShootOrchestrator() {
         // nothing to do
+        SmartDashboard.putNumber("SHOTTFED", 1.224808013371447);
+
+        SmartDashboard.putNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
+        SmartDashboard.putNumber("SHOOT_VELOCITY", 0);
     }
 
     public void setEnableShooting(boolean enable) {
@@ -151,9 +164,32 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
+    private void feedforwardShooter() {
+        double f = SmartDashboard.getNumber("SHOTTFED", 1.224808013371447);
+        double currentTime = Timer.getTimestamp();
+
+        if (RobotContainer.feeder.isBottomBeamBroken()) {
+            timeAtBallHit = currentTime + BOTTOM_BEAM_TIME_TO_BALL_HIT;
+        }
+
+        if (RobotContainer.feeder.isTopBeamBroken()) {
+            timeAtBallHit = currentTime + TOP_BEAM_TIME_TO_BALL_HIT;
+        }
+
+        if (timeAtBallHit > currentTime) {
+            double timeLeft = timeAtBallHit - currentTime;
+            if (timeLeft <= 0.06 && timeLeft >= 0.02) {
+                shooterFeedforward = f;
+            }
+        } else {
+            shooterFeedforward = 0;
+        }
+    }
+
     @Override
     public void periodicManaged() {
         setAutomatedTarget();
+        feedforwardShooter();
 
         Pose2d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition();
         Translation3d fuelReleaseOffset = RobotContainer.model.fuelManager.getShooterFuelReleasePosition();
@@ -205,10 +241,19 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
             if (shootingEnabled) {
                 double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)));
-                RobotContainer.shooter.setTargetState(
-                        new ShooterState(shotPitch, target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm())));
+                // RobotContainer.shooter.setTargetState(new ShooterState(
+                //         shotPitch,
+                //         target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm()),
+                //         shooterFeedforward));
+
+                double hoodAngle = SmartDashboard.getNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
+                double flyVel = SmartDashboard.getNumber("SHOOT_VELOCITY", 0);
+                RobotContainer.shooter.setTargetState(new ShooterState(
+                        hoodAngle,
+                        flyVel,
+                        shooterFeedforward));
             } else {
-                RobotContainer.shooter.setTargetState(new ShooterState(0, 0));
+                RobotContainer.shooter.setTargetState(new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));
             }
 
             boolean onTarget = true;

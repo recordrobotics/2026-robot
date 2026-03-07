@@ -49,6 +49,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
     private double hoodTargetPositionRotations;
     private double flywheelTargetVelocityMps;
+    private double flywheelFeedforward;
 
     public Shooter(ShooterIO io) {
         this.io = io;
@@ -119,7 +120,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
                 flywheelConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive)));
         io.setFlywheelFollowerMotionMagic(flywheelFollowerRequest);
 
-        setTargetState(new ShooterState(Constants.Shooter.HOOD_STARTING_POSITION_RADIANS, 0.0));
+        setTargetState(new ShooterState(Constants.Shooter.HOOD_STARTING_POSITION_RADIANS, 0.0, 0));
 
         sysIdRoutineFlywheel = new SysIdRoutine(
                 new SysIdRoutine.Config(
@@ -141,12 +142,14 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     public void setTargetState(ShooterState targetState) {
         hoodTargetPositionRotations = Units.radiansToRotations(targetState.hoodAngle);
         flywheelTargetVelocityMps = targetState.flywheelVelocityMps;
+        flywheelFeedforward = targetState.feedforward;
 
         if (!isForceDisabled()) {
             if (!(SysIdManager.getProvider() instanceof SysIdHood))
                 io.setHoodMotionMagic(hoodRequest.withPosition(hoodTargetPositionRotations));
             if (!(SysIdManager.getProvider() instanceof SysIdFlywheel))
-                io.setFlywheelMotionMagic(flywheelRequest.withVelocity(flywheelTargetVelocityMps));
+                io.setFlywheelMotionMagic(
+                        flywheelRequest.withVelocity(flywheelTargetVelocityMps).withFeedForward(flywheelFeedforward));
         }
     }
 
@@ -157,7 +160,8 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
             io.setFlywheelVoltage(0.0);
         } else {
             io.setHoodMotionMagic(hoodRequest.withPosition(hoodTargetPositionRotations));
-            io.setFlywheelMotionMagic(flywheelRequest.withVelocity(flywheelTargetVelocityMps));
+            io.setFlywheelMotionMagic(
+                    flywheelRequest.withVelocity(flywheelTargetVelocityMps).withFeedForward(flywheelFeedforward));
         }
     }
 
@@ -257,7 +261,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         io.close();
     }
 
-    public record ShooterState(double hoodAngle, double flywheelVelocityMps) {}
+    public record ShooterState(double hoodAngle, double flywheelVelocityMps, double feedforward) {}
 
     public static class SysIdHood implements SysIdProvider {
         @Override

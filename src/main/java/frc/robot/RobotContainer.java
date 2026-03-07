@@ -20,6 +20,7 @@ import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.io.real.ClimberReal;
 import frc.robot.subsystems.io.real.FeederReal;
+import frc.robot.subsystems.io.stub.IntakeStub;
 import frc.robot.subsystems.io.real.ShooterReal;
 import frc.robot.subsystems.io.real.SpindexerReal;
 import frc.robot.subsystems.io.sim.ClimberSim;
@@ -28,7 +29,6 @@ import frc.robot.subsystems.io.sim.IntakeSim;
 import frc.robot.subsystems.io.sim.ShooterSim;
 import frc.robot.subsystems.io.sim.SpindexerSim;
 import frc.robot.subsystems.io.sim.TurretSim;
-import frc.robot.subsystems.io.stub.IntakeStub;
 import frc.robot.subsystems.io.stub.TurretStub;
 import frc.robot.subsystems.shootorchestrator.ShootOrchestrator;
 import frc.robot.utils.AutoPath;
@@ -43,7 +43,9 @@ import frc.robot.utils.SysIdManager;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
+import java.util.EnumSet;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.photonvision.simulation.VisionSystemSim;
 
 /**
@@ -80,6 +82,14 @@ public final class RobotContainer {
     public static final double PHOTON_SIM_NOISY_STDDEV_POS = 0.2;
     public static final double PHOTON_SIM_NOISY_STDDEV_ROT = 0.1;
 
+    public enum ShootMode {
+        DISABLED,
+        AUTO,
+        FORCE
+    }
+
+    public static LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
+
     public static Drivetrain drivetrain;
     public static PoseSensorFusion poseSensorFusion;
     public static PowerDistributionPanel pdp;
@@ -112,6 +122,9 @@ public final class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     private static void initialize() {
         noEncoderResetAlert = new Alert("Encoders not reset!", AlertType.kError);
+
+        EnumSet.allOf(ShootMode.class).forEach(v -> shootModeChooser.addOption(v.name(), v));
+        shootModeChooser.addDefaultOption(ShootMode.DISABLED.name(), ShootMode.DISABLED);
 
         try {
             drivetrain = new Drivetrain();
@@ -227,10 +240,21 @@ public final class RobotContainer {
     }
 
     private static boolean shouldBeShooting() {
-        if (ShootOrchestrator.isInAllianceZone()) {
-            return !DashboardUI.Overview.getControl().isShooterInvertPressed();
-        } else {
-            return DashboardUI.Overview.getControl().isShooterInvertPressed();
+        if (shootModeChooser.get() == null) return false;
+
+        switch (shootModeChooser.get()) {
+            case FORCE:
+                return true;
+            case DISABLED:
+                return false;
+            case AUTO:
+                if (ShootOrchestrator.isInAllianceZone()) {
+                    return !DashboardUI.Overview.getControl().isShooterInvertPressed();
+                } else {
+                    return DashboardUI.Overview.getControl().isShooterInvertPressed();
+                }
+            default:
+                return false;
         }
     }
 
@@ -252,11 +276,7 @@ public final class RobotContainer {
                                 poseSensorFusion.getEstimatedPosition(),
                                 climber.getCurrentHeight())
                         && DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE)
-                                < CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING) // boolean must be in this order to
-                // avoid lazy class loading caused
-                // by short circuiting // TODO make
-                // it not trigger at the start of
-                // non-match teleop
+                                < CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING)
                 .onTrue(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.UP)))
                 .onFalse(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.DOWN)));
 

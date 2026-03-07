@@ -39,8 +39,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     private static final double ARM_VELOCITY_TOLERANCE = Units.degreesToRotations(50);
     private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 1.0; // TODO
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(0.8).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.2);
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.0).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.8);
     private static final Time SYSID_TIMEOUT = Seconds.of(0.8);
 
     private static final Time SYSID_WHEEL_TIMEOUT = Seconds.of(3.0);
@@ -83,8 +83,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         slot0ConfigsLeader.kP = Constants.Intake.ARM_KP;
         slot0ConfigsLeader.kD = Constants.Intake.ARM_KD;
         slot0ConfigsLeader.GravityType = GravityTypeValue.Arm_Cosine;
-        slot0ConfigsLeader.GravityArmPositionOffset =
-                Units.radiansToRotations(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_RADIANS);
+        slot0ConfigsLeader.GravityArmPositionOffset = Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS;
 
         configLeader.MotionMagic.MotionMagicExpo_kV = Constants.Intake.ARM_MMEXPO_KV;
         configLeader.MotionMagic.MotionMagicExpo_kA = Constants.Intake.ARM_MMEXPO_KA;
@@ -149,7 +148,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
                         SYSID_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Arm/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(
-                        v -> io.setArmVoltage(v.in(Volts) + 1.7 * Math.signum(v.in(Volts)) + 0.3), null, this));
+                        v -> io.setArmVoltage(
+                                v.in(Volts) + 0.9 * Math.cos(Units.rotationsToRadians(getArmPositionRotations()))),
+                        null,
+                        this));
 
         sysIdRoutineWheel = new SysIdRoutine(
                 new SysIdRoutine.Config(
