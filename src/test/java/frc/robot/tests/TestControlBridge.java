@@ -102,12 +102,12 @@ public class TestControlBridge implements AbstractControl {
     public Pair<Double, Double> getXYRaw() {
         double x = SimpleMath.applyThresholdAndSensitivity(
                 axisStates.getOrDefault(Axis.X, 0.0),
-                Constants.Control.JOYSTICK_X_THRESHOLD,
-                Constants.Control.JOYSTICK_DIRECTIONAL_SENSITIVITY);
+                Constants.Control.JOYSTICK_XY_THRESHOLD,
+                Constants.Control.JOYSTICK_XY_SENSITIVITY);
         double y = SimpleMath.applyThresholdAndSensitivity(
                 axisStates.getOrDefault(Axis.Y, 0.0),
                 Constants.Control.JOYSTICK_Y_THRESHOLD,
-                Constants.Control.JOYSTICK_DIRECTIONAL_SENSITIVITY);
+                Constants.Control.JOYSTICK_XY_SENSITIVITY);
 
         return new Pair<>(x, y);
     }

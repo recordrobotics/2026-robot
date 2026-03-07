@@ -231,16 +231,16 @@ public final class Constants {
         public static final double SPIN_SPEED_METER_HIGH = 2.4;
 
         // Sensitivies for directional controls (XY) and spin (theta)
-        public static final double JOYSTICK_DIRECTIONAL_SENSITIVITY = 1;
+        public static final double JOYSTICK_XY_SENSITIVITY = 1;
         public static final double JOYSTICK_SPIN_SENSITIVITY = 2;
-        public static final double JOYSTICK_X_THRESHOLD = 0.25;
-        public static final double JOYSTICK_Y_THRESHOLD = 0.25;
+        public static final double JOYSTICK_XY_THRESHOLD = 0.25;
         public static final double JOYSTICK_SPIN_THRESHOLD = 0.3;
+        public static final double JOYSTICK_XY_EXPONENT = 2;
+        public static final double JOYSTICK_SPIN_EXPONENT = 2;
 
         // Thresholds for directional controls (XY) and spin (theta)
         public static final double XBOX_DIRECTIONAL_SENSITIVITY = 1;
-        public static final double XBOX_X_THRESHOLD = 0.15;
-        public static final double XBOX_Y_THRESHOLD = 0.15;
+        public static final double XBOX_XY_THRESHOLD = 0.15;
         public static final double XBOX_SPIN_THRESHOLD = 0.3;
 
         public static final double XBOX_SPIN_ROT_THRESHOLD = 0.1;

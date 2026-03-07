@@ -82,14 +82,14 @@ public class JoystickControls implements AbstractControl {
     }
 
     public Pair<Double, Double> getXYRaw() {
-        double x = SimpleMath.applyThresholdAndSensitivity(
-                joystick.getX(),
-                Constants.Control.JOYSTICK_X_THRESHOLD,
-                Constants.Control.JOYSTICK_DIRECTIONAL_SENSITIVITY);
-        double y = SimpleMath.applyThresholdAndSensitivity(
-                joystick.getY(),
-                Constants.Control.JOYSTICK_Y_THRESHOLD,
-                Constants.Control.JOYSTICK_DIRECTIONAL_SENSITIVITY);
+        double unsquaredX = SimpleMath.applyThresholdAndSensitivity(
+                joystick.getX(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
+        double unsquaredY = SimpleMath.applyThresholdAndSensitivity(
+                joystick.getY(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
+
+        // Squares the inputs while preserving the sign to allow for finer control at low speeds
+        double x = Math.copySign(Math.pow(unsquaredX, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredX);
+        double y = Math.copySign(Math.pow(unsquaredY, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredY);
 
         return new Pair<>(x, y);
     }
@@ -101,10 +101,12 @@ public class JoystickControls implements AbstractControl {
 
     public Double getSpin() {
         // Gets raw twist value
-        return SimpleMath.applyThresholdAndSensitivity(
+        double unsquaredSpin = SimpleMath.applyThresholdAndSensitivity(
                 -SimpleMath.remap(joystick.getTwist(), -1.0, 1.0, -1.0, 1.0),
                 Constants.Control.JOYSTICK_SPIN_THRESHOLD,
                 Constants.Control.JOYSTICK_SPIN_SENSITIVITY);
+        // Squares the input while preserving the sign to allow for finer control at low speeds
+        return Math.copySign(Math.pow(unsquaredSpin, Constants.Control.JOYSTICK_SPIN_EXPONENT), unsquaredSpin) / 2;
     }
 
     public boolean isHalfSpeedTriggered() {
