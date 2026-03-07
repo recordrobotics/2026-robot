@@ -46,9 +46,9 @@ public final class OverviewLayout extends AbstractLayout {
 
         // Sets up drive mode options
         for (AbstractControl abstractControl : controls) {
-            driveMode.addOption(abstractControl.getClass().getSimpleName(), abstractControl);
+            driveMode.addOption(abstractControl.toDisplayName(), abstractControl);
         }
-        driveMode.addDefaultOption(defaultControl.getClass().getSimpleName(), defaultControl);
+        driveMode.addDefaultOption(defaultControl.toDisplayName(), defaultControl);
 
         EnumSet.allOf(DriverOrientation.class).forEach(v -> driverOrientation.addOption(v.displayName, v));
         driverOrientation.addDefaultOption(

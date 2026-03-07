@@ -29,11 +29,11 @@ public interface AbstractControl {
     // Misc
     boolean isPoseResetTriggered();
 
-    boolean isLimelightResetTriggered();
-
     boolean isKillTriggered();
 
     void vibrate(RumbleType type, double value);
+
+    String toDisplayName();
 
     // Orient XY
     static Pair<Double, Double> orientXY(Pair<Double, Double> input) {
