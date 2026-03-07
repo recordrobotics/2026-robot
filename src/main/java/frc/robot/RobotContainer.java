@@ -183,7 +183,7 @@ public final class RobotContainer {
         PlannedAuto.setAutoSupplier(DashboardUI.Autonomous::getAutoChooser);
 
         // Sets up Control scheme chooser
-        DashboardUI.Overview.addControls(new JoystickXboxSimple(CONTROL_JOYSTICK_PORT, CONTROL_XBOX_PORT));
+        DashboardUI.Overview.addControls(new JoystickControls(CONTROL_JOYSTICK_PORT, CONTROL_XBOX_PORT));
 
         configureTriggers();
 

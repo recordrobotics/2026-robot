@@ -12,7 +12,7 @@ import frc.robot.utils.SimpleMath;
 import frc.robot.utils.modifiers.DrivetrainControl;
 
 @SuppressWarnings({"java:S109"})
-public class JoystickXboxSimple implements AbstractControl {
+public class JoystickControls implements AbstractControl {
 
     private static final double HALF_SPEED_DIRECTIONAL_DIVIDER = 3;
     private static final double HALF_SPEED_SPIN_DIVIDER = 2;
@@ -26,7 +26,7 @@ public class JoystickXboxSimple implements AbstractControl {
     private Transform2d acceleration = new Transform2d();
     private Transform2d jerk = new Transform2d();
 
-    public JoystickXboxSimple(int joystickPort, int xboxPort) {
+    public JoystickControls(int joystickPort, int xboxPort) {
         joystick = new Joystick(joystickPort);
         xboxController = new XboxController(xboxPort);
     }
