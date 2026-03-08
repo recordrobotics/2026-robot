@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
@@ -165,11 +166,11 @@ public class LimelightCamera extends PoseEstimationCamera {
         LimelightHelpers.setCameraPose_RobotSpace(
                 getName(),
                 robotToCamera.getX(),
-                robotToCamera.getY(),
+                -robotToCamera.getY(),
                 robotToCamera.getZ(),
-                robotToCamera.getRotation().getX(),
-                robotToCamera.getRotation().getY(),
-                robotToCamera.getRotation().getZ());
+                Units.radiansToDegrees(robotToCamera.getRotation().getX()),
+                Units.radiansToDegrees(robotToCamera.getRotation().getY()),
+                Units.radiansToDegrees(robotToCamera.getRotation().getZ()));
     }
 
     /**

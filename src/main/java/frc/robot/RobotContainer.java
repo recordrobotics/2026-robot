@@ -20,7 +20,7 @@ import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.io.real.ClimberReal;
 import frc.robot.subsystems.io.real.FeederReal;
-import frc.robot.subsystems.io.stub.IntakeStub;
+import frc.robot.subsystems.io.real.IntakeReal;
 import frc.robot.subsystems.io.real.ShooterReal;
 import frc.robot.subsystems.io.real.SpindexerReal;
 import frc.robot.subsystems.io.sim.ClimberSim;
@@ -134,7 +134,7 @@ public final class RobotContainer {
         }
 
         if (Constants.RobotState.getMode() == Mode.REAL) {
-            intake = new Intake(new IntakeStub());
+            intake = new Intake(new IntakeReal(ROBOT_PERIODIC));
             turret = new Turret(new TurretStub());
             shooter = new Shooter(new ShooterReal(ROBOT_PERIODIC));
             spindexer = new Spindexer(new SpindexerReal(ROBOT_PERIODIC));
@@ -260,8 +260,8 @@ public final class RobotContainer {
 
     private static void configureTriggers() {
         new Trigger(() -> DashboardUI.Overview.getControl().isForceIntakePressed())
-                .whileTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE)))
-                .whileFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED)));
+                .whileTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED)))
+                .whileFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE)));
 
         new Trigger(() -> DashboardUI.Overview.getControl().isClimbPressed()).onTrue(new InstantCommand(() -> {
             if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {

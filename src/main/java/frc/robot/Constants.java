@@ -128,21 +128,21 @@ public final class Constants {
 
     public static final class Vision {
 
-        public static final String TURRET_NAME = "turret";
-        public static final String HOPPER_BACK_NAME = "hopper-back";
+        public static final String TURRET_NAME = "limelight-trt";
+        public static final String HOPPER_BACK_NAME = "limelight-bk";
         public static final String LEFT_BACK_NAME = "left-back";
-        public static final String RIGHT_FRONT_NAME = "right-front";
+        public static final String RIGHT_FRONT_NAME = "limelight-fr";
         public static final String RIGHT_BACK_NAME = "right-back";
         public static final String INTAKE_LEFT_NAME = "intake-left";
         public static final String INTAKE_RIGHT_NAME = "intake-right";
 
-        public static final Transform3d ROBOT_TO_CAMERA_LEFT_FRONT = new Transform3d(
+        public static final Transform3d ROBOT_TO_CAMERA_HOPPER_BACK = new Transform3d(
                 new Translation3d(0.311558, 0.330204, 0.246383), new Rotation3d(0, Units.degreesToRadians(-21), 0));
         public static final Transform3d ROBOT_TO_CAMERA_LEFT_BACK = new Transform3d(
                 new Translation3d(0.219412, -0.050800, 0.156247), new Rotation3d(0, Units.degreesToRadians(-27), 0));
         public static final Transform3d ROBOT_TO_CAMERA_RIGHT_FRONT = new Transform3d(
-                new Translation3d(-0.031750, 0.373120, 0.196097),
-                new Rotation3d(0, Units.degreesToRadians(-12.894), Units.degreesToRadians(90)));
+                new Translation3d(0.188160, -0.298610, 0.471224),
+                new Rotation3d(Units.degreesToRadians(4.0478724), Units.degreesToRadians(108.3905868), Units.degreesToRadians(-38.2675251)));
         public static final Transform3d ROBOT_TO_CAMERA_RIGHT_BACK = new Transform3d(
                 new Translation3d(-0.006350, -0.370769, 0.197020),
                 new Rotation3d(0, Units.degreesToRadians(-18.951), Units.degreesToRadians(-90)));
@@ -448,10 +448,10 @@ public final class Constants {
         public static final double ARM_KV = 0.8;
         public static final double ARM_KA = 0.3;
 
-        public static final double WHEEL_KP = 0.85;
-        public static final double WHEEL_KS = 0.035684;
-        public static final double WHEEL_KV = 0.60609;
-        public static final double WHEEL_KA = 0.01538;
+        public static final double WHEEL_KP = 0.063832;
+        public static final double WHEEL_KS = 0.40838;
+        public static final double WHEEL_KV = 0.68198;
+        public static final double WHEEL_KA = 0.051395;
 
         public static final double WHEEL_MAX_ACCELERATION = 190;
         public static final double WHEEL_MAX_JERK = 590;
@@ -464,9 +464,10 @@ public final class Constants {
                         ? ARM_DOWN_POSITION_RADIANS
                         : ARM_MAX_POSITION_RADIANS;
 
-        public static final double WHEEL_INTAKE_VELOCITY_MPS =
-                Constants.Swerve.MAX_MODULE_SPEED * 2; // surface speed of roller // TODO make correct
-        public static final double WHEEL_EJECT_VELOCITY_MPS = -6.0; // surface speed of roller // TODO make correct
+        public static final double ARM_DOWN_FF = -0.5;
+
+        public static final double WHEEL_INTAKE_VELOCITY_MPS = 5.5;
+        public static final double WHEEL_EJECT_VELOCITY_MPS = -5.5;
 
         public static final double ARM_GEAR_RATIO = 12.8571428571;
         public static final double ARM_GRAVITY_POSITION_OFFSET_ROTATIONS = -0.082671;
@@ -558,8 +559,7 @@ public final class Constants {
                 FLYWHEEL_WHEEL_DIAMETER.in(Meter) * Math.PI / FLYWHEEL_GEAR_RATIO;
 
         public static final double HOOD_STARTING_POSITION_RADIANS = Units.degreesToRadians(68.906250);
-        public static final double 
-        HOOD_MAX_POSITION_RADIANS = HOOD_STARTING_POSITION_RADIANS;
+        public static final double HOOD_MAX_POSITION_RADIANS = HOOD_STARTING_POSITION_RADIANS;
         public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(35.871753);
 
         private Shooter() {}

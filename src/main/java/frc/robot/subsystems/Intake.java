@@ -35,15 +35,19 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     // of the robot)
 
     private static final double ARM_POSITION_TOLERANCE = Units.degreesToRotations(5);
-    private static final double ARM_POSITION_TOLERANCE_WHEEL_START = Units.degreesToRotations(6);
+    private static final double ARM_POSITION_TOLERANCE_WHEEL_START = Units.degreesToRotations(15);
     private static final double ARM_VELOCITY_TOLERANCE = Units.degreesToRotations(50);
     private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 1.0; // TODO
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.0).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.8);
-    private static final Time SYSID_TIMEOUT = Seconds.of(0.8);
+    private static final Velocity<VoltageUnit> SYSID_ARM_RAMP_RATE =
+            Volts.of(2.0).per(Second);
+    private static final Voltage SYSID_ARM_STEP_VOLTAGE = Volts.of(0.8);
+    private static final Time SYSID_ARM_TIMEOUT = Seconds.of(0.8);
 
-    private static final Time SYSID_WHEEL_TIMEOUT = Seconds.of(3.0);
+    private static final Velocity<VoltageUnit> SYSID_WHEEL_RAMP_RATE =
+            Volts.of(2.86).per(Second);
+    private static final Voltage SYSID_WHEEL_STEP_VOLTAGE = Volts.of(4.3);
+    private static final Time SYSID_WHEEL_TIMEOUT = Seconds.of(1.5);
 
     private final IntakeIO io;
     private final SysIdRoutine sysIdRoutineArm;
@@ -143,9 +147,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
 
         sysIdRoutineArm = new SysIdRoutine(
                 new SysIdRoutine.Config(
-                        SYSID_RAMP_RATE,
-                        SYSID_STEP_VOLTAGE,
-                        SYSID_TIMEOUT,
+                        SYSID_ARM_RAMP_RATE,
+                        SYSID_ARM_STEP_VOLTAGE,
+                        SYSID_ARM_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Arm/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(
                         v -> io.setArmVoltage(
@@ -155,8 +159,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
 
         sysIdRoutineWheel = new SysIdRoutine(
                 new SysIdRoutine.Config(
-                        null, // default 1 volt/second ramp rate
-                        null, // default 7 volt step voltage
+                        SYSID_WHEEL_RAMP_RATE, // default 1 volt/second ramp rate
+                        SYSID_WHEEL_STEP_VOLTAGE, // default 7 volt step voltage
                         SYSID_WHEEL_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Wheel/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(v -> io.setWheelVoltage(v.in(Volts)), null, this));
@@ -181,19 +185,23 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         targetState = state;
 
         armTargetRotations = switch (state) {
-            case INTAKE -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
-            case EJECT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
+            case INTAKE, EJECT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
             case STARTING -> Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
             case RETRACTED -> Units.radiansToRotations(Constants.Intake.ARM_RETRACTED_POSITION_RADIANS);
         };
         wheelTargetVelocityMps = switch (state) {
-            case INTAKE -> Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS;
+            case INTAKE, RETRACTED -> Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS;
             case EJECT -> Constants.Intake.WHEEL_EJECT_VELOCITY_MPS;
-            case STARTING, RETRACTED -> 0.0;
+            case STARTING -> 0.0;
         };
 
         if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdArm))
-            io.setArmLeaderMotionMagic(armLeaderRequest.withPosition(armTargetRotations)); // follower will follow this
+            io.setArmLeaderMotionMagic(armLeaderRequest
+                    .withPosition(armTargetRotations)
+                    .withFeedForward(
+                            state == IntakeState.INTAKE || state == IntakeState.EJECT
+                                    ? Constants.Intake.ARM_DOWN_FF
+                                    : 0)); // follower will follow this
 
         updateWheel();
     }

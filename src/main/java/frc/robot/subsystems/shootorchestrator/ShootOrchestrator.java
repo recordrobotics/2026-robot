@@ -15,8 +15,8 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.dashboard.DashboardUI;
@@ -248,12 +248,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
                 double hoodAngle = SmartDashboard.getNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
                 double flyVel = SmartDashboard.getNumber("SHOOT_VELOCITY", 0);
-                RobotContainer.shooter.setTargetState(new ShooterState(
-                        hoodAngle,
-                        flyVel,
-                        shooterFeedforward));
+                RobotContainer.shooter.setTargetState(new ShooterState(hoodAngle, flyVel, shooterFeedforward));
             } else {
-                RobotContainer.shooter.setTargetState(new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));
+                RobotContainer.shooter.setTargetState(
+                        new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));
             }
 
             boolean onTarget = true;
