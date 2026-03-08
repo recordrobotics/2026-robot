@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -243,6 +244,10 @@ public final class Constants {
         public static final double XBOX_SPIN_THRESHOLD = 0.1;
         public static final double XBOX_XY_EXPONENT = 3;
         public static final double XBOX_SPIN_EXPONENT = 5;
+        public static final double SPIN_KP = 1.5;
+        public static final double SPIN_KD = 0.1;
+        public static final Constraints SPIN_CONSTRAINTS = new Constraints(
+                Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS, Constants.Swerve.MAX_ANGULAR_ACCELERATION_RADIANS);
 
         private Control() {}
     }
@@ -272,6 +277,9 @@ public final class Constants {
     }
 
     public static final class Swerve {
+
+        public static final double MAX_ANGULAR_ACCELERATION_RADIANS =
+                54.9727426818; // TODO add convertion from wheel m/s to robot spin
 
         public static final double PERIODIC = 0.02;
 

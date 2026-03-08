@@ -1,6 +1,7 @@
 package frc.robot.control;
 
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -14,6 +15,9 @@ import frc.robot.utils.modifiers.DrivetrainControl;
 public class XboxControls implements AbstractControl {
 
     private XboxController xbox;
+
+    private ProfiledPIDController spinController = new ProfiledPIDController(
+            Constants.Control.SPIN_KP, 0, Constants.Control.SPIN_KD, Constants.Control.SPIN_CONSTRAINTS);
 
     private Transform2d lastVelocity = new Transform2d();
     private Transform2d lastAcceleration = new Transform2d();
