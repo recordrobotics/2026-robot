@@ -18,6 +18,8 @@ public class XboxControls implements AbstractControl {
 
     private ProfiledPIDController spinController = new ProfiledPIDController(
             Constants.Control.SPIN_KP, 0, Constants.Control.SPIN_KD, Constants.Control.SPIN_CONSTRAINTS);
+    private double spinOutput = 0;
+    private double spinTarget = 0;
 
     private Transform2d lastVelocity = new Transform2d();
     private Transform2d lastAcceleration = new Transform2d();
@@ -27,24 +29,37 @@ public class XboxControls implements AbstractControl {
 
     public XboxControls(int xboxPort) {
         xbox = new XboxController(xboxPort);
+        spinController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     private Pair<Double, Double> getXYStickOutput() {
         return new Pair<>(xbox.getLeftX(), xbox.getLeftY());
     }
 
-    private double getSpinStickOutput() {
-        return xbox.getRightX();
-    }
-
     @Override
     public void update() {
+        // calculate velocity from the target spin position
+        Pair<Boolean, Rotation2d> targetPair = getSpinRotation2d();
+        boolean hasTarget = targetPair.getFirst();
+        Rotation2d target = targetPair.getSecond();
+        if (!hasTarget) {
+            target = new Rotation2d(spinTarget);
+        } else {
+            spinTarget = target.getRadians();
+        }
+        spinOutput = spinController.calculate(
+                RobotContainer.poseSensorFusion
+                        .getEstimatedPosition()
+                        .getRotation()
+                        .getRadians(),
+                target.getRadians());
+
         Pair<Double, Double> xy = getXYOriented();
 
         double x = xy.getFirst() * Constants.Swerve.MAX_MODULE_SPEED;
         double y = xy.getSecond() * Constants.Swerve.MAX_MODULE_SPEED;
 
-        velocity = new Transform2d(x, y, new Rotation2d(getSpin() * Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS));
+        velocity = new Transform2d(x, y, new Rotation2d(spinOutput));
         acceleration = new Transform2d(
                         velocity.getTranslation()
                                 .minus(lastVelocity.getTranslation())
@@ -76,7 +91,7 @@ public class XboxControls implements AbstractControl {
     public Transform2d getRawDriverInput() {
         Pair<Double, Double> xy = getXYRaw();
         // Returns the raw driver input as a Transform2d
-        return new Transform2d(xy.getFirst(), xy.getSecond(), Rotation2d.fromRadians(getSpin()));
+        return new Transform2d(xy.getFirst(), xy.getSecond(), new Rotation2d(spinOutput));
     }
 
     public boolean isAutoAlignTriggered() {
@@ -105,14 +120,15 @@ public class XboxControls implements AbstractControl {
         return AbstractControl.orientXY(new Pair<>(xy.getFirst(), xy.getSecond()));
     }
 
-    public Double getSpin() {
-        // Gets raw twist value
-        double unsquaredSpin = SimpleMath.applyThresholdAndSensitivity(
-                -SimpleMath.remap(getSpinStickOutput(), -1.0, 1.0, -1.0, 1.0),
-                Constants.Control.JOYSTICK_SPIN_THRESHOLD,
-                Constants.Control.JOYSTICK_SPIN_SENSITIVITY);
-        // Squares the input while preserving the sign to allow for finer control at low speeds
-        return Math.copySign(Math.pow(unsquaredSpin, Constants.Control.JOYSTICK_SPIN_EXPONENT), unsquaredSpin) / 2;
+    public Pair<Boolean, Rotation2d> getSpinRotation2d() {
+        double x = xbox.getRightX();
+        double y = xbox.getRightY();
+        double angle = -Math.atan2(y, x) + Math.PI / 2;
+        double magnitude = Math.hypot(x, y);
+        if (magnitude < Constants.Control.JOYSTICK_ABSOLUTE_SPIN_THRESHOLD) {
+            return new Pair<>(false, new Rotation2d());
+        }
+        return new Pair<>(true, new Rotation2d(angle));
     }
 
     @Override

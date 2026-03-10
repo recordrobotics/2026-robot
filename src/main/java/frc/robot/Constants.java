@@ -244,10 +244,11 @@ public final class Constants {
         public static final double XBOX_SPIN_THRESHOLD = 0.1;
         public static final double XBOX_XY_EXPONENT = 3;
         public static final double XBOX_SPIN_EXPONENT = 5;
-        public static final double SPIN_KP = 1.5;
+        public static final double SPIN_KP = 4;
         public static final double SPIN_KD = 0.1;
         public static final Constraints SPIN_CONSTRAINTS = new Constraints(
                 Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS, Constants.Swerve.MAX_ANGULAR_ACCELERATION_RADIANS);
+        public static final double JOYSTICK_ABSOLUTE_SPIN_THRESHOLD = 0.1;
 
         private Control() {}
     }
@@ -277,9 +278,6 @@ public final class Constants {
     }
 
     public static final class Swerve {
-
-        public static final double MAX_ANGULAR_ACCELERATION_RADIANS =
-                54.9727426818; // TODO add convertion from wheel m/s to robot spin
 
         public static final double PERIODIC = 0.02;
 
@@ -354,6 +352,9 @@ public final class Constants {
 
         // Turn max velocity
         public static final double TURN_MAX_ANGULAR_VELOCITY = 5; // ROTATIONS / SECOND // TODO: measure
+
+        public static final double MAX_ANGULAR_ACCELERATION_RADIANS =
+                54.9727426818 / WHEEL_BASE_RADIUS; // do the math if you want but this is right trust
 
         public static final double DRIVE_MAX_ACCELERATION = 13.18;
         public static final double DRIVE_MAX_JERK = 131.28;
