@@ -142,7 +142,10 @@ public final class Constants {
                 new Translation3d(0.219412, -0.050800, 0.156247), new Rotation3d(0, Units.degreesToRadians(-27), 0));
         public static final Transform3d ROBOT_TO_CAMERA_RIGHT_FRONT = new Transform3d(
                 new Translation3d(0.188160, -0.298610, 0.471224),
-                new Rotation3d(Units.degreesToRadians(4.0478724), Units.degreesToRadians(108.3905868), Units.degreesToRadians(-38.2675251)));
+                new Rotation3d(
+                        Units.degreesToRadians(4.0478724),
+                        Units.degreesToRadians(108.3905868),
+                        Units.degreesToRadians(-38.2675251)));
         public static final Transform3d ROBOT_TO_CAMERA_RIGHT_BACK = new Transform3d(
                 new Translation3d(-0.006350, -0.370769, 0.197020),
                 new Rotation3d(0, Units.degreesToRadians(-18.951), Units.degreesToRadians(-90)));

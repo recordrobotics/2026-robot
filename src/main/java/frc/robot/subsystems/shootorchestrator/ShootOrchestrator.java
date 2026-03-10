@@ -77,14 +77,17 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private double timeAtBallHit = 0;
     private double shooterFeedforward = 0;
 
+    public double hoodAngleOverride = Constants.Shooter.HOOD_MAX_POSITION_RADIANS;
+    public double shootVelocityOverride = 0;
+
     public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
 
     public ShootOrchestrator() {
         // nothing to do
         SmartDashboard.putNumber("SHOTTFED", 1.224808013371447);
 
-        SmartDashboard.putNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
-        SmartDashboard.putNumber("SHOOT_VELOCITY", 0);
+        SmartDashboard.putNumber("HOOD_ANGLE", hoodAngleOverride);
+        SmartDashboard.putNumber("SHOOT_VELOCITY", shootVelocityOverride);
     }
 
     public void setEnableShooting(boolean enable) {
@@ -246,9 +249,12 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 //         target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm()),
                 //         shooterFeedforward));
 
-                double hoodAngle = SmartDashboard.getNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
-                double flyVel = SmartDashboard.getNumber("SHOOT_VELOCITY", 0);
-                RobotContainer.shooter.setTargetState(new ShooterState(hoodAngle, flyVel, shooterFeedforward));
+                // double hoodAngle = SmartDashboard.getNumber("HOOD_ANGLE",
+                // Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
+                // double flyVel = SmartDashboard.getNumber("SHOOT_VELOCITY", 0);
+
+                RobotContainer.shooter.setTargetState(
+                        new ShooterState(hoodAngleOverride, shootVelocityOverride, shooterFeedforward));
             } else {
                 RobotContainer.shooter.setTargetState(
                         new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));
