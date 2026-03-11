@@ -25,13 +25,13 @@ import frc.robot.subsystems.io.real.FeederReal;
 import frc.robot.subsystems.io.real.IntakeReal;
 import frc.robot.subsystems.io.real.ShooterReal;
 import frc.robot.subsystems.io.real.SpindexerReal;
+import frc.robot.subsystems.io.real.TurretReal;
 import frc.robot.subsystems.io.sim.ClimberSim;
 import frc.robot.subsystems.io.sim.FeederSim;
 import frc.robot.subsystems.io.sim.IntakeSim;
 import frc.robot.subsystems.io.sim.ShooterSim;
 import frc.robot.subsystems.io.sim.SpindexerSim;
 import frc.robot.subsystems.io.sim.TurretSim;
-import frc.robot.subsystems.io.stub.TurretStub;
 import frc.robot.subsystems.shootorchestrator.ShootOrchestrator;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.ConsoleLogger;
@@ -137,7 +137,7 @@ public final class RobotContainer {
 
         if (Constants.RobotState.getMode() == Mode.REAL) {
             intake = new Intake(new IntakeReal(ROBOT_PERIODIC));
-            turret = new Turret(new TurretStub());
+            turret = new Turret(new TurretReal(ROBOT_PERIODIC));
             shooter = new Shooter(new ShooterReal(ROBOT_PERIODIC));
             spindexer = new Spindexer(new SpindexerReal(ROBOT_PERIODIC));
             feeder = new Feeder(new FeederReal(ROBOT_PERIODIC));

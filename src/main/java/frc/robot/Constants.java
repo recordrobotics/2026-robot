@@ -487,8 +487,8 @@ public final class Constants {
     public static final class Turret {
         public static final double KP = 50;
         public static final double KD = 3.811;
-        public static final double KS = 0.009;
-        public static final double KV = 1.00571757805;
+        public static final double KS = 0.3;
+        public static final double KV = 2.1;
         public static final double KA_MM = 0.01;
         public static final double KA = 0.1;
         public static final double KVP = 0.2;
@@ -504,12 +504,14 @@ public final class Constants {
 
         public static final double GEAR_RATIO = 15.5428571429;
 
-        public static final double STARTING_POSITION_RADIANS =
-                SysIdManager.getProvider() instanceof frc.robot.subsystems.Turret.SysId
-                        ? 0
-                        : Units.degreesToRadians(90.0);
-        public static final double ROTATION_MAX_POSITION_RADIANS = Units.degreesToRadians(360.0);
-        public static final double ROTATION_MIN_POSITION_RADIANS = -ROTATION_MAX_POSITION_RADIANS; // symmetric
+        public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.583;
+        public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS = -0.488; // slightly not symmetric
+
+        public static final double TURRET_SPRING_START_POS = 0.21;
+        public static final double TURRET_SPRING_START_NEG = -0.159;
+        public static final double TURRET_SPRING_VOLTS = 0.2;
+
+        public static final double STARTING_POSITION_RADIANS = Units.degreesToRadians(90.0);
 
         public static final double MAGNETIC_LIMIT_SWITCH_TRIGGER_ANGLE_RAD = Units.degreesToRadians(5);
         public static final double MAGNETIC_LIMIT_SWITCH_DETRIGGER_ANGLE_RAD = Units.degreesToRadians(10);

@@ -77,10 +77,11 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private double timeAtBallHit = 0;
     private double shooterFeedforward = 0;
 
+    public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
+
     public double hoodAngleOverride = Constants.Shooter.HOOD_MAX_POSITION_RADIANS;
     public double shootVelocityOverride = 0;
-
-    public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
+    public boolean overrideShootAngleVelocity = false;
 
     public ShootOrchestrator() {
         // nothing to do
@@ -88,6 +89,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
         SmartDashboard.putNumber("HOOD_ANGLE", hoodAngleOverride);
         SmartDashboard.putNumber("SHOOT_VELOCITY", shootVelocityOverride);
+        SmartDashboard.putBoolean("SHOOT_OVERRIDE", false);
     }
 
     public void setEnableShooting(boolean enable) {
@@ -237,24 +239,34 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             lastShotYaw = shotYaw;
             hasLastShotYaw = true;
 
-            RobotContainer.turret.setTarget(
-                    shotYaw - robotPose.getRotation().getRadians(),
-                    shotYawVelocity - RobotContainer.drivetrain.getChassisSpeeds().omegaRadiansPerSecond,
-                    -RobotContainer.drivetrain.getChassisAcceleration().omegaRadiansPerSecond);
+            if (!RobotContainer.intake.isNearStartPosition()) {
+                RobotContainer.turret.setTarget(
+                        shotYaw - robotPose.getRotation().getRadians(),
+                        shotYawVelocity - RobotContainer.drivetrain.getChassisSpeeds().omegaRadiansPerSecond,
+                        -RobotContainer.drivetrain.getChassisAcceleration().omegaRadiansPerSecond);
+            } else {
+                double turretPos = Units.rotationsToRadians(RobotContainer.turret.getPositionRotations());
+                RobotContainer.turret.setTarget(
+                        Math.copySign(Constants.Turret.STARTING_POSITION_RADIANS, turretPos), 0, 0);
+            }
 
             if (shootingEnabled) {
-                double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)));
-                // RobotContainer.shooter.setTargetState(new ShooterState(
-                //         shotPitch,
-                //         target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm()),
-                //         shooterFeedforward));
+                if (!SmartDashboard.getBoolean("SHOOT_OVERRIDE", false)) {
+                    double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)));
+                    RobotContainer.shooter.setTargetState(new ShooterState(
+                            shotPitch,
+                            target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm()),
+                            shooterFeedforward));
+                } else if (overrideShootAngleVelocity) {
+                    RobotContainer.shooter.setTargetState(
+                            new ShooterState(hoodAngleOverride, shootVelocityOverride, shooterFeedforward));
+                } else {
+                    double hoodAngle =
+                            SmartDashboard.getNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
+                    double flyVel = SmartDashboard.getNumber("SHOOT_VELOCITY", 0);
 
-                // double hoodAngle = SmartDashboard.getNumber("HOOD_ANGLE",
-                // Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
-                // double flyVel = SmartDashboard.getNumber("SHOOT_VELOCITY", 0);
-
-                RobotContainer.shooter.setTargetState(
-                        new ShooterState(hoodAngleOverride, shootVelocityOverride, shooterFeedforward));
+                    RobotContainer.shooter.setTargetState(new ShooterState(hoodAngle, flyVel, shooterFeedforward));
+                }
             } else {
                 RobotContainer.shooter.setTargetState(
                         new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));

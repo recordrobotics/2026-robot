@@ -195,7 +195,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
             case STARTING -> 0.0;
         };
 
-        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdArm))
+        if (!isForceDisabled()
+                && !(SysIdManager.getProvider() instanceof SysIdArm)
+                && !(SysIdManager.getProvider() instanceof Turret.SysId))
             io.setArmLeaderMotionMagic(armLeaderRequest
                     .withPosition(armTargetRotations)
                     .withFeedForward(
@@ -233,6 +235,12 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     @AutoLogLevel(level = AutoLogLevel.Level.DEBUG_REAL)
     public IntakeState getTargetState() {
         return targetState;
+    }
+
+    public boolean isNearStartPosition() {
+        return getArmPositionRotations()
+                >= Units.radiansToRotations(
+                        Constants.Intake.ARM_STARTING_POSITION_RADIANS - Units.degreesToRadians(15));
     }
 
     private boolean armAtGoal() {

@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.Intake.SysIdArm;
 import frc.robot.subsystems.io.TurretIO;
 import frc.robot.subsystems.io.TurretIO.LimitSwitchStates;
 import frc.robot.utils.AutoLogLevel;
@@ -30,12 +29,14 @@ import org.littletonrobotics.junction.Logger;
 
 public final class Turret extends KillableSubsystem implements PoweredSubsystem {
 
+    public static final double MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS = Units.degreesToRotations(90);
+
     private static final double POSITION_TOLERANCE = Units.degreesToRotations(2);
     private static final double VELOCITY_TOLERANCE = Units.degreesToRotations(50);
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(1.2).per(Second);
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.7).per(Second);
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
-    private static final Time SYSID_TIMEOUT = Seconds.of(0.8);
+    private static final Time SYSID_TIMEOUT = Seconds.of(1.0);
 
     private final TurretIO io;
     private final SysIdRoutine sysIdRoutine;
@@ -46,8 +47,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
 
     public Turret(TurretIO io) {
         this.io = io;
-        turretRequest =
-                new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS));
+        turretRequest = new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS)
+                - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -58,7 +59,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
         slot0Configs.kP = Constants.Turret.KP;
         slot0Configs.kD = Constants.Turret.KD;
 
-        config.ClosedLoopGeneral.ContinuousWrap = true;
+        config.ClosedLoopGeneral.ContinuousWrap = false;
 
         config.MotionMagic.MotionMagicExpo_kV = Constants.Turret.MMEXPO_KV;
         config.MotionMagic.MotionMagicExpo_kA = Constants.Turret.MMEXPO_KA;
@@ -70,10 +71,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
         config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-                Units.radiansToRotations(Constants.Turret.ROTATION_MAX_POSITION_RADIANS);
-        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-                Units.radiansToRotations(Constants.Turret.ROTATION_MIN_POSITION_RADIANS);
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.Turret.ROTATION_MAX_POSITION_MOTOR_ROTATIONS;
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.Turret.ROTATION_MIN_POSITION_MOTOR_ROTATIONS;
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
@@ -96,10 +95,10 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     @Override
     public void periodicManaged() {
 
-        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdArm)) {
+        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
             io.setMotionMagic(turretRequest
-                    .withPosition(targetPositionRotations)
-                    .withIgnoreSoftwareLimits(true)
+                    .withPosition(targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
+                    .withIgnoreSoftwareLimits(false)
                     .withFeedForward(feedforward(
                             targetVelocityRotationsPerSecond, targetAccelerationRotationsPerSecondSquared)));
         }
@@ -118,7 +117,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
     public double getPositionRotations() {
-        return io.getPositionRotations();
+        return io.getPositionRotations() + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS;
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
@@ -131,12 +130,20 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
         return io.getVoltage();
     }
 
+    private double getSpringFeedforward() {
+        double pos = io.getPositionRotations();
+        return pos > Constants.Turret.TURRET_SPRING_START_POS
+                ? Constants.Turret.TURRET_SPRING_VOLTS
+                : pos < Constants.Turret.TURRET_SPRING_START_NEG ? -Constants.Turret.TURRET_SPRING_VOLTS : 0;
+    }
+
     private double feedforward(double velocityRotationsPerSecond, double accelerationRotationsPerSecondSquared) {
         double velocityError = velocityRotationsPerSecond - getVelocityRotationsPerSecond();
         return (Constants.Turret.KV * velocityRotationsPerSecond
                         + Constants.Turret.KA * accelerationRotationsPerSecondSquared
                         + Constants.Turret.KS * Math.signum(velocityRotationsPerSecond)
-                        + Constants.Turret.KVP * velocityError)
+                        + Constants.Turret.KVP * velocityError
+                        + getSpringFeedforward())
                 * Constants.Turret.FF_MUL;
     }
 
@@ -144,14 +151,29 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
             double targetPositionRadians,
             double targetVelocityRadiansPerSecond,
             double targetAccelerationRadiansPerSecondSquared) {
+
+        double minRange = Units.rotationsToRadians(
+                Constants.Turret.ROTATION_MIN_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+        double maxRange = Units.rotationsToRadians(
+                Constants.Turret.ROTATION_MAX_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+        double totalRange = maxRange - minRange;
+
+        if (targetPositionRadians < minRange) {
+            double delta = (targetPositionRadians - minRange) % totalRange;
+            targetPositionRadians = maxRange + delta;
+        } else if (targetPositionRadians > maxRange) {
+            double delta = (targetPositionRadians - maxRange) % totalRange;
+            targetPositionRadians = minRange + delta;
+        }
+
         this.targetPositionRotations = Units.radiansToRotations(targetPositionRadians);
         this.targetVelocityRotationsPerSecond = Units.radiansToRotations(targetVelocityRadiansPerSecond);
         this.targetAccelerationRotationsPerSecondSquared =
                 Units.radiansToRotations(targetAccelerationRadiansPerSecondSquared);
-        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdArm)) {
+        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
             io.setMotionMagic(turretRequest
-                    .withPosition(this.targetPositionRotations)
-                    .withIgnoreSoftwareLimits(true)
+                    .withPosition(this.targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
+                    .withIgnoreSoftwareLimits(false)
                     .withFeedForward(feedforward(
                             targetVelocityRotationsPerSecond, targetAccelerationRotationsPerSecondSquared)));
         }
@@ -163,8 +185,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
             io.setVoltage(0.0);
         } else {
             io.setMotionMagic(turretRequest
-                    .withPosition(this.targetPositionRotations)
-                    .withIgnoreSoftwareLimits(true)
+                    .withPosition(this.targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
+                    .withIgnoreSoftwareLimits(false)
                     .withFeedForward(feedforward(
                             targetVelocityRotationsPerSecond, targetAccelerationRotationsPerSecondSquared)));
         }
@@ -186,7 +208,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     }
 
     public void resetEncoders() {
-        io.setPositionRotations(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS));
+        io.setPositionRotations(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS)
+                - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

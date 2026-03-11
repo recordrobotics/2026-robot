@@ -1,17 +1,25 @@
 package frc.robot.subsystems.shootorchestrator;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class HubRegressionCalculator implements ShotCalculator {
 
     private static final double FLYWHEEL_TO_FUEL_RATIO = 0.44;
 
+    static {
+        SmartDashboard.putNumber("FLYWHEEL_RATIO", FLYWHEEL_TO_FUEL_RATIO);
+    }
+
     @Override
     public double fuelToFlywheelVelocity(double fuelVelocityMps) {
-        return fuelVelocityMps / FLYWHEEL_TO_FUEL_RATIO;
+        double ratio = SmartDashboard.getNumber("FLYWHEEL_RATIO", FLYWHEEL_TO_FUEL_RATIO);
+        return fuelVelocityMps / ratio;
     }
 
     @Override
     public double flywheelToFuelVelocity(double flywheelVelocityMps) {
-        return flywheelVelocityMps * FLYWHEEL_TO_FUEL_RATIO;
+        double ratio = SmartDashboard.getNumber("FLYWHEEL_RATIO", FLYWHEEL_TO_FUEL_RATIO);
+        return flywheelVelocityMps * ratio;
     }
 
     @Override

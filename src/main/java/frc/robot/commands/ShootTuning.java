@@ -18,6 +18,7 @@ public class ShootTuning extends SequentialCommandGroup {
         addCommands(new InstantCommand(
                 () -> {
                     RobotContainer.shootOrchestrator.setEnableShooting(true);
+                    RobotContainer.shootOrchestrator.overrideShootAngleVelocity = true;
                 },
                 RobotContainer.shooter));
 
@@ -43,6 +44,7 @@ public class ShootTuning extends SequentialCommandGroup {
         addCommands(new InstantCommand(
                 () -> {
                     RobotContainer.shootOrchestrator.setEnableShooting(false);
+                    RobotContainer.shootOrchestrator.overrideShootAngleVelocity = false;
                 },
                 RobotContainer.shooter));
     }
