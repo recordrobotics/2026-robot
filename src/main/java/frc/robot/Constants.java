@@ -255,11 +255,11 @@ public final class Constants {
         public static final double XBOX_SPIN_THRESHOLD = 0.1;
         public static final double XBOX_XY_EXPONENT = 3;
         public static final double XBOX_SPIN_EXPONENT = 5;
-        public static final double SPIN_KP = 4;
-        public static final double SPIN_KD = 0.1;
+        public static final double SPIN_KP = 5;
+        public static final double SPIN_KD = 0.4;
         public static final Constraints SPIN_CONSTRAINTS = new Constraints(
                 Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS, Constants.Swerve.MAX_ANGULAR_ACCELERATION_RADIANS);
-        public static final double JOYSTICK_ABSOLUTE_SPIN_THRESHOLD = 0.1;
+        public static final double JOYSTICK_ABSOLUTE_SPIN_THRESHOLD = 0.9;
 
         private Control() {}
     }
