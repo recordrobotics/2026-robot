@@ -492,7 +492,7 @@ public final class Constants {
         public static final double KA_MM = 0.01;
         public static final double KA = 0.1;
         public static final double KVP = 0.2;
-        public static final double FF_MUL = 4.8;
+        public static double FF_MUL = 1.0;
 
         public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);

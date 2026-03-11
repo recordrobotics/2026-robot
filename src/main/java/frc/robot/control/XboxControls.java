@@ -6,8 +6,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.modifiers.DrivetrainControl;
 
@@ -124,6 +126,11 @@ public class XboxControls implements AbstractControl {
         double x = xbox.getRightX();
         double y = xbox.getRightY();
         double angle = -Math.atan2(y, x) + Math.PI / 2;
+
+        if(DriverStationUtils.getCurrentAlliance() == Alliance.Red) {
+            angle += Math.PI;
+        }
+
         double magnitude = Math.hypot(x, y);
         if (magnitude < Constants.Control.JOYSTICK_ABSOLUTE_SPIN_THRESHOLD) {
             return new Pair<>(false, new Rotation2d());

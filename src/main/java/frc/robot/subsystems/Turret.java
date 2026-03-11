@@ -12,6 +12,7 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -90,10 +91,13 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
                         SYSID_TIMEOUT,
                         state -> Logger.recordOutput("Turret/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
+
+        SmartDashboard.putNumber("TURRET_FFMUL", 1.0);
     }
 
     @Override
     public void periodicManaged() {
+        Constants.Turret.FF_MUL = SmartDashboard.getNumber("TURRET_FFMUL", 1.0);
 
         if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
             io.setMotionMagic(turretRequest
@@ -139,11 +143,11 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
 
     private double feedforward(double velocityRotationsPerSecond, double accelerationRotationsPerSecondSquared) {
         double velocityError = velocityRotationsPerSecond - getVelocityRotationsPerSecond();
-        return (Constants.Turret.KV * velocityRotationsPerSecond
+        return Math.max(-12.0, Math.min(12.0, Constants.Turret.KV * velocityRotationsPerSecond
                         + Constants.Turret.KA * accelerationRotationsPerSecondSquared
                         + Constants.Turret.KS * Math.signum(velocityRotationsPerSecond)
                         + Constants.Turret.KVP * velocityError
-                        + getSpringFeedforward())
+                        + getSpringFeedforward()))
                 * Constants.Turret.FF_MUL;
     }
 
