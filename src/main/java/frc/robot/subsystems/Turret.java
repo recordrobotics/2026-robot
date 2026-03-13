@@ -143,11 +143,15 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
 
     private double feedforward(double velocityRotationsPerSecond, double accelerationRotationsPerSecondSquared) {
         double velocityError = velocityRotationsPerSecond - getVelocityRotationsPerSecond();
-        return Math.max(-12.0, Math.min(12.0, Constants.Turret.KV * velocityRotationsPerSecond
-                        + Constants.Turret.KA * accelerationRotationsPerSecondSquared
-                        + Constants.Turret.KS * Math.signum(velocityRotationsPerSecond)
-                        + Constants.Turret.KVP * velocityError
-                        + getSpringFeedforward()))
+        return Math.max(
+                        -12.0,
+                        Math.min(
+                                12.0,
+                                Constants.Turret.KV * velocityRotationsPerSecond
+                                        + Constants.Turret.KA * accelerationRotationsPerSecondSquared
+                                        + Constants.Turret.KS * Math.signum(velocityRotationsPerSecond)
+                                        + Constants.Turret.KVP * velocityError
+                                        + getSpringFeedforward()))
                 * Constants.Turret.FF_MUL;
     }
 

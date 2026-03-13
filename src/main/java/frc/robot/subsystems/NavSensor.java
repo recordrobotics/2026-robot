@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.RobotContainer;
 import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.io.NavSensorIO;
@@ -28,6 +30,8 @@ public final class NavSensor extends ManagedSubsystemBase {
     // variable to keep track of a reference angle whenever you reset
     private double referenceAngle;
 
+    private final Alert disconnectedAlert = new Alert("NavX Disconnected!", AlertType.kError);
+
     public NavSensor(NavSensorIO io) {
         this.io = io;
 
@@ -37,6 +41,7 @@ public final class NavSensor extends ManagedSubsystemBase {
         referenceAngle = io.getAngle();
 
         DashboardUI.Overview.setNavSensor(io::isConnected);
+        disconnectedAlert.set(!io.isConnected());
     }
 
     // Stores the reference angle as whatever the angle is currently measured to be
@@ -74,6 +79,8 @@ public final class NavSensor extends ManagedSubsystemBase {
         jerkY = (accelY - lastAccelY) / PERIODIC;
         lastAccelX = accelX;
         lastAccelY = accelY;
+
+        disconnectedAlert.set(!io.isConnected());
     }
 
     @Override

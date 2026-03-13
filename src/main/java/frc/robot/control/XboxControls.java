@@ -4,9 +4,9 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.utils.DriverStationUtils;
@@ -127,7 +127,7 @@ public class XboxControls implements AbstractControl {
         double y = xbox.getRightY();
         double angle = -Math.atan2(y, x) + Math.PI / 2;
 
-        if(DriverStationUtils.getCurrentAlliance() == Alliance.Red) {
+        if (DriverStationUtils.getCurrentAlliance() == Alliance.Red) {
             angle += Math.PI;
         }
 

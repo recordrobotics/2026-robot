@@ -139,16 +139,23 @@ public final class Constants {
         public static final Transform3d ROBOT_TO_CAMERA_HOPPER_BACK = new Transform3d(
                 new Translation3d(0.311558, 0.330204, 0.246383), new Rotation3d(0, Units.degreesToRadians(-21), 0));
         public static final Transform3d ROBOT_TO_CAMERA_LEFT_BACK = new Transform3d(
-                new Translation3d(0.219412, -0.050800, 0.156247), new Rotation3d(0, Units.degreesToRadians(-27), 0));
+                new Translation3d(0.169875, 0.336431, 0.326706),
+                new Rotation3d(
+                        Units.degreesToRadians(-0.488769034869),
+                        Units.degreesToRadians(30.7856074797),
+                        Units.degreesToRadians(106.683871305)));
         public static final Transform3d ROBOT_TO_CAMERA_RIGHT_FRONT = new Transform3d(
                 new Translation3d(0.188160, -0.298610, 0.471224),
                 new Rotation3d(
-                        Units.degreesToRadians(4.0478724),
-                        Units.degreesToRadians(108.3905868),
-                        Units.degreesToRadians(-38.2675251)));
+                        Units.degreesToRadians(-0.00986101899264),
+                        Units.degreesToRadians(29.9963964578),
+                        Units.degreesToRadians(-48.8233556849)));
         public static final Transform3d ROBOT_TO_CAMERA_RIGHT_BACK = new Transform3d(
-                new Translation3d(-0.006350, -0.370769, 0.197020),
-                new Rotation3d(0, Units.degreesToRadians(-18.951), Units.degreesToRadians(-90)));
+                new Translation3d(0.170356, -0.340075, 0.393292),
+                new Rotation3d(
+                        Units.degreesToRadians(-0.827613033167),
+                        Units.degreesToRadians(25.5207428597),
+                        Units.degreesToRadians(-126.219878553)));
         public static final Transform3d ROBOT_TO_CAMERA_INTAKE_LEFT = new Transform3d(
                 new Translation3d(Meters.of(-0.338901), Meters.of(-0.277466), Meters.of(0.443145)),
                 new Rotation3d(
@@ -475,7 +482,7 @@ public final class Constants {
         public static final double ARM_GEAR_RATIO = 12.8571428571;
         public static final double ARM_GRAVITY_POSITION_OFFSET_ROTATIONS = -0.082671;
 
-        public static final double WHEEL_GEAR_RATIO = 1.0;
+        public static final double WHEEL_GEAR_RATIO = 3.0;
 
         public static final Distance ROLLER_DIAMETER = Inches.of(1.875);
 
@@ -504,8 +511,10 @@ public final class Constants {
 
         public static final double GEAR_RATIO = 15.5428571429;
 
-        public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.583;
-        public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS = -0.488; // slightly not symmetric
+        public static final double ROTATION_LIMIT_INSET_ROTATIONS = 0.01;
+        public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.607 - ROTATION_LIMIT_INSET_ROTATIONS;
+        public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS =
+                -0.509 + ROTATION_LIMIT_INSET_ROTATIONS; // slightly not symmetric
 
         public static final double TURRET_SPRING_START_POS = 0.21;
         public static final double TURRET_SPRING_START_NEG = -0.159;
