@@ -458,10 +458,10 @@ public final class Constants {
         public static final double ARM_KV = 0.8;
         public static final double ARM_KA = 0.3;
 
-        public static final double WHEEL_KP = 0.063832;
-        public static final double WHEEL_KS = 0.40838;
-        public static final double WHEEL_KV = 0.68198;
-        public static final double WHEEL_KA = 0.051395;
+        public static final double WHEEL_KP = 3.1649;
+        public static final double WHEEL_KS = 0.28151;
+        public static final double WHEEL_KV = 2.3535;
+        public static final double WHEEL_KA = 0.059602;
 
         public static final double WHEEL_MAX_ACCELERATION = 190;
         public static final double WHEEL_MAX_JERK = 590;
@@ -476,8 +476,9 @@ public final class Constants {
 
         public static final double ARM_DOWN_FF = -0.5;
 
-        public static final double WHEEL_INTAKE_VELOCITY_MPS = 5.5;
-        public static final double WHEEL_EJECT_VELOCITY_MPS = -5.5;
+        public static final double WHEEL_INTAKE_VELOCITY_MPS = 4;
+        public static final double WHEEL_JAMMED_VELOCITY_MPS = 6; // TODO go to this velocity when jam is detected
+        public static final double WHEEL_EJECT_VELOCITY_MPS = -4;
 
         public static final double ARM_GEAR_RATIO = 12.8571428571;
         public static final double ARM_GRAVITY_POSITION_OFFSET_ROTATIONS = -0.082671;
