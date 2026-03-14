@@ -15,6 +15,7 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -60,6 +61,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     private double armTargetRotations = Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
     private double wheelTargetVelocityMps = 0.0;
     private double actualWheelTargetVelocityMps = 0.0;
+    private WheelMode wheelTargetState = WheelMode.OFF;
     private IntakeState targetState = IntakeState.STARTING;
 
     public enum IntakeState {
@@ -67,6 +69,12 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         EJECT,
         STARTING,
         RETRACTED
+    }
+
+    private enum WheelMode {
+        OFF,
+        INTAKE,
+        EJECT
     }
 
     public Intake(IntakeIO io) {
@@ -189,10 +197,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
             case STARTING -> Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
             case RETRACTED -> Units.radiansToRotations(Constants.Intake.ARM_RETRACTED_POSITION_RADIANS);
         };
-        wheelTargetVelocityMps = switch (state) {
-            case INTAKE, RETRACTED -> Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS;
-            case EJECT -> Constants.Intake.WHEEL_EJECT_VELOCITY_MPS;
-            case STARTING -> 0.0;
+        wheelTargetState = switch (state) {
+            case INTAKE, RETRACTED -> WheelMode.INTAKE;
+            case EJECT -> WheelMode.EJECT;
+            case STARTING -> WheelMode.OFF;
         };
 
         if (!isForceDisabled()
@@ -219,7 +227,32 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         }
     }
 
+    private double lastNotJammedTime = 0;
+
     private void updateWheel() {
+
+        switch (wheelTargetState) {
+            case OFF:
+                wheelTargetVelocityMps = 0;
+                break;
+            case EJECT:
+                wheelTargetVelocityMps = Constants.Intake.WHEEL_EJECT_VELOCITY_MPS;
+                break;
+            case INTAKE:
+                if (actualWheelTargetVelocityMps > 1) {
+                    if (getWheelVelocityMps() >= 1) {
+                        lastNotJammedTime = Timer.getTimestamp();
+                    } else if (Timer.getTimestamp() - lastNotJammedTime >= 1.0) {
+                        wheelTargetVelocityMps = Constants.Intake.WHEEL_JAMMED_VELOCITY_MPS;
+                    } else {
+                        wheelTargetVelocityMps = Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS;
+                    }
+                } else {
+                    wheelTargetVelocityMps = Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS;
+                }
+                break;
+        }
+
         boolean armNearGoal = SimpleMath.isWithinTolerance(
                 getArmPositionRotations(), armTargetRotations, ARM_POSITION_TOLERANCE_WHEEL_START);
 
