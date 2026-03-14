@@ -31,8 +31,8 @@ import org.littletonrobotics.junction.Logger;
 
 public final class Shooter extends KillableSubsystem implements PoweredSubsystem {
 
-    private static final double HOOD_POSITION_TOLERANCE = Units.degreesToRotations(2);
-    private static final double HOOD_VELOCITY_TOLERANCE = Units.degreesToRotations(20);
+    private static final double HOOD_POSITION_TOLERANCE = Units.degreesToRotations(5);
+    private static final double HOOD_VELOCITY_TOLERANCE = Units.degreesToRotations(500);
 
     private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(1.3).per(Second);
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.4);
@@ -170,6 +170,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         RobotContainer.model.shooterModel.updateHood(Units.rotationsToRadians(getHoodPositionRotations()));
     }
 
+    @AutoLogLevel
     public boolean isAtTargetState() {
         return SimpleMath.isWithinTolerance(
                         getHoodPositionRotations(), hoodTargetPositionRotations, HOOD_POSITION_TOLERANCE)

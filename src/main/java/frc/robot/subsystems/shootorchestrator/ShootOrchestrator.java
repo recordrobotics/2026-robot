@@ -272,7 +272,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                         new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));
             }
 
-            boolean onTarget = true;
+            boolean onTarget = RobotContainer.turret.atGoal() && RobotContainer.shooter.isAtTargetState();
             SpindexerState spindexerState = (onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF;
 
             RobotContainer.spindexer.setState(
@@ -280,6 +280,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                             ? SpindexerState.UNSTUCK
                             : spindexerState);
             RobotContainer.feeder.setState((onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF);
+
+            Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
         }
 
         updateTrajectory(robotPose, fuelReleasePose);

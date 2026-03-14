@@ -32,8 +32,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
 
     public static final double MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS = Units.degreesToRotations(90);
 
-    private static final double POSITION_TOLERANCE = Units.degreesToRotations(2);
-    private static final double VELOCITY_TOLERANCE = Units.degreesToRotations(50);
+    private static final double POSITION_TOLERANCE = Units.degreesToRotations(12);
+    private static final double VELOCITY_TOLERANCE = Units.degreesToRotations(500);
 
     private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.7).per(Second);
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
@@ -104,7 +104,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
                     .withPosition(targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
                     .withIgnoreSoftwareLimits(false)
                     .withFeedForward(feedforward(
-                            targetVelocityRotationsPerSecond, targetAccelerationRotationsPerSecondSquared)));
+                            SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
+                            SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001))));
         }
 
         RobotContainer.model.shooterModel.updateTurret(Units.rotationsToRadians(getPositionRotations()));
@@ -116,7 +117,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
 
         Logger.recordOutput(
                 "Turret/TargetVoltage",
-                feedforward(targetVelocityRotationsPerSecond, targetAccelerationRotationsPerSecondSquared));
+                feedforward(
+                        SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
+                        SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001)));
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
@@ -150,9 +153,46 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
                                 Constants.Turret.KV * velocityRotationsPerSecond
                                         + Constants.Turret.KA * accelerationRotationsPerSecondSquared
                                         + Constants.Turret.KS * Math.signum(velocityRotationsPerSecond)
-                                        + Constants.Turret.KVP * velocityError
-                                        + getSpringFeedforward()))
+                                        + Constants.Turret.KVP * velocityError))
                 * Constants.Turret.FF_MUL;
+    }
+
+    private static final double TWO_PI = 2.0 * Math.PI;
+
+    public static double getClosestTurretPosition(double currentPos, double targetHeading) {
+
+        double minRange = Units.rotationsToRadians(
+                Constants.Turret.ROTATION_MIN_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+        double maxRange = Units.rotationsToRadians(
+                Constants.Turret.ROTATION_MAX_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+
+        // bring target close to current revolution
+        double baseTarget = targetHeading + TWO_PI * Math.round((currentPos - targetHeading) / TWO_PI);
+
+        double bestPos = Double.NaN;
+        double bestDist = Double.POSITIVE_INFINITY;
+
+        // check equivalent angles (target ± 2π)
+        for (int i = -1; i <= 1; i++) {
+            double candidate = baseTarget + i * TWO_PI;
+
+            if (candidate >= minRange && candidate <= maxRange) {
+                double dist = Math.abs(candidate - currentPos);
+
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestPos = candidate;
+                }
+            }
+        }
+
+        // if none are in range, clamp to nearest limit
+        if (Double.isNaN(bestPos)) {
+            double clamped = Math.max(minRange, Math.min(maxRange, baseTarget));
+            bestPos = clamped;
+        }
+
+        return bestPos;
     }
 
     public void setTarget(
@@ -160,21 +200,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
             double targetVelocityRadiansPerSecond,
             double targetAccelerationRadiansPerSecondSquared) {
 
-        double minRange = Units.rotationsToRadians(
-                Constants.Turret.ROTATION_MIN_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
-        double maxRange = Units.rotationsToRadians(
-                Constants.Turret.ROTATION_MAX_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
-        double totalRange = maxRange - minRange;
-
-        if (targetPositionRadians < minRange) {
-            double delta = (targetPositionRadians - minRange) % totalRange;
-            targetPositionRadians = maxRange + delta;
-        } else if (targetPositionRadians > maxRange) {
-            double delta = (targetPositionRadians - maxRange) % totalRange;
-            targetPositionRadians = minRange + delta;
-        }
-
-        this.targetPositionRotations = Units.radiansToRotations(targetPositionRadians);
+        this.targetPositionRotations = Units.radiansToRotations(
+                getClosestTurretPosition(Units.rotationsToRadians(getPositionRotations()), targetPositionRadians));
         this.targetVelocityRotationsPerSecond = Units.radiansToRotations(targetVelocityRadiansPerSecond);
         this.targetAccelerationRotationsPerSecondSquared =
                 Units.radiansToRotations(targetAccelerationRadiansPerSecondSquared);
@@ -183,7 +210,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
                     .withPosition(this.targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
                     .withIgnoreSoftwareLimits(false)
                     .withFeedForward(feedforward(
-                            targetVelocityRotationsPerSecond, targetAccelerationRotationsPerSecondSquared)));
+                            SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
+                            SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001))));
         }
     }
 
@@ -196,13 +224,14 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
                     .withPosition(this.targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
                     .withIgnoreSoftwareLimits(false)
                     .withFeedForward(feedforward(
-                            targetVelocityRotationsPerSecond, targetAccelerationRotationsPerSecondSquared)));
+                            SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
+                            SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001))));
         }
     }
 
+    @AutoLogLevel
     public boolean atGoal() {
-        return SimpleMath.isWithinTolerance(getPositionRotations(), targetPositionRotations, POSITION_TOLERANCE)
-                && SimpleMath.isWithinTolerance(getVelocityRotationsPerSecond(), 0, VELOCITY_TOLERANCE);
+        return SimpleMath.isWithinTolerance(getPositionRotations(), targetPositionRotations, POSITION_TOLERANCE);
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)

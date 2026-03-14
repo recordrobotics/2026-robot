@@ -295,4 +295,11 @@ public final class SimpleMath {
     public static Pose3d withHeight(Pose2d pose, double height) {
         return new Pose3d(new Translation3d(pose.getX(), pose.getY(), height), new Rotation3d(pose.getRotation()));
     }
+
+    public static double rawDeadband(double value, double deadband) {
+        if (Math.abs(value) < deadband) {
+            return 0;
+        }
+        return value;
+    }
 }
