@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -122,6 +123,8 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      */
     private int targetTXTYId = -1;
 
+    private Rotation2d lastRawNavAngle = Rotation2d.kZero;
+
     /**
      * Creates a new PoseSensorFusion subsystem
      * @param initialPose the initial pose of the robot on the field
@@ -135,9 +138,11 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                                 .getGyroSimulation()));
         nav.resetAngleAdjustment();
 
+        lastRawNavAngle = nav.isConnected() ? nav.getAdjustedAngle() : Rotation2d.kZero;
+
         poseFilter = new SwerveDrivePoseEstimator(
                 RobotContainer.drivetrain.getKinematics(),
-                nav.getAdjustedAngle(),
+                lastRawNavAngle,
                 RobotContainer.drivetrain.getModulePositions(),
                 initialPose);
 
@@ -234,8 +239,24 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      */
     public void performCalculation() {
         updateTimestamp = Timer.getTimestamp();
-        updateNav = nav.getAdjustedAngle();
-        updatePositions = RobotContainer.drivetrain.getModulePositions();
+
+        SwerveModulePosition[] positions = RobotContainer.drivetrain.getModulePositions();
+
+        if (nav.isConnected()) {
+            updateNav = nav.getAdjustedAngle();
+        } else if (updatePositions != null) {
+            SwerveModulePosition[] deltas = new SwerveModulePosition[4];
+            for (int i = 0; i < 4; i++) {
+                deltas[i] = new SwerveModulePosition(
+                        positions[i].distanceMeters - updatePositions[i].distanceMeters, positions[i].angle);
+            }
+
+            Twist2d twist = RobotContainer.drivetrain.getKinematics().toTwist2d(deltas);
+            updateNav = lastRawNavAngle.plus(new Rotation2d(twist.dtheta));
+        }
+
+        lastRawNavAngle = updateNav;
+        updatePositions = positions;
 
         cameras.stream().forEach(GenericCamera::periodic);
 
@@ -287,7 +308,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
     /** Resets the robot's pose to the specified pose (if in simulation also resets simulation pose) */
     public void setToPose(Pose2d pose) {
-        poseFilter.resetPosition(nav.getAdjustedAngle(), RobotContainer.drivetrain.getModulePositions(), pose);
+        poseFilter.resetPosition(lastRawNavAngle, RobotContainer.drivetrain.getModulePositions(), pose);
         independentPoseEstimator.reset(pose);
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
             RobotContainer.drivetrain

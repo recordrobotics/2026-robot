@@ -44,6 +44,10 @@ public final class NavSensor extends ManagedSubsystemBase {
         disconnectedAlert.set(!io.isConnected());
     }
 
+    public boolean isConnected() {
+        return io.isConnected();
+    }
+
     // Stores the reference angle as whatever the angle is currently measured to be
     public void resetAngleAdjustment() {
         referenceAngle = io.getAngle();
