@@ -273,7 +273,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     public boolean isNearStartPosition() {
         return getArmPositionRotations()
                 >= Units.radiansToRotations(
-                        Constants.Intake.ARM_STARTING_POSITION_RADIANS - Units.degreesToRadians(15));
+                        Constants.Intake.ARM_STARTING_POSITION_RADIANS - Units.degreesToRadians(38));
     }
 
     private boolean armAtGoal() {
