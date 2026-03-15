@@ -242,6 +242,8 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         lastModifiersAppliedCount = applyCount;
 
         ChassisSpeeds nonDiscreteSpeeds = drivetrainControl.toChassisSpeeds(); // Converts the control to ChassisSpeeds
+        double robotRelativeForcesXNewtons = drivetrainControl.robotRelativeForcesXNewtons();
+        double robotRelativeForcesYNewtons = drivetrainControl.robotRelativeForcesYNewtons();
 
         Logger.recordOutput("DSSPE", nonDiscreteSpeeds);
 
