@@ -112,7 +112,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
     /**
      * Last update nav angle
      */
-    private Rotation2d updateNav;
+    private Rotation2d updateNav = Rotation2d.kZero;
     /**
      * Last update swerve module positions
      */
@@ -132,7 +132,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
     public PoseSensorFusion(Pose2d initialPose) {
         nav = new NavSensor(
                 Constants.RobotState.getMode() == Mode.REAL
-                        ? new NavSensorReal(false)
+                        ? new NavSensorReal(true)
                         : new NavSensorSim(RobotContainer.drivetrain
                                 .getSwerveDriveSimulation()
                                 .getGyroSimulation()));
@@ -244,6 +244,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         if (nav.isConnected()) {
             updateNav = nav.getAdjustedAngle();
+            Logger.recordOutput("TWISTIN", false);
         } else if (updatePositions != null) {
             SwerveModulePosition[] deltas = new SwerveModulePosition[4];
             for (int i = 0; i < 4; i++) {
@@ -253,6 +254,8 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
             Twist2d twist = RobotContainer.drivetrain.getKinematics().toTwist2d(deltas);
             updateNav = lastRawNavAngle.plus(new Rotation2d(twist.dtheta));
+            Logger.recordOutput("TWIST", twist);
+            Logger.recordOutput("TWISTIN", true);
         }
 
         lastRawNavAngle = updateNav;

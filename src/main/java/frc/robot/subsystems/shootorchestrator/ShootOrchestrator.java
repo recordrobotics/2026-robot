@@ -27,6 +27,7 @@ import frc.robot.subsystems.shootorchestrator.ShotCalculator.ShotCalculation;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.ProjectileSimulationUtils;
+import frc.robot.utils.SimpleMath;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
 import org.littletonrobotics.junction.Logger;
 
@@ -51,6 +52,15 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_DEPOT_SIDE.getY(),
             0.0);
     private static final double PASSING_ACCEPTABLE_RADIUS_METERS = BLUE_PASSING_TARGET_HP_SIDE.getY();
+
+    private static final Translation2d BLUE_TRENCH_HP_SIDE = new Translation2d(4.572, 0.664);
+    private static final Translation2d BLUE_TRENCH_DEPOT_SIDE =
+            new Translation2d(BLUE_TRENCH_HP_SIDE.getX(), FlippingUtil.fieldSizeY - BLUE_TRENCH_HP_SIDE.getY());
+    private static final Translation2d RED_TRENCH_HP_SIDE = new Translation2d(
+            FlippingUtil.fieldSizeX - BLUE_TRENCH_HP_SIDE.getX(), FlippingUtil.fieldSizeY - BLUE_TRENCH_HP_SIDE.getY());
+    private static final Translation2d RED_TRENCH_DEPOT_SIDE = new Translation2d(
+            FlippingUtil.fieldSizeX - BLUE_TRENCH_DEPOT_SIDE.getX(),
+            FlippingUtil.fieldSizeY - BLUE_TRENCH_DEPOT_SIDE.getY());
 
     private static final ShotCalculator hubCalculator = new HubRegressionCalculator();
     private static final ShotCalculator passingCalculator = new HubRegressionCalculator();
@@ -90,6 +100,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         SmartDashboard.putNumber("HOOD_ANGLE", hoodAngleOverride);
         SmartDashboard.putNumber("SHOOT_VELOCITY", shootVelocityOverride);
         SmartDashboard.putBoolean("SHOOT_OVERRIDE", false);
+
+        Logger.recordOutput("TRENCHES", new Translation2d[] {
+            BLUE_TRENCH_HP_SIDE, BLUE_TRENCH_DEPOT_SIDE, RED_TRENCH_HP_SIDE, RED_TRENCH_DEPOT_SIDE
+        });
     }
 
     public void setEnableShooting(boolean enable) {
@@ -191,6 +205,21 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
+    private static final double TRENCH_WIDTH_METERS = 1.361281;
+    private static final double TRENCH_OFFSET_METERS = 0.3;
+
+    public boolean isInTrench(Pose2d pose, Translation2d trench) {
+        return Math.abs(pose.getY() - trench.getY()) < TRENCH_WIDTH_METERS / 2.0
+                && Math.abs(pose.getX() - trench.getX()) < TRENCH_OFFSET_METERS;
+    }
+
+    public boolean isInTrench(Pose2d pose) {
+        return isInTrench(pose, BLUE_TRENCH_HP_SIDE)
+                || isInTrench(pose, BLUE_TRENCH_DEPOT_SIDE)
+                || isInTrench(pose, RED_TRENCH_HP_SIDE)
+                || isInTrench(pose, RED_TRENCH_DEPOT_SIDE);
+    }
+
     @Override
     public void periodicManaged() {
         setAutomatedTarget();
@@ -250,36 +279,54 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                         Math.copySign(Constants.Turret.STARTING_POSITION_RADIANS, turretPos), 0, 0);
             }
 
+            Pose2d robotPoseTrench = SimpleMath.integrateChassisSpeeds(
+                    RobotContainer.poseSensorFusion.getEstimatedPosition(),
+                    RobotContainer.drivetrain.getChassisSpeeds(),
+                    0.2);
+            Pose3d fuelReleasePoseTrench =
+                    new Pose3d(robotPoseTrench).transformBy(new Transform3d(fuelReleaseOffset, Rotation3d.kZero));
+
+            boolean isInTrench = isInTrench(fuelReleasePoseTrench.toPose2d());
+            Logger.recordOutput("ShootOrchestrator/IsInTrench", isInTrench);
+
             if (shootingEnabled) {
                 if (!SmartDashboard.getBoolean("SHOOT_OVERRIDE", false)) {
                     double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)));
                     RobotContainer.shooter.setTargetState(new ShooterState(
-                            shotPitch,
+                            isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : shotPitch,
                             target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm()),
                             shooterFeedforward));
                 } else if (overrideShootAngleVelocity) {
-                    RobotContainer.shooter.setTargetState(
-                            new ShooterState(hoodAngleOverride, shootVelocityOverride, shooterFeedforward));
+                    RobotContainer.shooter.setTargetState(new ShooterState(
+                            isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngleOverride,
+                            shootVelocityOverride,
+                            shooterFeedforward));
                 } else {
                     double hoodAngle =
                             SmartDashboard.getNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
                     double flyVel = SmartDashboard.getNumber("SHOOT_VELOCITY", 0);
 
-                    RobotContainer.shooter.setTargetState(new ShooterState(hoodAngle, flyVel, shooterFeedforward));
+                    RobotContainer.shooter.setTargetState(new ShooterState(
+                            isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngle,
+                            flyVel,
+                            shooterFeedforward));
                 }
             } else {
                 RobotContainer.shooter.setTargetState(
                         new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));
             }
 
-            boolean onTarget = RobotContainer.turret.atGoal() && RobotContainer.shooter.isAtTargetState();
+            boolean onTarget =
+                    !isInTrench && RobotContainer.turret.atGoal() && RobotContainer.shooter.isAtTargetState();
             SpindexerState spindexerState = (onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF;
+            FeederState feederState = (onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF;
 
             RobotContainer.spindexer.setState(
                     DashboardUI.Overview.getControl().isUnstuckSpindexerPressed()
                             ? SpindexerState.UNSTUCK
                             : spindexerState);
-            RobotContainer.feeder.setState((onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF);
+            RobotContainer.feeder.setState(
+                    DashboardUI.Overview.getControl().isUnstuckSpindexerPressed() ? FeederState.UNSTUCK : feederState);
 
             Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
         }

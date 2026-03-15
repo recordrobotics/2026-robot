@@ -3,6 +3,7 @@ package frc.robot.utils.modifiers;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import org.littletonrobotics.junction.Logger;
 
 /**
  * A control modifier that simply drives with the given ChassisSpeeds for this one periodic cycle.
@@ -26,6 +27,7 @@ public class AutoControlModifier extends OneshotControlModifier {
     }
 
     public void drive(ChassisSpeeds speeds) {
+        Logger.recordOutput("AUTOSPEEDS", speeds);
         this.speeds = speeds;
         this.setEnabled(true);
     }

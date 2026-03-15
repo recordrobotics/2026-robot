@@ -1,6 +1,7 @@
 package frc.robot.utils;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -8,8 +9,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
 import frc.robot.utils.modifiers.AutoControlModifier;
 import java.util.Optional;
@@ -30,6 +33,22 @@ public final class AutoPath {
         }
 
         // Registering named commands (so that the pathplanner can call them by name)
+        NamedCommands.registerCommand(
+                "Intake",
+                Commands.run(() -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake));
+        NamedCommands.registerCommand(
+                "IntakeDepot",
+                Commands.run(() -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake)
+                        .withTimeout(2.0));
+        NamedCommands.registerCommand(
+                "Mixer",
+                Commands.repeatingSequence(
+                        Commands.runOnce(
+                                () -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake),
+                        Commands.waitSeconds(0.5),
+                        Commands.runOnce(
+                                () -> RobotContainer.intake.setState(IntakeState.RETRACTED), RobotContainer.intake),
+                        Commands.waitSeconds(0.5)));
 
         // Configures auto builder
         AutoBuilder.configure(

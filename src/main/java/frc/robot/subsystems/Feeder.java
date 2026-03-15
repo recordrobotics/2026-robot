@@ -35,7 +35,8 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
 
     public enum FeederState {
         OFF,
-        ON
+        ON,
+        UNSTUCK
     }
 
     public Feeder(FeederIO io) {

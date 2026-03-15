@@ -244,6 +244,11 @@ public final class RobotContainer {
     }
 
     private static boolean shouldBeShooting() {
+
+        boolean hubActive = DriverStationUtils.isHubActive();
+
+        Logger.recordOutput("HubActive", hubActive);
+
         if (shootModeChooser.get() == null) return false;
 
         switch (shootModeChooser.get()) {
@@ -252,7 +257,7 @@ public final class RobotContainer {
             case DISABLED:
                 return false;
             case AUTO:
-                if (ShootOrchestrator.isInAllianceZone()) {
+                if (ShootOrchestrator.isInAllianceZone() && hubActive) {
                     return !DashboardUI.Overview.getControl().isShooterInvertPressed();
                 } else {
                     return DashboardUI.Overview.getControl().isShooterInvertPressed();
@@ -264,8 +269,12 @@ public final class RobotContainer {
 
     private static void configureTriggers() {
         new Trigger(() -> DashboardUI.Overview.getControl().isForceIntakePressed())
-                .whileTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED)))
-                .whileFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE)));
+                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED), intake))
+                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake));
+
+        new Trigger(() -> DashboardUI.Overview.getControl().isReverseIntakePressed())
+                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.EJECT), intake))
+                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake));
 
         new Trigger(() -> DashboardUI.Overview.getControl().isClimbPressed()).onTrue(new InstantCommand(() -> {
             if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {

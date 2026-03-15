@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -36,9 +37,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     // of the robot)
 
     private static final double ARM_POSITION_TOLERANCE = Units.degreesToRotations(5);
-    private static final double ARM_POSITION_TOLERANCE_WHEEL_START = Units.degreesToRotations(15);
+    private static final double ARM_POSITION_TOLERANCE_WHEEL_START = Units.degreesToRotations(20);
     private static final double ARM_VELOCITY_TOLERANCE = Units.degreesToRotations(50);
-    private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 1.0; // TODO
+    private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 2.0; // TODO
 
     private static final Velocity<VoltageUnit> SYSID_ARM_RAMP_RATE =
             Volts.of(2.0).per(Second);
@@ -172,6 +173,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
                         SYSID_WHEEL_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Wheel/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(v -> io.setWheelVoltage(v.in(Volts)), null, this));
+
+        SmartDashboard.putBoolean("Intake/DisableWheel", false);
     }
 
     public IntakeSim getSimIO() {
@@ -259,7 +262,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         if (armNearGoal || Math.abs(wheelTargetVelocityMps) < Math.abs(actualWheelTargetVelocityMps)) {
             actualWheelTargetVelocityMps = wheelTargetVelocityMps;
 
-            if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdWheel)) {
+            if (SmartDashboard.getBoolean("Intake/DisableWheel", false)) {
+                io.setWheelMotionMagic(wheelRequest.withVelocity(0));
+            } else if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdWheel)) {
                 io.setWheelMotionMagic(wheelRequest.withVelocity(actualWheelTargetVelocityMps));
             }
         }

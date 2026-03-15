@@ -86,7 +86,7 @@ public final class AutonomousLayout extends AbstractLayout {
     }
 
     public FieldStartingLocation getStartingLocation() {
-        return Objects.requireNonNullElse(fieldStartingLocationChooser.get(), FieldStartingLocation.DEFAULT);
+        return Objects.requireNonNullElse(fieldStartingLocationChooser.get(), FieldStartingLocation.TrenchDepot);
     }
 
     public boolean isResetLocationPressed() {

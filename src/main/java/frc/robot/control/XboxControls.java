@@ -164,6 +164,11 @@ public class XboxControls implements AbstractControl {
     }
 
     @Override
+    public boolean isReverseIntakePressed() {
+        return xbox.getLeftBumperButton();
+    }
+
+    @Override
     public boolean isShooterInvertPressed() {
         return xbox.getRightTriggerAxis() > 0.75;
     }

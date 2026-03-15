@@ -15,6 +15,8 @@ public interface AbstractControl {
 
     boolean isForceIntakePressed();
 
+    boolean isReverseIntakePressed();
+
     boolean isClimbPressed();
 
     boolean isShooterInvertPressed();

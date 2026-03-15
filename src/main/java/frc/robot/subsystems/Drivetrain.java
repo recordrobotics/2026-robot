@@ -54,7 +54,7 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
     private static final int BL = 2;
     private static final int BR = 3;
 
-    private static final boolean DEBUG_LOG_MODIFIERS = false;
+    private static final boolean DEBUG_LOG_MODIFIERS = true;
 
     private static final Velocity<VoltageUnit> SYSID_DRIVE_RAMP_RATE =
             Volts.of(3.0).per(Second);
@@ -242,6 +242,8 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         lastModifiersAppliedCount = applyCount;
 
         ChassisSpeeds nonDiscreteSpeeds = drivetrainControl.toChassisSpeeds(); // Converts the control to ChassisSpeeds
+
+        Logger.recordOutput("DSSPE", nonDiscreteSpeeds);
 
         // Note: it is important to not discretize speeds before or after
         // using the setpoint generator, as it will discretize them for you

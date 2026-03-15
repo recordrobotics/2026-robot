@@ -67,6 +67,11 @@ public class JoystickControls implements AbstractControl {
         return new Transform2d(xy.getFirst(), xy.getSecond(), Rotation2d.fromRadians(getSpin()));
     }
 
+    @Override
+    public boolean isReverseIntakePressed() {
+        return false;
+    }
+
     public boolean isAutoAlignTriggered() {
         return false;
     }

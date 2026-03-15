@@ -92,7 +92,8 @@ public final class Constants {
     }
 
     public enum FieldStartingLocation {
-        DEFAULT(new Pose2d(3.599, 4.067, Rotation2d.kZero)); // TODO remove
+        TrenchDepot(new Pose2d(3.560, 7.418, Rotation2d.kZero)),
+        Center(new Pose2d(3.418, 4.080, Rotation2d.fromDegrees(34.439)));
 
         private final Pose2d transformRed;
         private final Pose2d transformBlue;
@@ -215,7 +216,7 @@ public final class Constants {
             MAPLE_SIM;
         }
 
-        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.MAPLE_CLEAN;
+        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.PHOTON_SIM_ACCURATE;
 
         public static final ObjectDetectionSimulationMode OBJECT_DETECTION_SIMULATION_MODE =
                 ObjectDetectionSimulationMode.MAPLE_SIM;
@@ -281,7 +282,7 @@ public final class Constants {
         public static final double FRAME_WITH_BUMPER_LENGTH =
                 FRAME_LENGTH + Inches.of(7.5).in(Meters);
 
-        public static final double ROBOT_MASS_KG = 56.398311242825; // kg
+        public static final double ROBOT_MASS_KG = 60.668; // kg
         public static final double ROBOT_MOI = 6.4482549519; // kg*m^2
 
         private Frame() {}
@@ -325,12 +326,12 @@ public final class Constants {
         public static final ImmutableCurrent FALCON_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
 
         public static final ImmutableCurrent KRAKEN_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
-        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
+        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(38));
         public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
         public static final ImmutableTime KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
                 ImmutableTime.of(Seconds.of(1.0));
         public static final ImmutableCurrent KRAKEN_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
-        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
+        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(63));
         public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
         public static final ImmutableTime KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
                 ImmutableTime.of(Seconds.of(1.0));
@@ -373,7 +374,7 @@ public final class Constants {
         public static final double TURN_MMEXPO_KA = 0.02;
 
         /** The max speed the robot can travel safely */
-        public static final double MAX_MODULE_SPEED = 4.35; // TODO: measure
+        public static final double MAX_MODULE_SPEED = 4.5; // TODO: measure
 
         // Offset rotation origin for testing turret feedforward
         public static final Translation2d TURRET_OFFSET = Translation2d.kZero; // new Translation2d(0.127, 0.127);
@@ -395,8 +396,8 @@ public final class Constants {
                 BACK_RIGHT_WHEEL_LOCATION.minus(TURRET_OFFSET));
 
         public static final PPHolonomicDriveController PP_DRIVE_CONTROLLER = new PPHolonomicDriveController(
-                new PIDConstants(1.5, 0.0, 0.0), // Translation PID constants
-                new PIDConstants(1.5, 0.0, 0.0) // Rotation PID constants
+                new PIDConstants(2.5, 0.0, 0.0), // Translation PID constants
+                new PIDConstants(2.5, 0.0, 0.0) // Rotation PID constants
                 );
 
         public static final DriveMotorType driveMotorType = DriveMotorType.KRAKEN;
@@ -438,15 +439,15 @@ public final class Constants {
         // TODO
         public static final double EJECT_FUEL_PER_SECOND = 10.0;
 
-        public static final Current ARM_SUPPLY_CURRENT_LIMIT = Amps.of(70);
-        public static final Current ARM_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Current ARM_SUPPLY_CURRENT_LIMIT = Amps.of(60);
+        public static final Current ARM_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(20);
         public static final Time ARM_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
-        public static final Current ARM_STATOR_CURRENT_LIMIT = Amps.of(120);
+        public static final Current ARM_STATOR_CURRENT_LIMIT = Amps.of(100);
 
-        public static final Current WHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(70);
-        public static final Current WHEEL_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Current WHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(20);
+        public static final Current WHEEL_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(20);
         public static final Time WHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
-        public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(120);
+        public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(100);
 
         public static final double ARM_MMEXPO_KV = 4;
         public static final double ARM_MMEXPO_KA = 2;
@@ -476,9 +477,9 @@ public final class Constants {
 
         public static final double ARM_DOWN_FF = -0.5;
 
-        public static final double WHEEL_INTAKE_VELOCITY_MPS = 4;
-        public static final double WHEEL_JAMMED_VELOCITY_MPS = 6; // TODO go to this velocity when jam is detected
-        public static final double WHEEL_EJECT_VELOCITY_MPS = -4;
+        public static final double WHEEL_INTAKE_VELOCITY_MPS = 5;
+        public static final double WHEEL_JAMMED_VELOCITY_MPS = 7;
+        public static final double WHEEL_EJECT_VELOCITY_MPS = -5;
 
         public static final double ARM_GEAR_RATIO = 12.8571428571;
         public static final double ARM_GRAVITY_POSITION_OFFSET_ROTATIONS = -0.082671;
@@ -548,10 +549,10 @@ public final class Constants {
         public static final double FLYWHEEL_KV = 0.35945;
         public static final double FLYWHEEL_KA = 0.01;
 
-        public static final Current HOOD_SUPPLY_CURRENT_LIMIT = Amps.of(70);
-        public static final Current HOOD_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
+        public static final Current HOOD_SUPPLY_CURRENT_LIMIT = Amps.of(20);
+        public static final Current HOOD_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(10);
         public static final Time HOOD_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
-        public static final Current HOOD_STATOR_CURRENT_LIMIT = Amps.of(120);
+        public static final Current HOOD_STATOR_CURRENT_LIMIT = Amps.of(40);
 
         public static final Current FLYWHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(70);
         public static final Current FLYWHEEL_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
