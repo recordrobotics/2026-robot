@@ -15,6 +15,8 @@ public class AutoControlModifier extends OneshotControlModifier {
     private static AutoControlModifier defaultInstance;
 
     private ChassisSpeeds speeds;
+    private double robotRelativeForcesXNewtons;
+    private double robotRelativeForcesYNewtons;
 
     protected AutoControlModifier() {}
 
@@ -26,24 +28,31 @@ public class AutoControlModifier extends OneshotControlModifier {
         return defaultInstance;
     }
 
-    public void drive(ChassisSpeeds speeds) {
+    public void drive(ChassisSpeeds speeds, double robotRelativeForcesXNewtons, double robotRelativeForcesYNewtons) {
         Logger.recordOutput("AUTOSPEEDS", speeds);
         this.speeds = speeds;
+        this.robotRelativeForcesXNewtons = robotRelativeForcesXNewtons;
+        this.robotRelativeForcesYNewtons = robotRelativeForcesYNewtons;
         this.setEnabled(true);
     }
 
     @Override
     protected final boolean perform(DrivetrainControl control) {
-        return applyChassisSpeeds(speeds, control);
+        return applyChassisSpeeds(speeds, robotRelativeForcesXNewtons, robotRelativeForcesYNewtons, control);
     }
 
-    protected boolean applyChassisSpeeds(ChassisSpeeds speeds, DrivetrainControl control) {
+    protected boolean applyChassisSpeeds(
+            ChassisSpeeds speeds,
+            double robotRelativeForcesXNewtons,
+            double robotRelativeForcesYNewtons,
+            DrivetrainControl control) {
         control.applyWeightedVelocity(
                 new Transform2d(
                         speeds.vxMetersPerSecond,
                         speeds.vyMetersPerSecond,
                         new Rotation2d(speeds.omegaRadiansPerSecond)),
                 1);
+        control.applyFeedforwards(robotRelativeForcesXNewtons, robotRelativeForcesYNewtons);
         return true;
     }
 }

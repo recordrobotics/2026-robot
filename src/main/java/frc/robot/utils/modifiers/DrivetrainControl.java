@@ -15,12 +15,18 @@ public final class DrivetrainControl {
 
     private Transform2d targetVelocity;
 
+    private double robotRelativeForcesXNewtons;
+    private double robotRelativeForcesYNewtons;
+
     private DrivetrainControl(Transform2d driverVelocity, Transform2d driverAcceleration, Transform2d driverJerk) {
         this.driverVelocity = driverVelocity;
         this.driverAcceleration = driverAcceleration;
         this.driverJerk = driverJerk;
 
         this.targetVelocity = driverVelocity;
+
+        this.robotRelativeForcesXNewtons = 0;
+        this.robotRelativeForcesYNewtons = 0;
     }
 
     public static Transform2d fieldToRobot(Transform2d fieldRelative, Rotation2d robotAngle) {
@@ -87,6 +93,14 @@ public final class DrivetrainControl {
                 targetVelocity.getRotation().getRadians());
     }
 
+    public double robotRelativeForcesXNewtons() {
+        return robotRelativeForcesXNewtons;
+    }
+
+    public double robotRelativeForcesYNewtons() {
+        return robotRelativeForcesYNewtons;
+    }
+
     /**
      * Sets target velocity to the given value interpolated using weight.
      *
@@ -100,11 +114,18 @@ public final class DrivetrainControl {
                         targetVelocity.getRotation(), velocity.getRotation(), weight));
     }
 
+    public void applyFeedforwards(double robotRelativeForcesXNewtons, double robotRelativeForcesYNewtons) {
+        this.robotRelativeForcesXNewtons += robotRelativeForcesXNewtons;
+        this.robotRelativeForcesYNewtons += robotRelativeForcesYNewtons;
+    }
+
     /**
      * Debug method that logs state to path
      * @param path the path to log to HAS TO END WITH / (e.g. "DrivetrainControl/Before/")
      */
     public void logState(String path) {
         Logger.recordOutput(path + "targetVelocity", targetVelocity);
+        Logger.recordOutput(path + "robotRelativeForcesXNewtons", robotRelativeForcesXNewtons);
+        Logger.recordOutput(path + "robotRelativeForcesYNewtons", robotRelativeForcesYNewtons);
     }
 }

@@ -54,6 +54,15 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
     public PhotonVisionCamera(String name, PhysicalCamera physicalCamera, Transform3d robotToCamera) {
         super(name, physicalCamera);
 
+        robotToCamera = new Transform3d(
+                robotToCamera.getX(),
+                robotToCamera.getY(),
+                robotToCamera.getZ(),
+                new Rotation3d(
+                        robotToCamera.getRotation().getX(),
+                        -robotToCamera.getRotation().getY(),
+                        robotToCamera.getRotation().getZ()));
+
         camera = new PhotonCamera(name);
 
         this.robotToCamera = robotToCamera;

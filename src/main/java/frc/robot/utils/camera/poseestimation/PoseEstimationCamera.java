@@ -304,8 +304,9 @@ public abstract class PoseEstimationCamera extends GenericCamera {
 
             if (pose.isPresent()
                     && SimpleMath.isInField(pose.get())
-                    && pose.get().getTranslation().getDistance(currentEstimate.getTranslation())
-                            <= maxDistanceToCurrentEstimate) {
+                    && (pose.get().getTranslation().getDistance(currentEstimate.getTranslation())
+                                    <= maxDistanceToCurrentEstimate
+                            || !SimpleMath.isInField(currentEstimate.getTranslation()))) {
                 lastStdDev = stdDev;
                 fusion.addVisionMeasurement(
                         pose.get(),
@@ -330,7 +331,7 @@ public abstract class PoseEstimationCamera extends GenericCamera {
         double stdDev = getPhysicalCamera().calculateStdDevs(estimate.avgTagDist());
 
         Optional<Pose2d> closestPose = fusion.getEstimatedPositionAt(estimate.timestampSeconds());
-        if (closestPose.isPresent()) {
+        if (closestPose.isPresent() && SimpleMath.isInField(closestPose.get())) {
             double distanceToClosest = estimate.unconstrainedPose()
                     .getTranslation()
                     .getDistance(closestPose.get().getTranslation());

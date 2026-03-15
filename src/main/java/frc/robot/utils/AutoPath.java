@@ -59,7 +59,11 @@ public final class AutoPath {
                 RobotContainer.drivetrain::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
 
                 // Method that will drive the robot given ROBOT RELATIVE speeds
-                (speeds, feedforwards) -> AutoControlModifier.getDefault().drive(speeds),
+                (speeds, feedforwards) -> AutoControlModifier.getDefault()
+                        .drive(
+                                speeds,
+                                feedforwards.robotRelativeForcesXNewtons(),
+                                feedforwards.robotRelativeForcesYNewtons()),
                 Constants.Swerve.PP_DRIVE_CONTROLLER,
                 config,
 

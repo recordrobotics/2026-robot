@@ -16,7 +16,7 @@ public enum PhysicalCamera {
      * Limelight 3G Camera Specifications
      * https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3g
      */
-    LIMELIGHT_3G(1280, 960, 1, 75.8, 8, 0.2, 0.0005, 35, 5, 0.55, 1.11574, 0.35),
+    LIMELIGHT_3G(1280, 960, 1, 75.8, 14, 0.2, 0.0005, 35, 5, 0.55, 1.11574, 0.35),
 
     /**
      * Limelight 4 Camera Specifications
