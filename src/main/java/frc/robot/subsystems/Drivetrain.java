@@ -223,6 +223,16 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         }
     }
 
+    private double projectFeedforward(double robotForceX, double robotForceY, double wheelAngleRadians) {
+        double robotAccelX = robotForceX / Constants.Frame.ROBOT_MASS_KG;
+        double robotAccelY = robotForceY / Constants.Frame.ROBOT_MASS_KG;
+
+        double robotVoltageX = robotAccelX * Constants.Swerve.KRAKEN_DRIVE_KA;
+        double robotVoltageY = robotAccelY * Constants.Swerve.KRAKEN_DRIVE_KA;
+
+        return Math.cos(wheelAngleRadians) * robotVoltageX + Math.sin(wheelAngleRadians) * robotVoltageY;
+    }
+
     /** Drives the robot using robot relative ChassisSpeeds. */
     private void driveInternal() {
         DrivetrainControl drivetrainControl = getDrivetrainControl();
@@ -242,8 +252,8 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         lastModifiersAppliedCount = applyCount;
 
         ChassisSpeeds nonDiscreteSpeeds = drivetrainControl.toChassisSpeeds(); // Converts the control to ChassisSpeeds
-        double robotRelativeForcesXNewtons = drivetrainControl.robotRelativeForcesXNewtons();
-        double robotRelativeForcesYNewtons = drivetrainControl.robotRelativeForcesYNewtons();
+        double[] robotRelativeForcesXNewtons = drivetrainControl.robotRelativeForcesXNewtons();
+        double[] robotRelativeForcesYNewtons = drivetrainControl.robotRelativeForcesYNewtons();
 
         Logger.recordOutput("DSSPE", nonDiscreteSpeeds);
 
@@ -260,10 +270,31 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         // Sets state for each module
         if (!(SysIdManager.getProvider() instanceof SysIdSpin)
                 && !(SysIdManager.getProvider() instanceof SysIdForward)) {
-            frontLeft.setDesiredState(swerveModuleStates[FL]);
-            frontRight.setDesiredState(swerveModuleStates[FR]);
-            backLeft.setDesiredState(swerveModuleStates[BL]);
-            backRight.setDesiredState(swerveModuleStates[BR]);
+            SwerveModuleState[] states = RobotContainer.drivetrain.getModuleStates();
+            frontLeft.setDesiredState(
+                    swerveModuleStates[FL],
+                    projectFeedforward(
+                            robotRelativeForcesXNewtons[FL],
+                            robotRelativeForcesYNewtons[FL],
+                            states[FL].angle.getRadians()));
+            frontRight.setDesiredState(
+                    swerveModuleStates[FR],
+                    projectFeedforward(
+                            robotRelativeForcesXNewtons[FR],
+                            robotRelativeForcesYNewtons[FR],
+                            states[FR].angle.getRadians()));
+            backLeft.setDesiredState(
+                    swerveModuleStates[BL],
+                    projectFeedforward(
+                            robotRelativeForcesXNewtons[BL],
+                            robotRelativeForcesYNewtons[BL],
+                            states[BL].angle.getRadians()));
+            backRight.setDesiredState(
+                    swerveModuleStates[BR],
+                    projectFeedforward(
+                            robotRelativeForcesXNewtons[BR],
+                            robotRelativeForcesYNewtons[BR],
+                            states[BR].angle.getRadians()));
         }
 
         lastModuleSetpoints = swerveModuleStates;
@@ -288,10 +319,10 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
     }
 
     public void sysIdOnlyDriveMotorsSpin(Voltage volts) {
-        frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(360 - 45.0)));
-        frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(180 + 45.0)));
-        backLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45.0)));
-        backRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(90 + 45.0)));
+        frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(360 - 45.0)), 0);
+        frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(180 + 45.0)), 0);
+        backLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45.0)), 0);
+        backRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(90 + 45.0)), 0);
 
         frontLeft.setDriveMotorVoltsSysIdOnly(volts.in(Volts));
         frontRight.setDriveMotorVoltsSysIdOnly(volts.in(Volts));
@@ -303,10 +334,10 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
 
         SwerveModuleState state = new SwerveModuleState(0, Rotation2d.fromDegrees(0));
 
-        frontLeft.setDesiredState(state);
-        frontRight.setDesiredState(state);
-        backLeft.setDesiredState(state);
-        backRight.setDesiredState(state);
+        frontLeft.setDesiredState(state, 0);
+        frontRight.setDesiredState(state, 0);
+        backLeft.setDesiredState(state, 0);
+        backRight.setDesiredState(state, 0);
 
         frontLeft.setDriveMotorVoltsSysIdOnly(volts.in(Volts));
         frontRight.setDriveMotorVoltsSysIdOnly(volts.in(Volts));

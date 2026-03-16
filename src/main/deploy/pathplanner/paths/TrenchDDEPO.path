@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.69732744869951,
-        "y": 7.249553923416356
+        "x": 6.623368797460532,
+        "y": 7.174791037699449
       },
       "isLocked": false,
       "linkedName": "DepotTrench"
@@ -20,12 +20,12 @@
         "y": 7.094992867332382
       },
       "prevControl": {
-        "x": 7.59536869447372,
-        "y": 7.28947762412327
+        "x": 7.580766259700042,
+        "y": 7.3139724791247405
       },
       "nextControl": {
-        "x": 8.083859499960832,
-        "y": 6.684683723623263
+        "x": 8.19776076991405,
+        "y": 6.5270234329589325
       },
       "isLocked": false,
       "linkedName": null
@@ -36,12 +36,12 @@
         "y": 4.300242510699002
       },
       "prevControl": {
-        "x": 8.019861929011126,
-        "y": 4.283279257523761
+        "x": 8.110994947839384,
+        "y": 4.302831421552279
       },
       "nextControl": {
-        "x": 6.771015985741346,
-        "y": 4.330508134279692
+        "x": 6.5628017068706805,
+        "y": 4.295404584458734
       },
       "isLocked": false,
       "linkedName": null
@@ -52,12 +52,12 @@
         "y": 7.41845934379458
       },
       "prevControl": {
-        "x": 7.468821407253982,
-        "y": 7.47932338035952
+        "x": 7.307186218493838,
+        "y": 7.436959545092239
       },
       "nextControl": {
-        "x": 3.299263005873982,
-        "y": 7.290871842400524
+        "x": 3.0585547618332605,
+        "y": 7.370630180594875
       },
       "isLocked": false,
       "linkedName": null
@@ -68,12 +68,12 @@
         "y": 7.094992867332382
       },
       "prevControl": {
-        "x": 3.4191850902860903,
-        "y": 7.227581035472328
+        "x": 3.5073002640952953,
+        "y": 7.321993876271012
       },
       "nextControl": {
-        "x": 2.1906342052790815,
-        "y": 6.6306779702482315
+        "x": 2.279378499353225,
+        "y": 6.5498821408404115
       },
       "isLocked": false,
       "linkedName": null
@@ -84,12 +84,12 @@
         "y": 5.956390870185448
       },
       "prevControl": {
-        "x": 1.726036289594503,
-        "y": 5.93225606512271
+        "x": 1.820099618343979,
+        "y": 5.97995559933862
       },
       "nextControl": {
-        "x": 0.732091106683714,
-        "y": 6.028661048260515
+        "x": 0.9869397604910431,
+        "y": 5.922698565376792
       },
       "isLocked": false,
       "linkedName": null
@@ -100,15 +100,35 @@
         "y": 5.956390870185448
       },
       "prevControl": {
-        "x": 1.0488828979403988,
-        "y": 6.095898904463692
+        "x": 0.45157951963828824,
+        "y": 5.975020183273595
+      },
+      "nextControl": {
+        "x": 0.9951723338963221,
+        "y": 5.934400205631287
+      },
+      "isLocked": false,
+      "linkedName": "Depot"
+    },
+    {
+      "anchor": {
+        "x": 1.3,
+        "y": 5.956390870185448
+      },
+      "prevControl": {
+        "x": 1.5498609111395674,
+        "y": 5.964729040518634
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Depot"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
+    {
+      "waypointRelativePos": 0.3710021321961741,
+      "rotationDegrees": 0.0
+    },
     {
       "waypointRelativePos": 0.682302771855013,
       "rotationDegrees": 90.0
@@ -139,7 +159,7 @@
     {
       "name": "Constraints Zone",
       "minWaypointRelativePos": 3.2734638757596235,
-      "maxWaypointRelativePos": 5.04,
+      "maxWaypointRelativePos": 5.1,
       "constraints": {
         "maxVelocity": 2.0,
         "maxAcceleration": 8.0,
@@ -151,8 +171,8 @@
     },
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 5.039837947332857,
-      "maxWaypointRelativePos": 6.0,
+      "minWaypointRelativePos": 5.1,
+      "maxWaypointRelativePos": 7.0,
       "constraints": {
         "maxVelocity": 0.7,
         "maxAcceleration": 8.0,
@@ -188,7 +208,7 @@
       }
     },
     {
-      "name": "Intake",
+      "name": "IntakeDepot",
       "waypointRelativePos": 4.910195813639397,
       "endWaypointRelativePos": null,
       "command": {

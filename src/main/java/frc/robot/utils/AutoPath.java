@@ -39,7 +39,7 @@ public final class AutoPath {
         NamedCommands.registerCommand(
                 "IntakeDepot",
                 Commands.run(() -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake)
-                        .withTimeout(2.0));
+                        .withTimeout(1.2));
         NamedCommands.registerCommand(
                 "Mixer",
                 Commands.repeatingSequence(

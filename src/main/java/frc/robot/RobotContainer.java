@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 // WPILib imports
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -123,6 +124,9 @@ public final class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     private static void initialize() {
+
+        RobotController.setBrownoutVoltage(5.75);
+
         noEncoderResetAlert = new Alert("Encoders not reset!", AlertType.kError);
 
         EnumSet.allOf(ShootMode.class).forEach(v -> shootModeChooser.addOption(v.name(), v));

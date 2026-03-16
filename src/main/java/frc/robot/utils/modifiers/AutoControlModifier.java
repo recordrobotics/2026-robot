@@ -15,8 +15,8 @@ public class AutoControlModifier extends OneshotControlModifier {
     private static AutoControlModifier defaultInstance;
 
     private ChassisSpeeds speeds;
-    private double robotRelativeForcesXNewtons;
-    private double robotRelativeForcesYNewtons;
+    private double[] robotRelativeForcesXNewtons;
+    private double[] robotRelativeForcesYNewtons;
 
     protected AutoControlModifier() {}
 
@@ -28,7 +28,8 @@ public class AutoControlModifier extends OneshotControlModifier {
         return defaultInstance;
     }
 
-    public void drive(ChassisSpeeds speeds, double robotRelativeForcesXNewtons, double robotRelativeForcesYNewtons) {
+    public void drive(
+            ChassisSpeeds speeds, double[] robotRelativeForcesXNewtons, double[] robotRelativeForcesYNewtons) {
         Logger.recordOutput("AUTOSPEEDS", speeds);
         this.speeds = speeds;
         this.robotRelativeForcesXNewtons = robotRelativeForcesXNewtons;
@@ -43,8 +44,8 @@ public class AutoControlModifier extends OneshotControlModifier {
 
     protected boolean applyChassisSpeeds(
             ChassisSpeeds speeds,
-            double robotRelativeForcesXNewtons,
-            double robotRelativeForcesYNewtons,
+            double[] robotRelativeForcesXNewtons,
+            double[] robotRelativeForcesYNewtons,
             DrivetrainControl control) {
         control.applyWeightedVelocity(
                 new Transform2d(

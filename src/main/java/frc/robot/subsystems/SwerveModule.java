@@ -36,6 +36,7 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
 
     private double targetDriveVelocity;
     private double targetTurnPosition;
+    private double targetFeedforward;
 
     private final double turnGearRatio;
     private final double driveGearRatio;
@@ -246,7 +247,7 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
      *
      * @param desiredState Desired state with speed and angle.
      */
-    public void setDesiredState(SwerveModuleState desiredState) {
+    public void setDesiredState(SwerveModuleState desiredState, double feedforward) {
         // Optimize the reference state to avoid spinning further than 90 degrees
         if (!(SysIdManager.getProvider() instanceof Drivetrain.SysIdSpin)
                 && !(SysIdManager.getProvider() instanceof Drivetrain.SysIdForward)) {
@@ -255,6 +256,7 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
 
         targetTurnPosition = desiredState.angle.getRotations();
         targetDriveVelocity = desiredState.speedMetersPerSecond;
+        targetFeedforward = feedforward;
     }
 
     public void periodic() {
@@ -288,7 +290,8 @@ public final class SwerveModule implements AutoCloseable, PoweredSubsystem {
                     - getTurnWheelRotation2d().getRadians());
         }
 
-        io.setDriveMotorMotionMagic(driveRequest.withVelocity(actualTargetDriveVelocity));
+        io.setDriveMotorMotionMagic(
+                driveRequest.withVelocity(actualTargetDriveVelocity).withFeedForward(targetFeedforward));
 
         if (!(SysIdManager.getProvider() instanceof Drivetrain.SysIdTurn)) {
             io.setTurnMotorMotionMagic(turnRequest.withPosition(targetTurnPosition));

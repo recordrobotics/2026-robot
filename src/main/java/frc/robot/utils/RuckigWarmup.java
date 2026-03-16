@@ -58,7 +58,11 @@ public final class RuckigWarmup {
         }
 
         @Override
-        protected boolean applyChassisSpeeds(ChassisSpeeds speeds, DrivetrainControl control) {
+        protected boolean applyChassisSpeeds(
+                ChassisSpeeds speeds,
+                double[] robotRelativeForcesXNewtons,
+                double[] robotRelativeForcesYNewtons,
+                DrivetrainControl control) {
 
             // convert input robot-relative speeds to field-relative for odometry
             speeds = ChassisSpeeds.fromRobotRelativeSpeeds(speeds, currentPose.getRotation());

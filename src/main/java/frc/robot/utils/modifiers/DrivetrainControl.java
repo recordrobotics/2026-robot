@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.utils.SimpleMath;
+import java.util.Arrays;
 import org.littletonrobotics.junction.Logger;
 
 public final class DrivetrainControl {
@@ -15,8 +16,8 @@ public final class DrivetrainControl {
 
     private Transform2d targetVelocity;
 
-    private double robotRelativeForcesXNewtons;
-    private double robotRelativeForcesYNewtons;
+    private double[] robotRelativeForcesXNewtons;
+    private double[] robotRelativeForcesYNewtons;
 
     private DrivetrainControl(Transform2d driverVelocity, Transform2d driverAcceleration, Transform2d driverJerk) {
         this.driverVelocity = driverVelocity;
@@ -25,8 +26,11 @@ public final class DrivetrainControl {
 
         this.targetVelocity = driverVelocity;
 
-        this.robotRelativeForcesXNewtons = 0;
-        this.robotRelativeForcesYNewtons = 0;
+        this.robotRelativeForcesXNewtons = new double[4];
+        this.robotRelativeForcesYNewtons = new double[4];
+
+        Arrays.fill(robotRelativeForcesXNewtons, 0);
+        Arrays.fill(robotRelativeForcesYNewtons, 0);
     }
 
     public static Transform2d fieldToRobot(Transform2d fieldRelative, Rotation2d robotAngle) {
@@ -93,11 +97,11 @@ public final class DrivetrainControl {
                 targetVelocity.getRotation().getRadians());
     }
 
-    public double robotRelativeForcesXNewtons() {
+    public double[] robotRelativeForcesXNewtons() {
         return robotRelativeForcesXNewtons;
     }
 
-    public double robotRelativeForcesYNewtons() {
+    public double[] robotRelativeForcesYNewtons() {
         return robotRelativeForcesYNewtons;
     }
 
@@ -114,9 +118,11 @@ public final class DrivetrainControl {
                         targetVelocity.getRotation(), velocity.getRotation(), weight));
     }
 
-    public void applyFeedforwards(double robotRelativeForcesXNewtons, double robotRelativeForcesYNewtons) {
-        this.robotRelativeForcesXNewtons += robotRelativeForcesXNewtons;
-        this.robotRelativeForcesYNewtons += robotRelativeForcesYNewtons;
+    public void applyFeedforwards(double[] robotRelativeForcesXNewtons, double[] robotRelativeForcesYNewtons) {
+        for (int i = 0; i < this.robotRelativeForcesXNewtons.length; i++) {
+            this.robotRelativeForcesXNewtons[i] += robotRelativeForcesXNewtons[i];
+            this.robotRelativeForcesYNewtons[i] += robotRelativeForcesYNewtons[i];
+        }
     }
 
     /**

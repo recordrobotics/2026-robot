@@ -360,9 +360,12 @@ public class RuckigAlign extends Command {
         double vr = rPid.calculate(currentState.position()[2], newPosition[2])
                 + feedforward(newVelocity[2], newAcceleration[2], newJerk[2]);
 
-        controlModifier.drive(ChassisSpeeds.fromFieldRelativeSpeeds(
-                new ChassisSpeeds(vx, vy, vr),
-                Rotation2d.fromRadians(currentState.position()[2])));
+        controlModifier.drive(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        new ChassisSpeeds(vx, vy, vr),
+                        Rotation2d.fromRadians(currentState.position()[2])),
+                new double[4],
+                new double[4]);
 
         output.passToInput(input);
 

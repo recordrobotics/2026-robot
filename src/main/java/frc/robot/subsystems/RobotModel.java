@@ -750,6 +750,19 @@ public final class RobotModel extends ManagedSubsystemBase {
                             .toArray(FuelObject[]::new));
         }
 
+        public final void addFuelAtNode(ManagedFuelNode node) {
+            fuelObjects.add(new FuelObject(node.node.pose, node));
+        }
+
+        public final void preloadFuel() {
+            clearFuel();
+            addFuelAtNode(fuelNodes[5]);
+            addFuelAtNode(fuelNodes[6]);
+            addFuelAtNode(fuelNodes[7]);
+            addFuelAtNode(fuelNodes[8]);
+            addFuelAtNode(fuelNodes[9]);
+        }
+
         public Pose3d getRobotPose3d() {
             Pose2d robotPose2d = RobotContainer.model.getRobot();
             return new Pose3d(

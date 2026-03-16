@@ -104,6 +104,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         Logger.recordOutput("TRENCHES", new Translation2d[] {
             BLUE_TRENCH_HP_SIDE, BLUE_TRENCH_DEPOT_SIDE, RED_TRENCH_HP_SIDE, RED_TRENCH_DEPOT_SIDE
         });
+
+        SmartDashboard.putNumber("SHOOT_ANGLE_OFFSET", 0);
     }
 
     public void setEnableShooting(boolean enable) {
@@ -292,6 +294,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             if (shootingEnabled) {
                 if (!SmartDashboard.getBoolean("SHOOT_OVERRIDE", false)) {
                     double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)));
+                    shotPitch += SmartDashboard.getNumber("SHOOT_ANGLE_OFFSET", 0);
                     RobotContainer.shooter.setTargetState(new ShooterState(
                             isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : shotPitch,
                             target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm()),
@@ -316,8 +319,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                         new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));
             }
 
-            boolean onTarget =
-                    !isInTrench && RobotContainer.turret.atGoal() && RobotContainer.shooter.isAtTargetState();
+            boolean onTarget = !isInTrench
+                    && RobotContainer.turret.atGoal()
+                    && RobotContainer.shooter.isAtTargetState()
+                    && !RobotContainer.intake.isNearStartPosition();
             SpindexerState spindexerState = (onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF;
             FeederState feederState = (onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF;
 

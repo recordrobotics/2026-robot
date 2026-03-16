@@ -325,13 +325,13 @@ public final class Constants {
                 ImmutableTime.of(Seconds.of(1.0));
         public static final ImmutableCurrent FALCON_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(70));
 
-        public static final ImmutableCurrent KRAKEN_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
-        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(35));
-        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(35));
+        public static final ImmutableCurrent KRAKEN_TURN_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
+        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(25));
+        public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(25));
         public static final ImmutableTime KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
                 ImmutableTime.of(Seconds.of(1.0));
-        public static final ImmutableCurrent KRAKEN_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(120));
-        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(63));
+        public static final ImmutableCurrent KRAKEN_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(95));
+        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(48));
         public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
         public static final ImmutableTime KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
                 ImmutableTime.of(Seconds.of(1.0));
@@ -447,7 +447,7 @@ public final class Constants {
         public static final Current WHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(20);
         public static final Current WHEEL_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(20);
         public static final Time WHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
-        public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(100);
+        public static final Current WHEEL_STATOR_CURRENT_LIMIT = Amps.of(80);
 
         public static final double ARM_MMEXPO_KV = 4;
         public static final double ARM_MMEXPO_KA = 2;
@@ -477,9 +477,9 @@ public final class Constants {
 
         public static final double ARM_DOWN_FF = -0.5;
 
-        public static final double WHEEL_INTAKE_VELOCITY_MPS = 5;
-        public static final double WHEEL_JAMMED_VELOCITY_MPS = 7;
-        public static final double WHEEL_EJECT_VELOCITY_MPS = -5;
+        public static final double WHEEL_INTAKE_VELOCITY_MPS = 4;
+        public static final double WHEEL_JAMMED_VELOCITY_MPS = 5;
+        public static final double WHEEL_EJECT_VELOCITY_MPS = -4;
 
         public static final double ARM_GEAR_RATIO = 12.8571428571;
         public static final double ARM_GRAVITY_POSITION_OFFSET_ROTATIONS = -0.082671;
@@ -503,10 +503,10 @@ public final class Constants {
         public static final double KVP = 0.2;
         public static double FF_MUL = 1.0;
 
-        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(40);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
         public static final Time SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
-        public static final Current STATOR_CURRENT_LIMIT = Amps.of(120);
+        public static final Current STATOR_CURRENT_LIMIT = Amps.of(90);
 
         public static final double MMEXPO_KV = 1.931;
         public static final double MMEXPO_KA = 1.1;
@@ -557,7 +557,7 @@ public final class Constants {
         public static final Current FLYWHEEL_SUPPLY_CURRENT_LIMIT = Amps.of(70);
         public static final Current FLYWHEEL_SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
         public static final Time FLYWHEEL_SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
-        public static final Current FLYWHEEL_STATOR_CURRENT_LIMIT = Amps.of(120);
+        public static final Current FLYWHEEL_STATOR_CURRENT_LIMIT = Amps.of(100);
 
         public static final double HOOD_MMEXPO_KV = HOOD_KV;
         public static final double HOOD_MMEXPO_KA = 0.3;
@@ -587,10 +587,10 @@ public final class Constants {
         public static final double KV = 0.23114;
         public static final double KA = 0.011727;
 
-        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(40);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
         public static final Time SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
-        public static final Current STATOR_CURRENT_LIMIT = Amps.of(120);
+        public static final Current STATOR_CURRENT_LIMIT = Amps.of(80);
 
         public static final double MAX_ACCELERATION = 700;
         public static final double MAX_JERK = 6600;
@@ -609,10 +609,10 @@ public final class Constants {
         public static final double KV = 0.11573;
         public static final double KA = 0.0026933;
 
-        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(70);
+        public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(35);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
         public static final Time SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
-        public static final Current STATOR_CURRENT_LIMIT = Amps.of(120);
+        public static final Current STATOR_CURRENT_LIMIT = Amps.of(80);
 
         public static final double MAX_ACCELERATION = 700;
         public static final double MAX_JERK = 6600;
