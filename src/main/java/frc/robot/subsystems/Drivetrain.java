@@ -40,7 +40,6 @@ import frc.robot.utils.modifiers.ControlModifierService.ControlModifier;
 import frc.robot.utils.modifiers.DrivetrainControl;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
-import org.ironmaple.simulation.drivesims.GyroSimulation;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
@@ -86,7 +85,8 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
     // Create and configure a drivetrain simulation configuration
     private final DriveTrainSimulationConfig driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
             // Specify gyro type (for realistic gyro drifting and error simulation)
-            .withGyro(() -> new GyroSimulation(0.5, 0.05)) // navX-Micro
+            // .withGyro(() -> new GyroSimulation(0.5, 0.05)) // navX-Micro
+            .withGyro(COTS.ofPigeon2())
             // Specify swerve module (for realistic swerve dynamics)
             .withSwerveModule(new SwerveModuleSimulationConfig(
                     DCMotor.getKrakenX60(1), // Drive motor is a Kraken X60

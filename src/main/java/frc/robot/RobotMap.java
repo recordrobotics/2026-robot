@@ -1,6 +1,9 @@
 package frc.robot;
 
 public final class RobotMap {
+
+    public static final int PIGEON_2_ID = 24;
+
     private RobotMap() {}
 
     public static final class Intake {

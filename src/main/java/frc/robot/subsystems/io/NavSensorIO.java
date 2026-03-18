@@ -1,22 +1,29 @@
 package frc.robot.subsystems.io;
 
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
+
 public interface NavSensorIO extends AutoCloseable {
+
+    void applyPigeon2Config(Pigeon2Configuration config);
 
     void reset();
 
     void resetDisplacement();
 
-    double getAngle();
+    Rotation2d getYaw();
 
-    double getYawRate();
+    AngularVelocity getYawRate();
 
-    double getPitch();
+    Rotation2d getPitch();
 
-    double getRoll();
+    Rotation2d getRoll();
 
-    double getWorldLinearAccelX();
+    LinearAcceleration getWorldLinearAccelX();
 
-    double getWorldLinearAccelY();
+    LinearAcceleration getWorldLinearAccelY();
 
     boolean isConnected();
 

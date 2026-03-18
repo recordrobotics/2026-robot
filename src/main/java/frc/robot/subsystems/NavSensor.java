@@ -1,6 +1,11 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+
+import com.ctre.phoenix6.configs.MountPoseConfigs;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.RobotContainer;
@@ -27,18 +32,15 @@ public final class NavSensor extends ManagedSubsystemBase {
     private double jerkX;
     private double jerkY;
 
-    // variable to keep track of a reference angle whenever you reset
-    private double referenceAngle;
-
-    private final Alert disconnectedAlert = new Alert("NavX Disconnected!", AlertType.kError);
+    private final Alert disconnectedAlert = new Alert("Nav Disconnected!", AlertType.kError);
 
     public NavSensor(NavSensorIO io) {
         this.io = io;
 
+        io.applyPigeon2Config(new Pigeon2Configuration().withMountPose(new MountPoseConfigs().withMountPoseYaw(0)));
+
         io.reset();
         io.resetDisplacement(); // Technically not necessary but whatever
-
-        referenceAngle = io.getAngle();
 
         DashboardUI.Overview.setNavSensor(io::isConnected);
         disconnectedAlert.set(!io.isConnected());
@@ -48,26 +50,19 @@ public final class NavSensor extends ManagedSubsystemBase {
         return io.isConnected();
     }
 
-    // Stores the reference angle as whatever the angle is currently measured to be
-    public void resetAngleAdjustment() {
-        referenceAngle = io.getAngle();
+    public Rotation2d getYaw() {
+        return io.getYaw();
     }
 
-    // Gets the angle minus the reference angle
-    public Rotation2d getAdjustedAngle() {
-        return Rotation2d.fromDegrees((io.getAngle() - referenceAngle));
-    }
-
-    public double getPitch() {
+    public Rotation2d getPitch() {
         return io.getPitch();
     }
 
-    public double getRoll() {
+    public Rotation2d getRoll() {
         return io.getRoll();
     }
 
-    // Gets the angular velocity in degrees per second
-    public double getYawRate() {
+    public AngularVelocity getYawRate() {
         return io.getYawRate();
     }
 
@@ -77,8 +72,8 @@ public final class NavSensor extends ManagedSubsystemBase {
 
     @Override
     public void periodicManaged() {
-        double accelX = io.getWorldLinearAccelX();
-        double accelY = io.getWorldLinearAccelY();
+        double accelX = io.getWorldLinearAccelX().in(MetersPerSecondPerSecond);
+        double accelY = io.getWorldLinearAccelY().in(MetersPerSecondPerSecond);
         jerkX = (accelX - lastAccelX) / PERIODIC;
         jerkY = (accelY - lastAccelY) / PERIODIC;
         lastAccelX = accelX;

@@ -1,6 +1,5 @@
-package frc.robot.subsystems.io.stub;
+package frc.robot.subsystems.io.sim;
 
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
@@ -8,22 +7,34 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import frc.robot.subsystems.io.NavSensorIO;
+import org.ironmaple.simulation.drivesims.GyroSimulation;
 
-@SuppressWarnings("java:S1186") // Methods intentionally left blank
-public class NavSensorStub implements NavSensorIO {
+public class NavSensorSimNavX implements NavSensorIO {
+
+    private final GyroSimulation gyroSimulation;
+
+    public NavSensorSimNavX(GyroSimulation gyroSimulation) {
+        this.gyroSimulation = gyroSimulation;
+    }
 
     @Override
-    public void applyPigeon2Config(Pigeon2Configuration config) {}
+    public void applyPigeon2Config(Pigeon2Configuration config) {
+        /* not supported */
+    }
 
     @Override
-    public void reset() {}
+    public void reset() {
+        gyroSimulation.setRotation(Rotation2d.kZero);
+    }
 
     @Override
-    public void resetDisplacement() {}
+    public void resetDisplacement() {
+        /* not supported */
+    }
 
     @Override
     public Rotation2d getYaw() {
-        return Rotation2d.kZero;
+        return gyroSimulation.getGyroReading();
     }
 
     @Override
@@ -38,7 +49,7 @@ public class NavSensorStub implements NavSensorIO {
 
     @Override
     public AngularVelocity getYawRate() {
-        return DegreesPerSecond.of(0);
+        return gyroSimulation.getMeasuredAngularVelocity();
     }
 
     @Override
@@ -53,12 +64,16 @@ public class NavSensorStub implements NavSensorIO {
 
     @Override
     public boolean isConnected() {
-        return false;
+        return true;
     }
 
     @Override
-    public void close() throws Exception {}
+    public void close() throws Exception {
+        /* nothing to close */
+    }
 
     @Override
-    public void simulationPeriodic() {}
+    public void simulationPeriodic() {
+        /* simulation handled by maplesim */
+    }
 }

@@ -1,5 +1,7 @@
 package frc.robot.utils.camera.poseestimation.io;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -152,7 +154,7 @@ public class LimelightCamera extends PoseEstimationCamera {
         Rotation2d estimatedRotation =
                 RobotContainer.poseSensorFusion.getEstimatedPosition().getRotation();
 
-        double yawRate = RobotContainer.poseSensorFusion.nav.getYawRate();
+        double yawRate = RobotContainer.poseSensorFusion.nav.getYawRate().in(DegreesPerSecond);
 
         LimelightHelpers.SetRobotOrientation(
                 getName(),

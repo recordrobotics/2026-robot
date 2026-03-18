@@ -17,8 +17,8 @@ import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.dashboard.DashboardUI;
-import frc.robot.subsystems.io.real.NavSensorReal;
-import frc.robot.subsystems.io.sim.NavSensorSim;
+import frc.robot.subsystems.io.real.NavSensorPigeon2;
+import frc.robot.subsystems.io.sim.NavSensorSimPigeon2;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.ConsoleLogger;
@@ -132,13 +132,12 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
     public PoseSensorFusion(Pose2d initialPose) {
         nav = new NavSensor(
                 Constants.RobotState.getMode() == Mode.REAL
-                        ? new NavSensorReal(true)
-                        : new NavSensorSim(RobotContainer.drivetrain
+                        ? new NavSensorPigeon2()
+                        : new NavSensorSimPigeon2(RobotContainer.drivetrain
                                 .getSwerveDriveSimulation()
                                 .getGyroSimulation()));
-        nav.resetAngleAdjustment();
 
-        lastRawNavAngle = nav.isConnected() ? nav.getAdjustedAngle() : Rotation2d.kZero;
+        lastRawNavAngle = nav.isConnected() ? nav.getYaw() : Rotation2d.kZero;
 
         poseFilter = new SwerveDrivePoseEstimator(
                 RobotContainer.drivetrain.getKinematics(),
@@ -243,8 +242,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
         SwerveModulePosition[] positions = RobotContainer.drivetrain.getModulePositions();
 
         if (nav.isConnected()) {
-            updateNav = nav.getAdjustedAngle();
-            Logger.recordOutput("TWISTIN", false);
+            updateNav = nav.getYaw();
         } else if (updatePositions != null) {
             SwerveModulePosition[] deltas = new SwerveModulePosition[4];
             for (int i = 0; i < 4; i++) {
@@ -254,8 +252,6 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
             Twist2d twist = RobotContainer.drivetrain.getKinematics().toTwist2d(deltas);
             updateNav = lastRawNavAngle.plus(new Rotation2d(twist.dtheta));
-            Logger.recordOutput("TWIST", twist);
-            Logger.recordOutput("TWISTIN", true);
         }
 
         lastRawNavAngle = updateNav;
