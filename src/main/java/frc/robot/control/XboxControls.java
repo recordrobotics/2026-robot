@@ -16,6 +16,8 @@ import frc.robot.utils.modifiers.DrivetrainControl;
 @SuppressWarnings({"java:S109"})
 public class XboxControls implements AbstractControl {
 
+    private static final double SLOW_SPEED = 2.0;
+
     private XboxController xbox;
 
     private ProfiledPIDController spinController = new ProfiledPIDController(
@@ -58,8 +60,9 @@ public class XboxControls implements AbstractControl {
 
         Pair<Double, Double> xy = getXYOriented();
 
-        double x = xy.getFirst() * Constants.Swerve.MAX_MODULE_SPEED;
-        double y = xy.getSecond() * Constants.Swerve.MAX_MODULE_SPEED;
+        double maxSpeed = isSlowSpeedPressed() ? SLOW_SPEED : Constants.Swerve.MAX_MODULE_SPEED;
+        double x = xy.getFirst() * maxSpeed;
+        double y = xy.getSecond() * maxSpeed;
 
         velocity = new Transform2d(x, y, new Rotation2d(spinOutput));
         acceleration = new Transform2d(
@@ -94,14 +97,6 @@ public class XboxControls implements AbstractControl {
         Pair<Double, Double> xy = getXYRaw();
         // Returns the raw driver input as a Transform2d
         return new Transform2d(xy.getFirst(), xy.getSecond(), new Rotation2d(spinOutput));
-    }
-
-    public boolean isAutoAlignTriggered() {
-        return false;
-    }
-
-    public boolean isAutoAlignNearTriggered() {
-        return false;
     }
 
     public Pair<Double, Double> getXYRaw() {
@@ -176,6 +171,11 @@ public class XboxControls implements AbstractControl {
     @Override
     public boolean isUnstuckSpindexerPressed() {
         return xbox.getRightBumperButton();
+    }
+
+    @Override
+    public boolean isSlowSpeedPressed() {
+        return xbox.getLeftStickButton();
     }
 
     @Override

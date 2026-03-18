@@ -216,7 +216,7 @@ public final class Constants {
             MAPLE_SIM;
         }
 
-        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.PHOTON_SIM_ACCURATE;
+        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.MAPLE_CLEAN;
 
         public static final ObjectDetectionSimulationMode OBJECT_DETECTION_SIMULATION_MODE =
                 ObjectDetectionSimulationMode.MAPLE_SIM;
@@ -396,8 +396,8 @@ public final class Constants {
                 BACK_RIGHT_WHEEL_LOCATION.minus(TURRET_OFFSET));
 
         public static final PPHolonomicDriveController PP_DRIVE_CONTROLLER = new PPHolonomicDriveController(
-                new PIDConstants(2.5, 0.0, 0.0), // Translation PID constants
-                new PIDConstants(2.5, 0.0, 0.0) // Rotation PID constants
+                new PIDConstants(3.0, 0.0, 0.15), // Translation PID constants
+                new PIDConstants(4.0, 0.0, 0.3) // Rotation PID constants
                 );
 
         public static final DriveMotorType driveMotorType = DriveMotorType.KRAKEN;

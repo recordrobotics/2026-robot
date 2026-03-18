@@ -271,4 +271,14 @@ public class TestControlBridge implements AbstractControl {
     public boolean isUnstuckSpindexerPressed() {
         return false; // TODO
     }
+
+    @Override
+    public boolean isReverseIntakePressed() {
+        return false; // TODO
+    }
+
+    @Override
+    public boolean isSlowSpeedPressed() {
+        return false; // TODO
+    }
 }

@@ -10,37 +10,73 @@ public enum PhysicalCamera {
      * Limelight 2 Camera Specifications
      * https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-2
      */
-    LIMELIGHT_2(1280, 960, 2, 74.36, 13, 0.2, 0.0005, 35, 5, 0.55, 1.4175, 0.35),
+    LIMELIGHT_2(new PhysicalCameraBuilder()
+            .withResolution(1280, 960)
+            .withDownscale(2)
+            .withFov(74.36)
+            .withFps(13)
+            .withPxError(0.2, 0.0005)
+            .withLatencyMs(35, 5)
+            .withStdDevs(0.55, 1.4175, 0.35)),
 
     /**
      * Limelight 3G Camera Specifications
      * https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3g
      */
-    LIMELIGHT_3G(1280, 960, 1, 75.8, 14, 0.2, 0.0005, 35, 5, 0.55, 1.11574, 0.35),
+    LIMELIGHT_3G(new PhysicalCameraBuilder()
+            .withResolution(1280, 960)
+            .withDownscale(1)
+            .withFov(75.8)
+            .withFps(14)
+            .withPxError(0.2, 0.0005)
+            .withLatencyMs(35, 5)
+            .withStdDevs(0.55, 1.11574, 0.35)),
 
     /**
      * Limelight 4 Camera Specifications
      * https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-4
      */
-    LIMELIGHT_4(1280, 960, 1, 91.5, 30, 0.2, 0.0005, 35, 5, 0.55, 1.11574, 0.35),
+    LIMELIGHT_4(new PhysicalCameraBuilder()
+            .withResolution(1280, 960)
+            .withDownscale(1)
+            .withFov(91.5)
+            .withFps(30)
+            .withPxError(0.2, 0.0005)
+            .withLatencyMs(35, 5)
+            .withStdDevs(0.55, 1.11574, 0.35)),
 
     /**
      * SVPro Global Shutter Camera Specifications
      * https://www.amazon.com/SVPRO-Shutter-Distortion-Free-1920x1200-Computer/dp/B0CC28R5TL
      */
-    SVPRO_GLOBAL_SHUTTER(1920, 1200, 1, 83, 23, 0.2, 0.0005, 35, 5, 0.55, 1.3, 0.35),
+    SVPRO_GLOBAL_SHUTTER(new PhysicalCameraBuilder()
+            .withResolution(1920, 1200)
+            .withDownscale(1)
+            .withFov(83)
+            .withFps(23)
+            .withPxError(0.2, 0.0005)
+            .withLatencyMs(35, 5)
+            .withStdDevs(0.55, 1.3, 0.35)),
 
     /**
      * Arducam 100 FOV Camera Specifications
      * https://www.amazon.com/Arducam-Camera-Computer-Microphone-Windows/dp/B07ZRJDTBQ/?th=1
      */
-    ARDUCAM_100_FOV(1920, 1080, 1, 100, 30, 0.2, 0.0005, 35, 5, 0.55, 1.0, 0.35),
+    ARDUCAM_100_FOV(new PhysicalCameraBuilder()
+            .withResolution(1920, 1080)
+            .withFov(100)
+            .withFps(30)
+            .withLatencyMs(35, 5)),
 
     /**
      * Arducam 160 FOV Camera Specifications
      * https://www.amazon.com/Arducam-Camera-Computer-Microphone-Windows/dp/B07ZS75KZR/?th=1
      */
-    ARDUCAM_160_FOV(1920, 1080, 1, 160, 30, 0.2, 0.0005, 35, 5, 0.55, 1.0, 0.35);
+    ARDUCAM_160_FOV(new PhysicalCameraBuilder()
+            .withResolution(1920, 1080)
+            .withFov(160)
+            .withFps(30)
+            .withLatencyMs(35, 5));
 
     public final int width;
     public final int height;
@@ -60,31 +96,19 @@ public enum PhysicalCamera {
     public final double horizontalFov;
     public final double verticalFov;
 
-    PhysicalCamera(
-            int width,
-            int height,
-            double downscale,
-            double fov, // diagonal
-            double fps,
-            double pxError,
-            double pxErrorStdDev,
-            double latencyMs,
-            double latencyStdDevMs,
-            double minStdDevs,
-            double stdDevsExponent,
-            double txtyStdDevs) {
-        this.width = width;
-        this.height = height;
-        this.downscale = downscale;
-        this.fov = fov;
-        this.fps = fps;
-        this.pxError = pxError;
-        this.pxErrorStdDev = pxErrorStdDev;
-        this.latencyMs = latencyMs;
-        this.latencyStdDevMs = latencyStdDevMs;
-        this.minStdDevs = minStdDevs;
-        this.stdDevsExponent = stdDevsExponent;
-        this.txtyStdDevs = txtyStdDevs;
+    PhysicalCamera(PhysicalCameraBuilder builder) {
+        this.width = builder.width;
+        this.height = builder.height;
+        this.downscale = builder.downscale;
+        this.fov = builder.fov;
+        this.fps = builder.fps;
+        this.pxError = builder.pxError;
+        this.pxErrorStdDev = builder.pxErrorStdDev;
+        this.latencyMs = builder.latencyMs;
+        this.latencyStdDevMs = builder.latencyStdDevMs;
+        this.minStdDevs = builder.minStdDevs;
+        this.stdDevsExponent = builder.stdDevsExponent;
+        this.txtyStdDevs = builder.txtyStdDevs;
 
         this.aspectRatio = (double) getDetectorWidth() / getDetectorHeight();
         double diagonalFovRad = Math.toRadians(fov);
@@ -141,5 +165,60 @@ public enum PhysicalCamera {
 
         return Math.abs(horizontalAngle) <= Math.toRadians(horizontalFov / 2.0)
                 && Math.abs(verticalAngle) <= Math.toRadians(verticalFov / 2.0);
+    }
+
+    public static class PhysicalCameraBuilder {
+        private int width;
+        private int height;
+        private double downscale = 1.0;
+        private double fov; // diagonal
+        private double fps;
+        private double pxError = 0.2;
+        private double pxErrorStdDev = 0.0005;
+        private double latencyMs = 35;
+        private double latencyStdDevMs = 5;
+        private double minStdDevs = 0.55;
+        private double stdDevsExponent = 1.0;
+        private double txtyStdDevs = 0.35;
+
+        public PhysicalCameraBuilder withResolution(int width, int height) {
+            this.width = width;
+            this.height = height;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withDownscale(double downscale) {
+            this.downscale = downscale;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withFov(double fov) {
+            this.fov = fov;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withFps(double fps) {
+            this.fps = fps;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withPxError(double pxError, double pxErrorStdDev) {
+            this.pxError = pxError;
+            this.pxErrorStdDev = pxErrorStdDev;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withLatencyMs(double latencyMs, double latencyStdDevMs) {
+            this.latencyMs = latencyMs;
+            this.latencyStdDevMs = latencyStdDevMs;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withStdDevs(double minStdDevs, double stdDevsExponent, double txtyStdDevs) {
+            this.minStdDevs = minStdDevs;
+            this.stdDevsExponent = stdDevsExponent;
+            this.txtyStdDevs = txtyStdDevs;
+            return this;
+        }
     }
 }

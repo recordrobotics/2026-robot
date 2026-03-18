@@ -68,11 +68,18 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private static final double BOTTOM_BEAM_TIME_TO_BALL_HIT = 0.06;
     private static final double TOP_BEAM_TIME_TO_BALL_HIT = 0.04;
 
+    private static final double TRENCH_WIDTH_METERS = 1.361281;
+    private static final double TRENCH_OFFSET_METERS = 0.3;
+
     public enum FeedMode {
         AUTO,
         ALWAYS,
         DISABLED
     }
+
+    public double hoodAngleOverride = Constants.Shooter.HOOD_MAX_POSITION_RADIANS;
+    public double shootVelocityOverride = 0;
+    public boolean overrideShootAngleVelocity = false;
 
     Translation3d[] trajectory = new Translation3d[48];
 
@@ -88,10 +95,6 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private double shooterFeedforward = 0;
 
     public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
-
-    public double hoodAngleOverride = Constants.Shooter.HOOD_MAX_POSITION_RADIANS;
-    public double shootVelocityOverride = 0;
-    public boolean overrideShootAngleVelocity = false;
 
     public ShootOrchestrator() {
         // nothing to do
@@ -206,9 +209,6 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             shooterFeedforward = 0;
         }
     }
-
-    private static final double TRENCH_WIDTH_METERS = 1.361281;
-    private static final double TRENCH_OFFSET_METERS = 0.3;
 
     public boolean isInTrench(Pose2d pose, Translation2d trench) {
         return Math.abs(pose.getY() - trench.getY()) < TRENCH_WIDTH_METERS / 2.0

@@ -255,6 +255,7 @@ public final class Robot extends LoggedRobot {
         if (Constants.RobotState.getMode() == Constants.RobotState.Mode.SIM) {
             // Reset simulation field
             SimulatedArena.getInstance().resetFieldForAuto();
+            RobotContainer.model.fuelManager.preloadFuel();
         }
 
         RobotContainer.model.intakeModel.resetHopperExtension();

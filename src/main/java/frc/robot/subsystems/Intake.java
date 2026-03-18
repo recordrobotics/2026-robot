@@ -65,6 +65,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     private WheelMode wheelTargetState = WheelMode.OFF;
     private IntakeState targetState = IntakeState.STARTING;
 
+    private double lastNotJammedTime = 0;
+
     public enum IntakeState {
         INTAKE,
         EJECT,
@@ -229,8 +231,6 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
             io.setWheelMotionMagic(wheelRequest.withVelocity(actualWheelTargetVelocityMps));
         }
     }
-
-    private double lastNotJammedTime = 0;
 
     private void updateWheel() {
 

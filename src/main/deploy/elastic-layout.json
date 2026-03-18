@@ -335,6 +335,58 @@
                 }
               }
             ]
+          },
+          {
+            "title": "limelight-bk",
+            "x": 640.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 256.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Enabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Camera/limelight-bk/Enabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "ForceUnconstrained",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Camera/limelight-bk/ForceUnconstrained",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "UseRotation",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Camera/limelight-bk/UseRotation",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              }
+            ]
           }
         ],
         "containers": [
@@ -513,8 +565,8 @@
           },
           {
             "title": "SHOOT_ANGLE_OFFSET",
-            "x": 192.0,
-            "y": 512.0,
+            "x": 0.0,
+            "y": 384.0,
             "width": 416.0,
             "height": 128.0,
             "type": "Number Slider",

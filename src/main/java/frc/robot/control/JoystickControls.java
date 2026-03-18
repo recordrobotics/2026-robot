@@ -72,11 +72,8 @@ public class JoystickControls implements AbstractControl {
         return false;
     }
 
-    public boolean isAutoAlignTriggered() {
-        return false;
-    }
-
-    public boolean isAutoAlignNearTriggered() {
+    @Override
+    public boolean isSlowSpeedPressed() {
         return false;
     }
 

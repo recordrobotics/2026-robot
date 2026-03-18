@@ -223,7 +223,7 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         }
     }
 
-    private double projectFeedforward(double robotForceX, double robotForceY, double wheelAngleRadians) {
+    private static double projectFeedforward(double robotForceX, double robotForceY, double wheelAngleRadians) {
         double robotAccelX = robotForceX / Constants.Frame.ROBOT_MASS_KG;
         double robotAccelY = robotForceY / Constants.Frame.ROBOT_MASS_KG;
 

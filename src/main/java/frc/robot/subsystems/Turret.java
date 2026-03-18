@@ -39,6 +39,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
     private static final Time SYSID_TIMEOUT = Seconds.of(1.0);
 
+    private static final double TWO_PI = 2.0 * Math.PI;
+
     private final TurretIO io;
     private final SysIdRoutine sysIdRoutine;
     private final MotionMagicExpoVoltage turretRequest;
@@ -156,8 +158,6 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
                                         + Constants.Turret.KVP * velocityError))
                 * Constants.Turret.FF_MUL;
     }
-
-    private static final double TWO_PI = 2.0 * Math.PI;
 
     public static double getClosestTurretPosition(double currentPos, double targetHeading) {
 

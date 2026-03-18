@@ -33,6 +33,8 @@ public interface AbstractControl {
 
     boolean isKillTriggered();
 
+    boolean isSlowSpeedPressed();
+
     void vibrate(RumbleType type, double value);
 
     String toDisplayName();
