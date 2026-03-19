@@ -330,8 +330,8 @@ public final class Constants {
         public static final ImmutableCurrent KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(25));
         public static final ImmutableTime KRAKEN_TURN_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
                 ImmutableTime.of(Seconds.of(1.0));
-        public static final ImmutableCurrent KRAKEN_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(95));
-        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(48));
+        public static final ImmutableCurrent KRAKEN_DRIVE_STATOR_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(108));
+        public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(58));
         public static final ImmutableCurrent KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT = ImmutableCurrent.of(Amps.of(40));
         public static final ImmutableTime KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
                 ImmutableTime.of(Seconds.of(1.0));
@@ -592,8 +592,8 @@ public final class Constants {
         public static final Time SUPPLY_LOWER_CURRENT_LIMIT_TIME = Seconds.of(1.0);
         public static final Current STATOR_CURRENT_LIMIT = Amps.of(80);
 
-        public static final double MAX_ACCELERATION = 700;
-        public static final double MAX_JERK = 6600;
+        public static final double MAX_ACCELERATION = 200;
+        public static final double MAX_JERK = 3600;
 
         public static final double GEAR_RATIO = 2.0;
 
