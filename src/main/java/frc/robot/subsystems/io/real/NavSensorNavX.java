@@ -58,6 +58,16 @@ public class NavSensorNavX implements NavSensorIO {
     }
 
     @Override
+    public AngularVelocity getPitchRate() {
+        return DegreesPerSecond.of(0);
+    }
+
+    @Override
+    public AngularVelocity getRollRate() {
+        return DegreesPerSecond.of(0);
+    }
+
+    @Override
     public LinearAcceleration getWorldLinearAccelX() {
         return MetersPerSecondPerSecond.of(G * nav.getWorldLinearAccelX());
     }

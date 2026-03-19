@@ -157,6 +157,9 @@ public final class Constants {
                         Units.degreesToRadians(-0.827613033167),
                         Units.degreesToRadians(25.5207428597),
                         Units.degreesToRadians(-126.219878553)));
+        public static final Transform3d MECHANISM_TO_CAMERA_TURRET = new Transform3d(
+                new Translation3d(0.183918, 0, 0.355131 + 0.192215),
+                new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(30), Units.degreesToRadians(0)));
         public static final Transform3d ROBOT_TO_CAMERA_INTAKE_LEFT = new Transform3d(
                 new Translation3d(Meters.of(-0.338901), Meters.of(-0.277466), Meters.of(0.443145)),
                 new Rotation3d(
@@ -216,7 +219,29 @@ public final class Constants {
             MAPLE_SIM;
         }
 
-        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.MAPLE_CLEAN;
+        public enum PhotonVisionSimPerformanceMode {
+            /**
+             * Disables all streaming and unnecessary computer vision apart from AprilTag detection.
+             * This is the fastest and should be used.
+             */
+            FAST,
+            /**
+             * Enables streaming of the camera feed to the dashboard.
+             * This is not necessary for the simulation and can cause significant performance issues,
+             * but can be useful for debugging robot to camera poses, etc.
+             */
+            STREAMED,
+            /**
+             * Same as STREAMED but also enables a field wireframe to help with the dashboard visualization.
+             * This is the slowest and should only be used for debugging the field layout and robot to camera poses.
+             */
+            WIREFRAME
+        }
+
+        public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.PHOTON_SIM_ACCURATE;
+
+        public static final PhotonVisionSimPerformanceMode PHOTON_VISION_SIM_PERFORMANCE_MODE =
+                PhotonVisionSimPerformanceMode.FAST;
 
         public static final ObjectDetectionSimulationMode OBJECT_DETECTION_SIMULATION_MODE =
                 ObjectDetectionSimulationMode.MAPLE_SIM;

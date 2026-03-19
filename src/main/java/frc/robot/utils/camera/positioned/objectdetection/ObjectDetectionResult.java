@@ -1,4 +1,4 @@
-package frc.robot.utils.camera.objectdetection;
+package frc.robot.utils.camera.positioned.objectdetection;
 
 public record ObjectDetectionResult(
         int id,

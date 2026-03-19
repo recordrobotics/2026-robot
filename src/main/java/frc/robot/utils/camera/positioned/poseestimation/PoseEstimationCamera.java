@@ -1,14 +1,15 @@
-package frc.robot.utils.camera.poseestimation;
+package frc.robot.utils.camera.positioned.poseestimation;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.PoseSensorFusion;
 import frc.robot.utils.SimpleMath;
-import frc.robot.utils.camera.GenericCamera;
 import frc.robot.utils.camera.PhysicalCamera;
-import frc.robot.utils.camera.poseestimation.CameraPoseEstimate.TXTYMeasurement;
+import frc.robot.utils.camera.positioned.PositionedCamera;
+import frc.robot.utils.camera.positioned.poseestimation.CameraPoseEstimate.TXTYMeasurement;
 import java.util.List;
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
@@ -18,7 +19,7 @@ import org.littletonrobotics.junction.Logger;
  * <p>Supports both constrained and unconstrained pose estimates as well as a way to force using unconstrained estimates.
  * <p>Allows rotation measurements to be optionally trusted or ignored.
  */
-public abstract class PoseEstimationCamera extends GenericCamera {
+public abstract class PoseEstimationCamera extends PositionedCamera {
 
     public static final double DEFAULT_MAX_DISTANCE_TO_CURRENT_ESTIMATE = 10.0;
     public static final double DEFAULT_UNCONSTRAINED_MAX_DISTANCE = Units.feetToMeters(7);
@@ -86,15 +87,17 @@ public abstract class PoseEstimationCamera extends GenericCamera {
      * <p>Sets up SmartDashboard entries for configuring rotation trust and forcing unconstrained measurements.
      * @param name The name of the camera. This is used for network connection and logging.
      * @param physicalCamera The physical camera type.
+     * @param toCamera The transform from either the mechanism or robot to the camera, depending on if the camera will be moving.
      */
-    protected PoseEstimationCamera(String name, PhysicalCamera physicalCamera) {
+    protected PoseEstimationCamera(String name, PhysicalCamera physicalCamera, Transform3d toCamera) {
         this(
                 name,
                 physicalCamera,
                 DEFAULT_MAX_DISTANCE_TO_CURRENT_ESTIMATE,
                 DEFAULT_UNCONSTRAINED_MAX_DISTANCE,
                 DEFAULT_TXTY_MAX_DISTANCE,
-                DEFAULT_ROTATION_STDDEV_MULTIPLIER);
+                DEFAULT_ROTATION_STDDEV_MULTIPLIER,
+                toCamera);
     }
 
     /**
@@ -106,6 +109,7 @@ public abstract class PoseEstimationCamera extends GenericCamera {
      * @param unconstrainedMaxDistance Maximum distance to tag to use unconstrained measurements.
      * @param txtyMaxDistance Maximum distance to TXTY tag to use TXTY measurements.
      * @param rotationStdDevMultiplier Multiplier for rotation standard deviation when using rotation measurements.
+     * @param toCamera The transform from either the mechanism or robot to the camera, depending on if the camera will be moving.
      */
     protected PoseEstimationCamera(
             String name,
@@ -113,8 +117,9 @@ public abstract class PoseEstimationCamera extends GenericCamera {
             double maxDistanceToCurrentEstimate,
             double unconstrainedMaxDistance,
             double txtyMaxDistance,
-            double rotationStdDevMultiplier) {
-        super(name, physicalCamera);
+            double rotationStdDevMultiplier,
+            Transform3d toCamera) {
+        super(name, physicalCamera, toCamera);
 
         this.maxDistanceToCurrentEstimate = maxDistanceToCurrentEstimate;
         this.unconstrainedMaxDistance = unconstrainedMaxDistance;

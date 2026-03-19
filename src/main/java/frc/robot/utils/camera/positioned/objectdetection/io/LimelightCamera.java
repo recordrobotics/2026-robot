@@ -1,4 +1,4 @@
-package frc.robot.utils.camera.objectdetection.io;
+package frc.robot.utils.camera.positioned.objectdetection.io;
 
 import com.google.common.collect.ImmutableSortedMap;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -6,9 +6,9 @@ import edu.wpi.first.networktables.DoubleArrayEntry;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.utils.camera.PhysicalCamera;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionCamera;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionClass;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionResult;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionCamera;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionClass;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionResult;
 import frc.robot.utils.libraries.LimelightHelpers;
 import java.util.Arrays;
 import java.util.List;

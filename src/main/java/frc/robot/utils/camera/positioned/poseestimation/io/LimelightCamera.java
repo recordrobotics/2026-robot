@@ -1,4 +1,4 @@
-package frc.robot.utils.camera.poseestimation.io;
+package frc.robot.utils.camera.positioned.poseestimation.io;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 
@@ -10,13 +10,14 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.utils.camera.PhysicalCamera;
-import frc.robot.utils.camera.poseestimation.CameraPoseEstimate;
-import frc.robot.utils.camera.poseestimation.CameraPoseEstimate.TXTYMeasurement;
-import frc.robot.utils.camera.poseestimation.PoseEstimationCamera;
+import frc.robot.utils.camera.positioned.poseestimation.CameraPoseEstimate;
+import frc.robot.utils.camera.positioned.poseestimation.CameraPoseEstimate.TXTYMeasurement;
+import frc.robot.utils.camera.positioned.poseestimation.PoseEstimationCamera;
 import frc.robot.utils.libraries.LimelightHelpers;
 import frc.robot.utils.libraries.LimelightHelpers.PoseEstimate;
 import java.util.List;
@@ -33,27 +34,52 @@ public class LimelightCamera extends PoseEstimationCamera {
     private double lastHeartbeatIncrementTime = 0.0;
     private double lastHeartbeatValue = -1.0;
 
-    /**
-     * The transform from robot to camera.
-     */
-    private Transform3d robotToCamera;
+    private LimelightIMUMode imuMode = LimelightIMUMode.EXTERNAL_SEED;
+
+    public enum LimelightIMUMode {
+        /**
+         * No internal IMU processing. MT2 uses interpolated yaw from robot's gyro sent via SetRobotOrientation().
+         */
+        EXTERNAL_ONLY(0),
+        /**
+         * Internal IMU offset is calibrated to match external yaw each frame (seeding). MT2 still uses external yaw for botpose.
+         */
+        EXTERNAL_SEED(1),
+        /**
+         * 	Uses internal IMU's fused yaw only. No external input required.
+         */
+        INTERNAL_ONLY(2),
+        /**
+         * Complementary filter fuses internal IMU with MT1 vision yaw. When MT1 gets a valid pose, it slowly corrects internal IMU drift.
+         */
+        INTERNAL_MT1_ASSIST(3),
+        /**
+         * Complementary filter fuses internal IMU with external yaw from SetRobotOrientation(). This is the recommended mode, as the internal IMU's 1khz update rate is utilized for frame-by-frame motion while the robot's IMU corrects for any drift over time.
+         */
+        INTERNAL_EXTERNAL_ASSIST(4);
+
+        private final int num;
+
+        private LimelightIMUMode(int num) {
+            this.num = num;
+        }
+    }
 
     /**
      * Constructs a LimelightCamera with the given name and physical camera type and default settings.
      * @param name The name of the camera. This is used for network connection and logging.
      * @param physicalCamera The physical camera type.
-     * @param robotToCamera The transform from robot to camera.
+     * @param toCamera The transform from either the mechanism or robot to the camera, depending on if the camera will be moving.
      */
-    public LimelightCamera(String name, PhysicalCamera physicalCamera, Transform3d robotToCamera) {
-        super(name, physicalCamera);
-        this.robotToCamera = robotToCamera;
+    public LimelightCamera(String name, PhysicalCamera physicalCamera, Transform3d toCamera) {
+        super(name, physicalCamera, toCamera);
     }
 
     /**
      * Constructs a LimelightCamera with the given name and physical camera type.
      * @param name The name of the camera. This is used for network connection and logging.
      * @param physicalCamera The physical camera type.
-     * @param robotToCamera The transform from robot to camera.
+     * @param toCamera The transform from either the mechanism or robot to the camera, depending on if the camera will be moving.
      * @param maxDistanceToCurrentEstimate Maximum distance from last pose to accept vision measurements.
      * @param unconstrainedMaxDistance Maximum distance to tag to use unconstrained measurements.
      * @param txtyMaxDistance Maximum distance to TXTY tag to use TXTY measurements.
@@ -62,19 +88,30 @@ public class LimelightCamera extends PoseEstimationCamera {
     protected LimelightCamera(
             String name,
             PhysicalCamera physicalCamera,
-            Transform3d robotToCamera,
             double maxDistanceToCurrentEstimate,
             double unconstrainedMaxDistance,
             double txtyMaxDistance,
-            double rotationStdDevMultiplier) {
+            double rotationStdDevMultiplier,
+            Transform3d toCamera) {
         super(
                 name,
                 physicalCamera,
                 maxDistanceToCurrentEstimate,
                 unconstrainedMaxDistance,
                 txtyMaxDistance,
-                rotationStdDevMultiplier);
-        this.robotToCamera = robotToCamera;
+                rotationStdDevMultiplier,
+                toCamera);
+    }
+
+    private static Transform3d convertRobotToCamera(Transform3d robotToCamera) {
+        return new Transform3d(
+                robotToCamera.getX(),
+                -robotToCamera.getY(),
+                robotToCamera.getZ(),
+                new Rotation3d(
+                        robotToCamera.getRotation().getX(),
+                        robotToCamera.getRotation().getY(),
+                        robotToCamera.getRotation().getZ()));
     }
 
     /**
@@ -96,6 +133,14 @@ public class LimelightCamera extends PoseEstimationCamera {
         }
     }
 
+    public LimelightIMUMode getLimelightIMUMode() {
+        return imuMode;
+    }
+
+    public void setLimelightIMUMode(LimelightIMUMode mode) {
+        imuMode = mode;
+    }
+
     /**
      * Sets the current pipeline index.
      * @param pipeline The pipeline index to set.
@@ -105,27 +150,18 @@ public class LimelightCamera extends PoseEstimationCamera {
     }
 
     /**
-     * Gets the transform from robot to camera.
-     * @return The transform from robot to camera.
-     */
-    public Transform3d getRobotToCamera() {
-        return robotToCamera;
-    }
-
-    /**
-     * Sets the transform from robot to camera.
-     * @param robotToCamera The transform from robot to camera.
-     */
-    public void setRobotToCamera(Transform3d robotToCamera) {
-        this.robotToCamera = robotToCamera;
-    }
-
-    /**
      * Makes pose estimates from the camera.
      * @return A list of camera pose estimates.
      */
     @Override
     public List<CameraPoseEstimate> makeEstimates() {
+
+        if (DriverStation.isEnabled()) {
+            setLimelightIMUMode(LimelightIMUMode.INTERNAL_EXTERNAL_ASSIST);
+        } else {
+            setLimelightIMUMode(LimelightIMUMode.EXTERNAL_SEED);
+        }
+
         updateCameraOrientation();
 
         Measurements measurements = getMeasurements();
@@ -135,8 +171,15 @@ public class LimelightCamera extends PoseEstimationCamera {
         }
 
         CameraPoseEstimate estimate = new CameraPoseEstimate(
-                measurements.mt1().pose,
-                Optional.ofNullable(measurements.mt2()).map(m -> m.pose),
+                getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                        ? measurements.mt1().pose
+                        : calculateRobotPose(new Pose3d(measurements.mt1().pose), measurements.mt1().timestampSeconds)
+                                .toPose2d(),
+                Optional.ofNullable(measurements.mt2())
+                        .map(m -> getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                                ? m.pose
+                                : calculateRobotPose(new Pose3d(m.pose), m.timestampSeconds)
+                                        .toPose2d()),
                 measurements.txty(),
                 measurements.mt1().timestampSeconds,
                 measurements.mt1().latency,
@@ -154,25 +197,40 @@ public class LimelightCamera extends PoseEstimationCamera {
         Rotation2d estimatedRotation =
                 RobotContainer.poseSensorFusion.getEstimatedPosition().getRotation();
 
+        double rollRate = RobotContainer.poseSensorFusion.nav.getRollRate().in(DegreesPerSecond);
+        double pitchRate = RobotContainer.poseSensorFusion.nav.getPitchRate().in(DegreesPerSecond);
         double yawRate = RobotContainer.poseSensorFusion.nav.getYawRate().in(DegreesPerSecond);
 
-        LimelightHelpers.SetRobotOrientation(
-                getName(),
-                estimatedRotation.getDegrees(),
-                0, // TODO: try out `yawRate`,
-                0,
-                0,
-                0,
-                0);
+        Transform3d robotToCamera = convertRobotToCamera(
+                getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                        ? getRobotToCamera()
+                        : getMechanismToCamera());
 
         LimelightHelpers.setCameraPose_RobotSpace(
                 getName(),
                 robotToCamera.getX(),
-                -robotToCamera.getY(),
+                robotToCamera.getY(),
                 robotToCamera.getZ(),
                 Units.radiansToDegrees(robotToCamera.getRotation().getX()),
                 Units.radiansToDegrees(robotToCamera.getRotation().getY()),
                 Units.radiansToDegrees(robotToCamera.getRotation().getZ()));
+
+        Rotation3d orientation = new Rotation3d(
+                        RobotContainer.poseSensorFusion.nav.getRoll().getRadians(),
+                        RobotContainer.poseSensorFusion.nav.getPitch().getRadians(),
+                        estimatedRotation.getRadians())
+                .plus(getLastRobotToMechanism().getRotation());
+
+        LimelightHelpers.SetIMUMode(getName(), imuMode.num);
+
+        LimelightHelpers.SetRobotOrientation(
+                getName(),
+                Units.radiansToDegrees(orientation.getZ()),
+                useVelocity() ? yawRate : 0,
+                use3DRotation() ? Units.radiansToDegrees(orientation.getY()) : 0,
+                useVelocity() ? pitchRate : 0,
+                use3DRotation() ? Units.radiansToDegrees(orientation.getX()) : 0,
+                useVelocity() ? rollRate : 0);
     }
 
     /**
@@ -201,11 +259,21 @@ public class LimelightCamera extends PoseEstimationCamera {
             return List.of();
         }
 
+        Transform3d robotToCamera = getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                ? getRobotToCameraAt(timestamp).orElse(getRobotToCamera())
+                : getMechanismToCamera();
+
         Optional<Pose2d> headingSampleOpt = RobotContainer.poseSensorFusion.getEstimatedPositionAt(timestamp);
         if (headingSampleOpt.isEmpty()) {
             return List.of();
         }
-        Rotation2d headingSample = headingSampleOpt.get().getRotation();
+        Rotation2d headingSample = headingSampleOpt
+                .get()
+                .getRotation()
+                .plus(sampleRobotToMechanism(timestamp)
+                        .orElse(getLastRobotToMechanism())
+                        .getRotation()
+                        .toRotation2d());
 
         Pose3d bestCameraToTarget = LimelightHelpers.toPose3D(LimelightHelpers.getTargetPose_CameraSpace(getName()));
 
@@ -235,7 +303,11 @@ public class LimelightCamera extends PoseEstimationCamera {
         Pose2d robotPose = new Pose2d(fieldToCameraTranslation.plus(camToRobotTranslation), headingSample);
 
         return List.of(new TXTYMeasurement(
-                robotPose, bestCameraToTarget.getTranslation().getNorm(), fiducialId));
+                getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                        ? robotPose
+                        : calculateRobotPose(new Pose3d(robotPose), timestamp).toPose2d(),
+                bestCameraToTarget.getTranslation().getNorm(),
+                fiducialId));
     }
 
     /**

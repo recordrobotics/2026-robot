@@ -1,4 +1,4 @@
-package frc.robot.utils.camera.objectdetection;
+package frc.robot.utils.camera.positioned.objectdetection;
 
 import com.google.common.collect.ImmutableSortedMap;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -10,8 +10,8 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.FieldStateTracker;
 import frc.robot.utils.ConsoleLogger;
-import frc.robot.utils.camera.GenericCamera;
 import frc.robot.utils.camera.PhysicalCamera;
+import frc.robot.utils.camera.positioned.PositionedCamera;
 import java.util.List;
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
@@ -20,12 +20,7 @@ import org.photonvision.PhotonUtils;
 /**
  * Abstract base class for object detection cameras.
  */
-public abstract class ObjectDetectionCamera extends GenericCamera {
-
-    /**
-     * The transform from robot to camera.
-     */
-    private Transform3d robotToCamera;
+public abstract class ObjectDetectionCamera extends PositionedCamera {
 
     /**
      * List of object detection results from last periodic.
@@ -41,33 +36,16 @@ public abstract class ObjectDetectionCamera extends GenericCamera {
      * Constructs a ObjectDetectionCamera with the given name and physical camera type and default settings.
      * @param name The name of the camera. This is used for network connection and logging.
      * @param physicalCamera The physical camera type.
-     * @param robotToCamera The transform from robot to camera.
+     * @param toCamera The transform from either the mechanism or robot to the camera, depending on if the camera will be moving.
      * @param detectionClassMap The map of detection class IDs to ObjectDetectionClass enum.
      */
     protected ObjectDetectionCamera(
             String name,
             PhysicalCamera physicalCamera,
-            Transform3d robotToCamera,
+            Transform3d toCamera,
             ImmutableSortedMap<Integer, ObjectDetectionClass> detectionClassMap) {
-        super(name, physicalCamera);
-        this.robotToCamera = robotToCamera;
+        super(name, physicalCamera, toCamera);
         this.detectionClassMap = detectionClassMap;
-    }
-
-    /**
-     * Sets the transform from robot to camera.
-     * @param robotToCamera The transform from robot to camera.
-     */
-    public void setRobotToCamera(Transform3d robotToCamera) {
-        this.robotToCamera = robotToCamera;
-    }
-
-    /**
-     * Gets the transform from robot to camera.
-     * @return The transform from robot to camera.
-     */
-    public Transform3d getRobotToCamera() {
-        return robotToCamera;
     }
 
     /**
@@ -163,7 +141,8 @@ public abstract class ObjectDetectionCamera extends GenericCamera {
 
         double targetHeightMeters = detectionClass.getHeight();
 
-        Pose3d fieldToCamera = new Pose3d(fieldToRobot.get()).transformBy(robotToCamera);
+        Pose3d fieldToCamera = new Pose3d(fieldToRobot.get())
+                .transformBy(getRobotToCameraAt(detection.timestamp()).orElse(getRobotToCamera()));
 
         return Optional.of(new Pose2d(
                 estimateFieldToTargetTranslation(

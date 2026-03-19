@@ -96,6 +96,9 @@ public enum PhysicalCamera {
     public final double horizontalFov;
     public final double verticalFov;
 
+    public final double maxSightRange;
+    public final double minTargetAreaPixels;
+
     PhysicalCamera(PhysicalCameraBuilder builder) {
         this.width = builder.width;
         this.height = builder.height;
@@ -109,6 +112,8 @@ public enum PhysicalCamera {
         this.minStdDevs = builder.minStdDevs;
         this.stdDevsExponent = builder.stdDevsExponent;
         this.txtyStdDevs = builder.txtyStdDevs;
+        this.maxSightRange = builder.maxSightRange;
+        this.minTargetAreaPixels = builder.minTargetAreaPixels;
 
         this.aspectRatio = (double) getDetectorWidth() / getDetectorHeight();
         double diagonalFovRad = Math.toRadians(fov);
@@ -180,6 +185,8 @@ public enum PhysicalCamera {
         private double minStdDevs = 0.55;
         private double stdDevsExponent = 1.0;
         private double txtyStdDevs = 0.35;
+        private double maxSightRange = 10.0;
+        private double minTargetAreaPixels = 24.0;
 
         public PhysicalCameraBuilder withResolution(int width, int height) {
             this.width = width;
@@ -218,6 +225,16 @@ public enum PhysicalCamera {
             this.minStdDevs = minStdDevs;
             this.stdDevsExponent = stdDevsExponent;
             this.txtyStdDevs = txtyStdDevs;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withMaxSightRange(double maxSightRange) {
+            this.maxSightRange = maxSightRange;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withMinTargetAreaPixels(double minTargetAreaPixels) {
+            this.minTargetAreaPixels = minTargetAreaPixels;
             return this;
         }
     }

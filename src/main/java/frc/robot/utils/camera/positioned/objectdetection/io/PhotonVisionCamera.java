@@ -1,12 +1,12 @@
-package frc.robot.utils.camera.objectdetection.io;
+package frc.robot.utils.camera.positioned.objectdetection.io;
 
 import com.google.common.collect.ImmutableSortedMap;
 import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.utils.camera.PhysicalCamera;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionCamera;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionClass;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionResult;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionResult.TargetCorner;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionCamera;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionClass;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionResult;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionResult.TargetCorner;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.PhotonCamera;

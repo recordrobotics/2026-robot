@@ -1,7 +1,8 @@
-package frc.robot.utils.camera.poseestimation.io;
+package frc.robot.utils.camera.positioned.poseestimation.io;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
@@ -9,9 +10,9 @@ import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.camera.PhysicalCamera;
-import frc.robot.utils.camera.poseestimation.CameraPoseEstimate;
-import frc.robot.utils.camera.poseestimation.CameraPoseEstimate.TXTYMeasurement;
-import frc.robot.utils.camera.poseestimation.PoseEstimationCamera;
+import frc.robot.utils.camera.positioned.poseestimation.CameraPoseEstimate;
+import frc.robot.utils.camera.positioned.poseestimation.CameraPoseEstimate.TXTYMeasurement;
+import frc.robot.utils.camera.positioned.poseestimation.PoseEstimationCamera;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,7 +47,7 @@ public class MapleSimCamera extends PoseEstimationCamera {
      * @param physicalCamera The physical camera type.
      */
     public MapleSimCamera(String name, PhysicalCamera physicalCamera, boolean addNoise) {
-        super(name, physicalCamera);
+        super(name, physicalCamera, Transform3d.kZero);
         this.addNoise = addNoise;
     }
 

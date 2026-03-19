@@ -7,11 +7,15 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -244,6 +248,16 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
         return io.getCurrentDrawAmps();
     }
 
+    public RobotToMechanismUpdate getRobotToMechanism() {
+        double timestamp = Timer.getTimestamp();
+        return new RobotToMechanismUpdate(
+                new Transform3d(
+                                Translation3d.kZero,
+                                new Rotation3d(0, 0, Units.rotationsToRadians(getPositionRotations())))
+                        .plus(new Transform3d(0.127, 0.127, 0, Rotation3d.kZero)),
+                timestamp);
+    }
+
     public void resetEncoders() {
         io.setPositionRotations(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS)
                 - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
@@ -267,6 +281,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     public void close() {
         io.close();
     }
+
+    public record RobotToMechanismUpdate(Transform3d robotToMechanism, double timestamp) {}
 
     public static class SysId implements SysIdProvider {
         @Override

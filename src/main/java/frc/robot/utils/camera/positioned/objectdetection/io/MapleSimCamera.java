@@ -1,4 +1,4 @@
-package frc.robot.utils.camera.objectdetection.io;
+package frc.robot.utils.camera.positioned.objectdetection.io;
 
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
@@ -14,9 +14,9 @@ import frc.robot.RobotContainer;
 import frc.robot.utils.ContainerUtils;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.camera.PhysicalCamera;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionCamera;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionClass;
-import frc.robot.utils.camera.objectdetection.ObjectDetectionResult;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionCamera;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionClass;
+import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionResult;
 import frc.robot.utils.field.FieldIntersection;
 import frc.robot.utils.field.FieldIntersection.FieldIntersectionOptions;
 import java.util.ArrayList;

@@ -15,6 +15,10 @@ public interface NavSensorIO extends AutoCloseable {
 
     Rotation2d getYaw();
 
+    AngularVelocity getRollRate();
+
+    AngularVelocity getPitchRate();
+
     AngularVelocity getYawRate();
 
     Rotation2d getPitch();

@@ -62,6 +62,16 @@ public class NavSensorSimPigeon2 implements NavSensorIO {
     }
 
     @Override
+    public AngularVelocity getPitchRate() {
+        return pigeon.getAngularVelocityYWorld().getValue();
+    }
+
+    @Override
+    public AngularVelocity getRollRate() {
+        return pigeon.getAngularVelocityXWorld().getValue();
+    }
+
+    @Override
     public LinearAcceleration getWorldLinearAccelX() {
         return pigeon.getAccelerationX().getValue();
     }

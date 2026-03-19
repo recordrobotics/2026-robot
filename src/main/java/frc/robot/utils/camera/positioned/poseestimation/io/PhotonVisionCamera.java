@@ -1,4 +1,4 @@
-package frc.robot.utils.camera.poseestimation.io;
+package frc.robot.utils.camera.positioned.poseestimation.io;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,11 +9,12 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
+import frc.robot.Constants.Vision.PhotonVisionSimPerformanceMode;
 import frc.robot.RobotContainer;
 import frc.robot.utils.camera.PhysicalCamera;
-import frc.robot.utils.camera.poseestimation.CameraPoseEstimate;
-import frc.robot.utils.camera.poseestimation.CameraPoseEstimate.TXTYMeasurement;
-import frc.robot.utils.camera.poseestimation.PoseEstimationCamera;
+import frc.robot.utils.camera.positioned.poseestimation.CameraPoseEstimate;
+import frc.robot.utils.camera.positioned.poseestimation.CameraPoseEstimate.TXTYMeasurement;
+import frc.robot.utils.camera.positioned.poseestimation.PoseEstimationCamera;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,14 +32,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class PhotonVisionCamera extends PoseEstimationCamera {
 
     /**
-     * The transform from robot to camera.
-     */
-    private Transform3d robotToCamera;
-
-    /**
      * The PhotonCamera instance.
      */
     private final PhotonCamera camera;
+
+    private final PhotonCameraSim cameraSim;
 
     /**
      * The PhotonPoseEstimator instance.
@@ -49,24 +47,24 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
      * Constructs a PhotonVisionCamera with the given name, physical camera, and robot-to-camera transform.
      * @param name The name of the camera.
      * @param physicalCamera The physical camera type.
-     * @param robotToCamera The transform from robot to camera.
+     * @param toCamera The transform from either the mechanism or robot to the camera, depending on if the camera will be moving.
+     * @param performanceMode The performance mode for the simulation.
      */
-    public PhotonVisionCamera(String name, PhysicalCamera physicalCamera, Transform3d robotToCamera) {
-        super(name, physicalCamera);
-
-        robotToCamera = new Transform3d(
-                robotToCamera.getX(),
-                robotToCamera.getY(),
-                robotToCamera.getZ(),
-                new Rotation3d(
-                        robotToCamera.getRotation().getX(),
-                        -robotToCamera.getRotation().getY(),
-                        robotToCamera.getRotation().getZ()));
+    public PhotonVisionCamera(
+            String name,
+            PhysicalCamera physicalCamera,
+            Transform3d toCamera,
+            PhotonVisionSimPerformanceMode performanceMode) {
+        super(name, physicalCamera, toCamera);
 
         camera = new PhotonCamera(name);
 
-        this.robotToCamera = robotToCamera;
-        photonEstimator = new PhotonPoseEstimator(Constants.Game.APRILTAG_LAYOUT, robotToCamera);
+        photonEstimator = new PhotonPoseEstimator(
+                Constants.Game.APRILTAG_LAYOUT,
+                convertRobotToCamera(
+                        getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                                ? getRobotToCamera()
+                                : getMechanismToCamera()));
 
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
             SimCameraProperties cameraProp = new SimCameraProperties();
@@ -79,10 +77,44 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
             cameraProp.setAvgLatencyMs(physicalCamera.latencyMs);
             cameraProp.setLatencyStdDevMs(physicalCamera.latencyStdDevMs);
 
-            PhotonCameraSim cameraSim = new PhotonCameraSim(camera, cameraProp);
-            cameraSim.enableDrawWireframe(true);
-            RobotContainer.visionSim.addCamera(cameraSim, robotToCamera);
+            cameraSim = new PhotonCameraSim(camera, cameraProp);
+
+            switch (performanceMode) {
+                case FAST:
+                    cameraSim.enableDrawWireframe(false);
+                    cameraSim.enableRawStream(false);
+                    cameraSim.enableProcessedStream(false);
+                    break;
+                case STREAMED:
+                    cameraSim.enableDrawWireframe(false);
+                    cameraSim.enableRawStream(true);
+                    cameraSim.enableProcessedStream(true);
+                    break;
+                case WIREFRAME:
+                    cameraSim.enableDrawWireframe(true);
+                    cameraSim.enableRawStream(true);
+                    cameraSim.enableProcessedStream(true);
+                    break;
+            }
+
+            cameraSim.setMaxSightRange(physicalCamera.maxSightRange);
+            cameraSim.setMinTargetAreaPixels(physicalCamera.minTargetAreaPixels);
+
+            RobotContainer.visionSim.addCamera(cameraSim, convertRobotToCamera(getRobotToCamera()));
+        } else {
+            cameraSim = null;
         }
+    }
+
+    private static Transform3d convertRobotToCamera(Transform3d robotToCamera) {
+        return new Transform3d(
+                robotToCamera.getX(),
+                robotToCamera.getY(),
+                robotToCamera.getZ(),
+                new Rotation3d(
+                        robotToCamera.getRotation().getX(),
+                        -robotToCamera.getRotation().getY(),
+                        robotToCamera.getRotation().getZ()));
     }
 
     /**
@@ -101,22 +133,6 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
      */
     public void setPipeline(int pipeline) {
         camera.setPipelineIndex(pipeline);
-    }
-
-    /**
-     * Sets the transform from robot to camera.
-     * @param robotToCamera The transform from robot to camera.
-     */
-    public void setRobotToCamera(Transform3d robotToCamera) {
-        this.robotToCamera = robotToCamera;
-    }
-
-    /**
-     * Gets the transform from robot to camera.
-     * @return The transform from robot to camera.
-     */
-    public Transform3d getRobotToCamera() {
-        return robotToCamera;
     }
 
     /**
@@ -139,15 +155,23 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
     private void addHeadingDataToEstimator() {
         double timestamp = Timer.getTimestamp();
         Rotation3d heading = new Rotation3d(
-                0,
-                0,
+                use3DRotation() ? RobotContainer.poseSensorFusion.nav.getRoll().getRadians() : 0,
+                use3DRotation() ? RobotContainer.poseSensorFusion.nav.getPitch().getRadians() : 0,
                 RobotContainer.poseSensorFusion
                         .getEstimatedPosition()
                         .getRotation()
                         .getRadians());
 
-        photonEstimator.addHeadingData(timestamp, heading);
-        photonEstimator.setRobotToCameraTransform(robotToCamera);
+        photonEstimator.addHeadingData(
+                timestamp, heading.plus(getLastRobotToMechanism().getRotation()));
+        photonEstimator.setRobotToCameraTransform(convertRobotToCamera(
+                getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                        ? getRobotToCamera()
+                        : getMechanismToCamera()));
+
+        if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
+            RobotContainer.visionSim.adjustCamera(cameraSim, convertRobotToCamera(getRobotToCamera()));
+        }
     }
 
     /**
@@ -169,6 +193,11 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
             if (!result.hasTargets()) {
                 continue;
             }
+
+            photonEstimator.setRobotToCameraTransform(convertRobotToCamera(
+                    getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                            ? getRobotToCameraAt(result.getTimestampSeconds()).orElse(getRobotToCamera())
+                            : getMechanismToCamera()));
 
             Optional<EstimatedRobotPose> unconstrainedEst = photonEstimator.estimateCoprocMultiTagPose(result);
             if (unconstrainedEst.isEmpty()) {
@@ -200,7 +229,12 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
                         unconstrainedEst.get(),
                         constrainedEst,
                         txtyEst.map(v -> new TXTYMeasurement(
-                                v.estimatedPose.toPose2d(), bestTargetDist, v.targetsUsed.get(0).fiducialId))));
+                                (getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                                                ? v.estimatedPose
+                                                : calculateRobotPose(v.estimatedPose, v.timestampSeconds))
+                                        .toPose2d(),
+                                bestTargetDist,
+                                v.targetsUsed.get(0).fiducialId))));
             }
         }
 
@@ -234,8 +268,14 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
         avgTagArea /= tagCount;
 
         return new CameraPoseEstimate(
-                unconstrainedEst.estimatedPose.toPose2d(),
-                constrainedEst.map(e -> e.estimatedPose.toPose2d()),
+                (getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                                ? unconstrainedEst.estimatedPose
+                                : calculateRobotPose(unconstrainedEst.estimatedPose, unconstrainedEst.timestampSeconds))
+                        .toPose2d(),
+                constrainedEst.map(e -> (getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                                ? e.estimatedPose
+                                : calculateRobotPose(e.estimatedPose, e.timestampSeconds))
+                        .toPose2d()),
                 txtyEst.map(List::of).orElse(List.of()),
                 unconstrainedEst.timestampSeconds,
                 getPhysicalCamera().latencyMs,

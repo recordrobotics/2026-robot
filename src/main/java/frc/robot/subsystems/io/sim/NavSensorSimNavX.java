@@ -1,5 +1,6 @@
 package frc.robot.subsystems.io.sim;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
@@ -50,6 +51,16 @@ public class NavSensorSimNavX implements NavSensorIO {
     @Override
     public AngularVelocity getYawRate() {
         return gyroSimulation.getMeasuredAngularVelocity();
+    }
+
+    @Override
+    public AngularVelocity getPitchRate() {
+        return DegreesPerSecond.of(0);
+    }
+
+    @Override
+    public AngularVelocity getRollRate() {
+        return DegreesPerSecond.of(0);
     }
 
     @Override

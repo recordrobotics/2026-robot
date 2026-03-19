@@ -5,7 +5,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -17,6 +16,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.dashboard.DashboardUI;
+import frc.robot.subsystems.Turret.RobotToMechanismUpdate;
 import frc.robot.subsystems.io.real.NavSensorPigeon2;
 import frc.robot.subsystems.io.sim.NavSensorSimPigeon2;
 import frc.robot.utils.AutoLogLevel;
@@ -28,7 +28,8 @@ import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.camera.Cameras;
 import frc.robot.utils.camera.GenericCamera;
 import frc.robot.utils.camera.PhysicalCamera;
-import frc.robot.utils.camera.poseestimation.PoseEstimationCamera;
+import frc.robot.utils.camera.positioned.PositionedCamera.DynamicPositionMode;
+import frc.robot.utils.camera.positioned.poseestimation.PoseEstimationCamera;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -67,6 +68,8 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      */
     private IndependentSwervePoseEstimator independentPoseEstimator;
 
+    private final PoseEstimationCamera turretCamera;
+
     /**
      * The cameras used for vision measurements
      */
@@ -87,8 +90,10 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                     Constants.Vision.RIGHT_BACK_NAME,
                     PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
                     Constants.Vision.ROBOT_TO_CAMERA_RIGHT_BACK),
-            Cameras.createLimelightPoseEstimationCamera(
-                    Constants.Vision.TURRET_NAME, PhysicalCamera.LIMELIGHT_4, Transform3d.kZero));
+            turretCamera = Cameras.createLimelightPoseEstimationCamera(
+                    Constants.Vision.TURRET_NAME,
+                    PhysicalCamera.LIMELIGHT_4,
+                    Constants.Vision.MECHANISM_TO_CAMERA_TURRET));
 
     /**
      * The deferred pose estimations to be added at the end of the calculation phase
@@ -159,6 +164,11 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                     Constants.Swerve.BACK_LEFT_WHEEL_LOCATION,
                     Constants.Swerve.BACK_RIGHT_WHEEL_LOCATION
                 });
+
+        RobotToMechanismUpdate robotToMechanismUpdate = RobotContainer.turret.getRobotToMechanism();
+        turretCamera.setDynamicPositionMode(DynamicPositionMode.MECHANISM_TO_CAMERA);
+        turretCamera.updateRobotToMechanism(
+                robotToMechanismUpdate.robotToMechanism(), robotToMechanismUpdate.timestamp());
     }
 
     public record DeferredPoseEstimation(
@@ -256,6 +266,10 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         lastRawNavAngle = updateNav;
         updatePositions = positions;
+
+        RobotToMechanismUpdate robotToMechanismUpdate = RobotContainer.turret.getRobotToMechanism();
+        turretCamera.updateRobotToMechanism(
+                robotToMechanismUpdate.robotToMechanism(), robotToMechanismUpdate.timestamp());
 
         cameras.stream().forEach(GenericCamera::periodic);
 

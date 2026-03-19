@@ -62,6 +62,14 @@ public final class NavSensor extends ManagedSubsystemBase {
         return io.getRoll();
     }
 
+    public AngularVelocity getRollRate() {
+        return io.getRollRate();
+    }
+
+    public AngularVelocity getPitchRate() {
+        return io.getPitchRate();
+    }
+
     public AngularVelocity getYawRate() {
         return io.getYawRate();
     }

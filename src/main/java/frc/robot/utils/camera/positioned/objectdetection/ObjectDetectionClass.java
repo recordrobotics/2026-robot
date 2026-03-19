@@ -1,4 +1,4 @@
-package frc.robot.utils.camera.objectdetection;
+package frc.robot.utils.camera.positioned.objectdetection;
 
 import edu.wpi.first.math.util.Units;
 
