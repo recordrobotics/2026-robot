@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shootorchestrator;
 
 import com.pathplanner.lib.util.FlippingUtil;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -266,7 +267,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
             double shotYaw = Math.atan2(shotVector.get(1), shotVector.get(0));
 
-            double shotYawVelocity = hasLastShotYaw ? (shotYaw - lastShotYaw) / 0.02 : 0;
+            double errorBound = Math.PI;
+            double shotYawVelocity =
+                    hasLastShotYaw ? MathUtil.inputModulus(shotYaw - lastShotYaw, -errorBound, errorBound) / 0.02 : 0;
             lastShotYaw = shotYaw;
             hasLastShotYaw = true;
 

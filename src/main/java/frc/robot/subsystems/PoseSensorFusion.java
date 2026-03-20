@@ -166,6 +166,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                 });
 
         RobotToMechanismUpdate robotToMechanismUpdate = RobotContainer.turret.getRobotToMechanism();
+        turretCamera.setUnconstrainedMaxDistance(0);
         turretCamera.setDynamicPositionMode(DynamicPositionMode.MECHANISM_TO_CAMERA);
         turretCamera.updateRobotToMechanism(
                 robotToMechanismUpdate.robotToMechanism(), robotToMechanismUpdate.timestamp());

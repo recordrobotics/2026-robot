@@ -43,7 +43,7 @@ public enum PhysicalCamera {
             .withFps(30)
             .withPxError(0.2, 0.0005)
             .withLatencyMs(35, 5)
-            .withStdDevs(0.55, 1.11574, 0.35)),
+            .withStdDevs(1.5, 1.11574, 1.5)),
 
     /**
      * SVPro Global Shutter Camera Specifications
