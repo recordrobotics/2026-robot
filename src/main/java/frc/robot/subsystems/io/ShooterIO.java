@@ -1,9 +1,8 @@
 package frc.robot.subsystems.io;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 
 public interface ShooterIO {
 
@@ -13,15 +12,11 @@ public interface ShooterIO {
 
     void applyHoodTalonFXConfig(TalonFXConfiguration configuration);
 
-    void setHoodVoltage(double outputVolts);
+    void setFlywheelControl(ControlRequest request);
 
-    void setFlywheelVoltage(double outputVolts);
+    void setFlywheelFollowerControl(ControlRequest request);
 
-    void setFlywheelMotionMagic(MotionMagicVelocityVoltage request);
-
-    void setFlywheelFollowerMotionMagic(Follower request);
-
-    void setHoodMotionMagic(MotionMagicExpoVoltage request);
+    void setHoodControl(ControlRequest request);
 
     Follower createFlywheelFollower();
 

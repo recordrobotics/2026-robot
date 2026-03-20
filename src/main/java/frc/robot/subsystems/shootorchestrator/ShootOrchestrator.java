@@ -27,6 +27,7 @@ import frc.robot.subsystems.Spindexer.SpindexerState;
 import frc.robot.subsystems.shootorchestrator.ShotCalculator.ShotCalculation;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.ManagedSubsystemBase;
+import frc.robot.utils.PositionedSubsystem.PositionStatus;
 import frc.robot.utils.ProjectileSimulationUtils;
 import frc.robot.utils.SimpleMath;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
@@ -325,7 +326,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             boolean onTarget = !isInTrench
                     && RobotContainer.turret.atGoal()
                     && RobotContainer.shooter.isAtTargetState()
-                    && !RobotContainer.intake.isNearStartPosition();
+                    && !RobotContainer.intake.isNearStartPosition()
+                    && RobotContainer.turret.getPositionStatus() == PositionStatus.KNOWN
+                    && RobotContainer.shooter.getPositionStatus() == PositionStatus.KNOWN;
             SpindexerState spindexerState = (onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF;
             FeederState feederState = (onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF;
 

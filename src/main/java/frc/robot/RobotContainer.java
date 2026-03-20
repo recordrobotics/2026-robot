@@ -39,6 +39,7 @@ import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
+import frc.robot.utils.PositionedSubsystem;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.RuckigWarmup;
 import frc.robot.utils.SimpleMath;
@@ -344,7 +345,7 @@ public final class RobotContainer {
     }
 
     public static void robotPeriodic() {
-        // nothing to do here, command scheduler handles everything
+        PositionedSubsystem.PositionedSubsystemManager.getInstance().update();
     }
 
     public static void simulationPeriodic() {
@@ -362,14 +363,11 @@ public final class RobotContainer {
     }
 
     public static void resetEncoders() {
-        intake.resetEncoders();
-        turret.resetEncoders();
-        shooter.resetEncoders();
-        climber.resetEncoders();
+        PositionedSubsystem.PositionedSubsystemManager.getInstance().resetAll();
 
         noEncoderResetAlert.set(false);
         Elastic.sendNotification(
-                new Notification(NotificationLevel.INFO, "Encoders reset!", "Successfully reset arm encoders."));
+                new Notification(NotificationLevel.INFO, "Encoders reset!", "Successfully reset encoders."));
     }
 
     /** frees up all hardware allocations */

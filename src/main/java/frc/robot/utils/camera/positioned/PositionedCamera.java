@@ -135,6 +135,10 @@ public abstract class PositionedCamera extends GenericCamera {
         lastRobotToMechanism = robotToMechanism;
     }
 
+    public boolean hasRobotToMechanism() {
+        return !robotToMechanismBuffer.getInternalBuffer().isEmpty();
+    }
+
     /**
      * Return the robot-to-mechanism pose at a given timestamp, if the buffer is not empty.
      *

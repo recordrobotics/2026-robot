@@ -26,13 +26,14 @@ import frc.robot.subsystems.io.IntakeIO;
 import frc.robot.subsystems.io.sim.IntakeSim;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
+import frc.robot.utils.PositionedSubsystem;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import org.littletonrobotics.junction.Logger;
 
-public final class Intake extends KillableSubsystem implements PoweredSubsystem {
+public final class Intake extends KillableSubsystem implements PoweredSubsystem, PositionedSubsystem {
     // Arm Leader is on the left of the intake (right of the robot) and Arm Follower is on the right of the intake (left
     // of the robot)
 
@@ -66,6 +67,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
     private IntakeState targetState = IntakeState.STARTING;
 
     private double lastNotJammedTime = 0;
+
+    private PositionStatus positionStatus = PositionStatus.UNKNOWN;
 
     public enum IntakeState {
         INTAKE,
@@ -177,6 +180,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
                 new SysIdRoutine.Mechanism(v -> io.setWheelVoltage(v.in(Volts)), null, this));
 
         SmartDashboard.putBoolean("Intake/DisableWheel", false);
+
+        PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
 
     public IntakeSim getSimIO() {
@@ -330,8 +335,15 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem 
         return io.getArmLeaderCurrentDrawAmps() + io.getArmFollowerCurrentDrawAmps() + io.getWheelCurrentDrawAmps();
     }
 
-    public void resetEncoders() {
+    @Override
+    public void resetToStartPosition() {
+        positionStatus = PositionStatus.UNKNOWN;
         io.setArmPositionRotations(Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+    }
+
+    @Override
+    public PositionStatus getPositionStatus() {
+        return positionStatus;
     }
 
     @Override

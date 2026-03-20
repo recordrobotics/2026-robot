@@ -1,7 +1,7 @@
 package frc.robot.subsystems.io.sim;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -70,12 +70,7 @@ public class ClimberSim implements ClimberIO {
     }
 
     @Override
-    public void setVoltage(double outputVolts) {
-        motorClimber.setVoltage(outputVolts);
-    }
-
-    @Override
-    public void setMotionMagic(MotionMagicExpoVoltage request) {
+    public void setControl(ControlRequest request) {
         motorClimber.setControl(request);
     }
 

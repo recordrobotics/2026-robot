@@ -302,4 +302,18 @@ public final class SimpleMath {
         }
         return value;
     }
+
+    /**
+     * Returns true if a is farther from zero than b (in the direction of b).
+     * @param a The value to compare
+     * @param b The value to compare to (the "direction" of comparison)
+     * @return True if a is farther from zero than b (in the direction of b), false otherwise
+     */
+    public static boolean isAFartherFromZeroThanB(double a, double b) {
+        if (b >= 0) {
+            return a > b;
+        } else {
+            return a < b;
+        }
+    }
 }

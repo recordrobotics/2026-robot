@@ -26,13 +26,14 @@ import frc.robot.subsystems.io.TurretIO;
 import frc.robot.subsystems.io.TurretIO.LimitSwitchStates;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
+import frc.robot.utils.PositionedSubsystem;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import org.littletonrobotics.junction.Logger;
 
-public final class Turret extends KillableSubsystem implements PoweredSubsystem {
+public final class Turret extends KillableSubsystem implements PoweredSubsystem, PositionedSubsystem {
 
     public static final double MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS = Units.degreesToRotations(90);
 
@@ -51,6 +52,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
     private double targetPositionRotations;
     private double targetVelocityRotationsPerSecond;
     private double targetAccelerationRotationsPerSecondSquared;
+
+    private PositionStatus positionStatus = PositionStatus.UNKNOWN;
 
     public Turret(TurretIO io) {
         this.io = io;
@@ -99,6 +102,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
                 new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
 
         SmartDashboard.putNumber("TURRET_FFMUL", 1.0);
+
+        PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
 
     @Override
@@ -258,9 +263,16 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem 
                 timestamp);
     }
 
-    public void resetEncoders() {
+    @Override
+    public void resetToStartPosition() {
+        positionStatus = PositionStatus.UNKNOWN;
         io.setPositionRotations(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS)
                 - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+    }
+
+    @Override
+    public PositionStatus getPositionStatus() {
+        return positionStatus;
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {

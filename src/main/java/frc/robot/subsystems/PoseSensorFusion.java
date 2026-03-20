@@ -25,6 +25,7 @@ import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.IndependentSwervePoseEstimator;
 import frc.robot.utils.ManagedSubsystemBase;
+import frc.robot.utils.PositionedSubsystem.PositionStatus;
 import frc.robot.utils.camera.Cameras;
 import frc.robot.utils.camera.GenericCamera;
 import frc.robot.utils.camera.PhysicalCamera;
@@ -68,7 +69,8 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      */
     private IndependentSwervePoseEstimator independentPoseEstimator;
 
-    private final PoseEstimationCamera turretCamera;
+    private final PoseEstimationCamera turretCamera = Cameras.createLimelightPoseEstimationCamera(
+            Constants.Vision.TURRET_NAME, PhysicalCamera.LIMELIGHT_4, Constants.Vision.MECHANISM_TO_CAMERA_TURRET);
 
     /**
      * The cameras used for vision measurements
@@ -90,10 +92,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                     Constants.Vision.RIGHT_BACK_NAME,
                     PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
                     Constants.Vision.ROBOT_TO_CAMERA_RIGHT_BACK),
-            turretCamera = Cameras.createLimelightPoseEstimationCamera(
-                    Constants.Vision.TURRET_NAME,
-                    PhysicalCamera.LIMELIGHT_4,
-                    Constants.Vision.MECHANISM_TO_CAMERA_TURRET));
+            turretCamera);
 
     /**
      * The deferred pose estimations to be added at the end of the calculation phase
@@ -165,11 +164,8 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                     Constants.Swerve.BACK_RIGHT_WHEEL_LOCATION
                 });
 
-        RobotToMechanismUpdate robotToMechanismUpdate = RobotContainer.turret.getRobotToMechanism();
         turretCamera.setUnconstrainedMaxDistance(0);
         turretCamera.setDynamicPositionMode(DynamicPositionMode.MECHANISM_TO_CAMERA);
-        turretCamera.updateRobotToMechanism(
-                robotToMechanismUpdate.robotToMechanism(), robotToMechanismUpdate.timestamp());
     }
 
     public record DeferredPoseEstimation(
@@ -268,16 +264,23 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
         lastRawNavAngle = updateNav;
         updatePositions = positions;
 
-        RobotToMechanismUpdate robotToMechanismUpdate = RobotContainer.turret.getRobotToMechanism();
-        turretCamera.updateRobotToMechanism(
-                robotToMechanismUpdate.robotToMechanism(), robotToMechanismUpdate.timestamp());
+        if (RobotContainer.turret.getPositionStatus() == PositionStatus.KNOWN) {
+            RobotToMechanismUpdate robotToMechanismUpdate = RobotContainer.turret.getRobotToMechanism();
+            turretCamera.updateRobotToMechanism(
+                    robotToMechanismUpdate.robotToMechanism(), robotToMechanismUpdate.timestamp());
+        }
 
         cameras.stream().forEach(GenericCamera::periodic);
 
         /* perform any multi-camera logic like txty selection (currently manual) */
 
         Pose2d currentEstimate = getEstimatedPosition();
-        cameras.stream().forEach(camera -> camera.addVisionMeasurements(this, currentEstimate, targetTXTYId));
+        cameras.stream().forEach(camera -> {
+            if (camera.hasRobotToMechanism()
+                    || camera.getDynamicPositionMode() != DynamicPositionMode.MECHANISM_TO_CAMERA) {
+                camera.addVisionMeasurements(this, currentEstimate, targetTXTYId);
+            }
+        });
 
         updateIndependentPoseEstimator();
     }

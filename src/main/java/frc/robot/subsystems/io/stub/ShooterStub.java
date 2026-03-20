@@ -1,9 +1,8 @@
 package frc.robot.subsystems.io.stub;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import frc.robot.subsystems.io.ShooterIO;
 
@@ -25,27 +24,17 @@ public class ShooterStub implements ShooterIO {
     }
 
     @Override
-    public void setFlywheelVoltage(double outputVolts) {
+    public void setFlywheelControl(ControlRequest request) {
         // stub
     }
 
     @Override
-    public void setHoodVoltage(double outputVolts) {
+    public void setFlywheelFollowerControl(ControlRequest request) {
         // stub
     }
 
     @Override
-    public void setFlywheelMotionMagic(MotionMagicVelocityVoltage request) {
-        // stub
-    }
-
-    @Override
-    public void setFlywheelFollowerMotionMagic(Follower request) {
-        // stub
-    }
-
-    @Override
-    public void setHoodMotionMagic(MotionMagicExpoVoltage request) {
+    public void setHoodControl(ControlRequest request) {
         // stub
     }
 

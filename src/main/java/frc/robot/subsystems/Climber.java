@@ -6,9 +6,9 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -16,6 +16,7 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -25,36 +26,36 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.ClimberIO;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
-import frc.robot.utils.EncoderResettableSubsystem;
 import frc.robot.utils.KillableSubsystem;
+import frc.robot.utils.PositionedSubsystem;
 import frc.robot.utils.PoweredSubsystem;
+import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import java.util.Arrays;
 import org.littletonrobotics.junction.Logger;
 
-public final class Climber extends KillableSubsystem implements PoweredSubsystem, EncoderResettableSubsystem {
+public final class Climber extends KillableSubsystem implements PoweredSubsystem, PositionedSubsystem {
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE_FREE =
-            Volts.of(7.5).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE_FREE = Volts.of(5.2);
-    private static final Time SYSID_TIMEOUT_FREE = Seconds.of(1.2);
+    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(7.5).per(Second);
+    private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(5.2);
+    private static final Time SYSID_TIMEOUT = Seconds.of(1.2);
 
-    private static final Velocity<VoltageUnit> SYSID_RAMP_RATE_LOADED =
-            Volts.of(7.5).per(Second);
-    private static final Voltage SYSID_STEP_VOLTAGE_LOADED = Volts.of(5.2);
-    private static final Time SYSID_TIMEOUT_LOADED = Seconds.of(1.2);
+    private static final double RESET_VOLTAGE = -2.0;
+    private static final double RESET_VELOCITY_THRESHOLD = 0.001;
+    private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
     private final ClimberIO io;
 
     private final MotionMagicExpoVoltage climberRequest;
+    private final VoltageOut voltageRequest;
 
     private double setpoint;
 
-    private final SysIdRoutine sysIdRoutineFree;
-    private final SysIdRoutine sysIdRoutineLoaded;
+    private final SysIdRoutine sysIdRoutine;
 
-    private boolean supportingRobot = false;
+    private PositionStatus positionStatus = PositionStatus.UNKNOWN;
+    private double lastMovementTime = 0;
 
     public Climber(ClimberIO io) {
         this.io = io;
@@ -67,30 +68,19 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-        // slot 0 gains for when climber is not supporting weight of robot
         Slot0Configs slot0ConfigsClimber = config.Slot0;
         slot0ConfigsClimber.kS = Constants.Climber.KS;
-        slot0ConfigsClimber.kV = Constants.Climber.KV_0;
-        slot0ConfigsClimber.kA = Constants.Climber.KA_0;
-        slot0ConfigsClimber.kG = Constants.Climber.KG_0;
-        slot0ConfigsClimber.kP = Constants.Climber.KP_0;
-        slot0ConfigsClimber.kD = Constants.Climber.KD_0;
+        slot0ConfigsClimber.kV = Constants.Climber.KV;
+        slot0ConfigsClimber.kA = Constants.Climber.KA;
+        slot0ConfigsClimber.kG = Constants.Climber.KG;
+        slot0ConfigsClimber.kP = Constants.Climber.KP;
+        slot0ConfigsClimber.kD = Constants.Climber.KD;
         slot0ConfigsClimber.GravityType = GravityTypeValue.Elevator_Static;
-
-        // slot 1 gains for when climber is supporting weight of robot
-        Slot1Configs slot1ConfigsClimber = config.Slot1;
-        slot1ConfigsClimber.kS = Constants.Climber.KS;
-        slot1ConfigsClimber.kV = Constants.Climber.KV_1;
-        slot1ConfigsClimber.kA = Constants.Climber.KA_1;
-        slot1ConfigsClimber.kG = Constants.Climber.KG_1;
-        slot1ConfigsClimber.kP = Constants.Climber.KP_1;
-        slot1ConfigsClimber.kD = Constants.Climber.KD_1;
-        slot1ConfigsClimber.GravityType = GravityTypeValue.Elevator_Static;
 
         // set Motion Magic settings
         MotionMagicConfigs motionMagicConfigsClimber = config.MotionMagic;
-        motionMagicConfigsClimber.MotionMagicExpo_kV = Constants.Climber.MMEXPO_KV_0;
-        motionMagicConfigsClimber.MotionMagicExpo_kA = Constants.Climber.MMEXPO_KA_0;
+        motionMagicConfigsClimber.MotionMagicExpo_kV = Constants.Climber.MMEXPO_KV;
+        motionMagicConfigsClimber.MotionMagicExpo_kA = Constants.Climber.MMEXPO_KA;
 
         io.applyTalonFXConfig(config.withMotorOutput(new MotorOutputConfigs()
                         .withInverted(InvertedValue.Clockwise_Positive)
@@ -103,27 +93,21 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
                         .withSupplyCurrentLimitEnable(true)
                         .withStatorCurrentLimitEnable(true)));
 
-        climberRequest = new MotionMagicExpoVoltage(0).withSlot(0);
+        climberRequest = new MotionMagicExpoVoltage(0);
+        voltageRequest = new VoltageOut(0);
 
         setState(ClimberHeight.DOWN);
 
-        sysIdRoutineFree = new SysIdRoutine(
+        sysIdRoutine = new SysIdRoutine(
                 // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
                 new SysIdRoutine.Config(
-                        SYSID_RAMP_RATE_FREE,
-                        SYSID_STEP_VOLTAGE_FREE,
-                        SYSID_TIMEOUT_FREE,
-                        state -> Logger.recordOutput("Climber/Free/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
+                        SYSID_RAMP_RATE,
+                        SYSID_STEP_VOLTAGE,
+                        SYSID_TIMEOUT,
+                        state -> Logger.recordOutput("Climber/SysIdTestState", state.toString())),
+                new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v.in(Volts))), null, this));
 
-        sysIdRoutineLoaded = new SysIdRoutine(
-                // Empty config defaults to 1 volt/second ramp rate and 7 volt step voltage.
-                new SysIdRoutine.Config(
-                        SYSID_RAMP_RATE_LOADED,
-                        SYSID_STEP_VOLTAGE_LOADED,
-                        SYSID_TIMEOUT_LOADED,
-                        state -> Logger.recordOutput("Climber/Loaded/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
+        PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
 
     /** Height of the climber in meters */
@@ -147,12 +131,18 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         // Update mechanism
         RobotContainer.model.climberModel.update(getCurrentHeight());
 
-        if (io.getCurrentDraw() > Constants.Climber.STATOR_CURRENT_AMPS_THRESHOLD
-                && !supportingRobot) { // TODO maybe debounce over time?
-            supportingRobot = true;
-        } else if (io.getCurrentDraw() < Constants.Climber.STATOR_CURRENT_AMPS_THRESHOLD
-                && supportingRobot) { // TODO maybe debounce over amps? (different threshold for up and down)
-            supportingRobot = false;
+        if (!isForceDisabled()
+                && positionStatus == PositionStatus.UNKNOWN
+                && SimpleMath.isAFartherFromZeroThanB(getCurrentVoltage(), RESET_VOLTAGE / 2)) {
+            if (Math.abs(getCurrentVelocity()) > RESET_VELOCITY_THRESHOLD) {
+                lastMovementTime = Timer.getTimestamp();
+            } else if (Timer.getTimestamp() - lastMovementTime > RESET_VELOCITY_THRESHOLD_TIME) {
+                positionStatus = PositionStatus.KNOWN;
+                io.setPosition(0);
+                setControl();
+            }
+        } else {
+            lastMovementTime = Timer.getTimestamp();
         }
     }
 
@@ -164,19 +154,25 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     public void setState(ClimberHeight height) {
         setpoint = height.getHeight();
 
-        if (!isForceDisabled()
-                && !(SysIdManager.getProvider() instanceof SysIdFree)
-                && !(SysIdManager.getProvider() instanceof SysIdLoaded)) {
-            io.setMotionMagic(climberRequest.withPosition(setpoint).withSlot(supportingRobot ? 1 : 0));
+        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
+            setControl();
         }
     }
 
     @Override
     protected void onForceDisabledChange(boolean isNowForceDisabled) {
         if (isNowForceDisabled) {
-            io.setVoltage(0.0);
+            io.setControl(voltageRequest.withOutput(0.0));
         } else {
-            io.setMotionMagic(climberRequest.withPosition(setpoint).withSlot(supportingRobot ? 1 : 0));
+            setControl();
+        }
+    }
+
+    private void setControl() {
+        if (positionStatus == PositionStatus.UNKNOWN) {
+            io.setControl(voltageRequest.withOutput(RESET_VOLTAGE).withIgnoreSoftwareLimits(true));
+        } else {
+            io.setControl(climberRequest.withPosition(setpoint));
         }
     }
 
@@ -194,20 +190,12 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
                 && Math.abs(getCurrentVelocity()) < Constants.Climber.AT_GOAL_VELOCITY_TOLERANCE;
     }
 
-    public Command sysIdQuasistaticFree(SysIdRoutine.Direction direction) {
-        return sysIdRoutineFree.quasistatic(direction);
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return sysIdRoutine.quasistatic(direction);
     }
 
-    public Command sysIdDynamicFree(SysIdRoutine.Direction direction) {
-        return sysIdRoutineFree.dynamic(direction);
-    }
-
-    public Command sysIdQuasistaticLoaded(SysIdRoutine.Direction direction) {
-        return sysIdRoutineLoaded.quasistatic(direction);
-    }
-
-    public Command sysIdDynamicLoaded(SysIdRoutine.Direction direction) {
-        return sysIdRoutineLoaded.dynamic(direction);
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+        return sysIdRoutine.dynamic(direction);
     }
 
     @Override
@@ -221,41 +209,25 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     }
 
     @Override
-    public void resetEncoders() {
+    public void resetToStartPosition() {
+        positionStatus = PositionStatus.UNKNOWN;
         io.setPosition(0);
     }
 
-    public static class SysIdFree implements SysIdProvider {
-        @Override
-        public Command sysIdQuasistatic(Direction direction) {
-            return RobotContainer.climber.sysIdQuasistaticFree(direction);
-        }
-
-        @Override
-        public Command sysIdDynamic(Direction direction) {
-            return RobotContainer.climber.sysIdDynamicFree(direction);
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return true;
-        }
-
-        @Override
-        public boolean isReversed() {
-            return false;
-        }
+    @Override
+    public PositionStatus getPositionStatus() {
+        return positionStatus;
     }
 
-    public static class SysIdLoaded implements SysIdProvider {
+    public static class SysId implements SysIdProvider {
         @Override
         public Command sysIdQuasistatic(Direction direction) {
-            return RobotContainer.climber.sysIdQuasistaticLoaded(direction);
+            return RobotContainer.climber.sysIdQuasistatic(direction);
         }
 
         @Override
         public Command sysIdDynamic(Direction direction) {
-            return RobotContainer.climber.sysIdDynamicLoaded(direction);
+            return RobotContainer.climber.sysIdDynamic(direction);
         }
 
         @Override

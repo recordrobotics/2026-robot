@@ -1,9 +1,8 @@
 package frc.robot.subsystems.io.real;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import frc.robot.RobotMap;
@@ -48,16 +47,6 @@ public class ShooterReal implements ShooterIO {
     }
 
     @Override
-    public void setHoodVoltage(double outputVolts) {
-        hood.setVoltage(outputVolts);
-    }
-
-    @Override
-    public void setFlywheelVoltage(double outputVolts) {
-        flywheelLeader.setVoltage(outputVolts);
-    }
-
-    @Override
     public void setFlywheelPositionMeters(double newValue) {
         flywheelLeader.setPosition(newValue);
         flywheelFollower.setPosition(newValue);
@@ -69,17 +58,17 @@ public class ShooterReal implements ShooterIO {
     }
 
     @Override
-    public void setFlywheelMotionMagic(MotionMagicVelocityVoltage request) {
+    public void setFlywheelControl(ControlRequest request) {
         flywheelLeader.setControl(request);
     }
 
     @Override
-    public void setFlywheelFollowerMotionMagic(Follower request) {
+    public void setFlywheelFollowerControl(ControlRequest request) {
         flywheelFollower.setControl(request);
     }
 
     @Override
-    public void setHoodMotionMagic(MotionMagicExpoVoltage request) {
+    public void setHoodControl(ControlRequest request) {
         hood.setControl(request);
     }
 
