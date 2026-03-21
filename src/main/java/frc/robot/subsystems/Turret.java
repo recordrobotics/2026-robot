@@ -265,7 +265,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     @Override
     public void resetToStartPosition() {
-        positionStatus = PositionStatus.UNKNOWN;
+        positionStatus = PositionStatus.KNOWN; // TODO: add magnet sensor homing
         io.setPositionRotations(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS)
                 - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
     }

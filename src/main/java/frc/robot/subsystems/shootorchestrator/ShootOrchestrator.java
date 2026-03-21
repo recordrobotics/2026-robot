@@ -65,7 +65,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             FlippingUtil.fieldSizeY - BLUE_TRENCH_DEPOT_SIDE.getY());
 
     private static final ShotCalculator hubCalculator = new HubRegressionCalculator();
-    private static final ShotCalculator passingCalculator = new HubRegressionCalculator();
+    private static final ShotCalculator passingCalculator = new PassingRegressionCalculator();
 
     private static final double BOTTOM_BEAM_TIME_TO_BALL_HIT = 0.06;
     private static final double TOP_BEAM_TIME_TO_BALL_HIT = 0.04;
@@ -328,7 +328,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                     && RobotContainer.turret.atGoal()
                     && RobotContainer.shooter.isAtTargetState()
                     && !RobotContainer.intake.isNearStartPosition()
-                    // && RobotContainer.turret.getPositionStatus() == PositionStatus.KNOWN
+                    && RobotContainer.turret.getPositionStatus() == PositionStatus.KNOWN
                     && RobotContainer.shooter.getPositionStatus() == PositionStatus.KNOWN;
             SpindexerState spindexerState = (onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF;
             FeederState feederState = (onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF;
