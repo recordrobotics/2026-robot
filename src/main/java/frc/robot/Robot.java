@@ -17,6 +17,7 @@ import frc.robot.utils.AutoLogLevelManager;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SysIdManager;
+import frc.robot.utils.maplesim.ImprovedMapleMatch;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -204,6 +205,10 @@ public final class Robot extends LoggedRobot {
 
         RobotContainer.robotPeriodic();
 
+        if (Constants.RobotState.getMode() == Constants.RobotState.Mode.SIM) {
+            ImprovedMapleMatch.getInstance().periodic();
+        }
+
         try {
             CommandScheduler.getInstance().run();
         } catch (Exception e) {
@@ -256,6 +261,7 @@ public final class Robot extends LoggedRobot {
             // Reset simulation field
             SimulatedArena.getInstance().resetFieldForAuto();
             RobotContainer.model.fuelManager.preloadFuel();
+            ImprovedMapleMatch.getInstance().autonomousInit();
         }
 
         RobotContainer.model.intakeModel.resetHopperExtension();
@@ -286,6 +292,10 @@ public final class Robot extends LoggedRobot {
         // this line or comment it out.
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
+        }
+
+        if (Constants.RobotState.getMode() == Constants.RobotState.Mode.SIM) {
+            ImprovedMapleMatch.getInstance().teleopInit();
         }
 
         RobotContainer.teleopInit();
