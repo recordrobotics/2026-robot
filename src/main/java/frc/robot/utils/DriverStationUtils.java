@@ -52,27 +52,31 @@ public final class DriverStationUtils {
         return inPracticeMode;
     }
 
-    public static boolean isHubActive() {
+    public record MatchTimeData(boolean hubActive, double timeLeftInShift) {}
+
+    public static MatchTimeData isHubActive() {
         Optional<Alliance> alliance = DriverStation.getAlliance();
         // If we have no alliance, we cannot be enabled, therefore no hub.
         if (alliance.isEmpty()) {
-            return false;
+            return new MatchTimeData(false, 0);
         }
+
+        double matchTime = DriverStation.getMatchTime();
+
         // Hub is always enabled in autonomous.
         if (DriverStation.isAutonomousEnabled()) {
-            return true;
+            return new MatchTimeData(true, matchTime);
         }
         // At this point, if we're not teleop enabled, there is no hub.
         if (!DriverStation.isTeleopEnabled()) {
-            return false;
+            return new MatchTimeData(false, 25);
         }
 
         // We're teleop enabled, compute.
-        double matchTime = DriverStation.getMatchTime();
         String gameData = DriverStation.getGameSpecificMessage();
         // If we have no game data, we cannot compute, assume hub is active, as its likely early in teleop.
         if (gameData.isEmpty()) {
-            return true;
+            return new MatchTimeData(true, 0);
         }
         boolean redInactiveFirst = false;
         switch (gameData.charAt(0)) {
@@ -80,7 +84,7 @@ public final class DriverStationUtils {
             case 'B' -> redInactiveFirst = false;
             default -> {
                 // If we have invalid game data, assume hub is active.
-                return true;
+                return new MatchTimeData(true, 0);
             }
         }
 
@@ -93,22 +97,22 @@ public final class DriverStationUtils {
 
         if (matchTime > 130) {
             // Transition shift, hub is active.
-            return true;
+            return new MatchTimeData(true, matchTime - 130);
         } else if (matchTime > 105) {
             // Shift 1
-            return shift1Active;
+            return new MatchTimeData(shift1Active, matchTime - 105);
         } else if (matchTime > 80) {
             // Shift 2
-            return !shift1Active;
+            return new MatchTimeData(!shift1Active, matchTime - 80);
         } else if (matchTime > 55) {
             // Shift 3
-            return shift1Active;
+            return new MatchTimeData(shift1Active, matchTime - 55);
         } else if (matchTime > 30) {
             // Shift 4
-            return !shift1Active;
+            return new MatchTimeData(!shift1Active, matchTime - 30);
         } else {
             // End game, hub always active.
-            return true;
+            return new MatchTimeData(true, matchTime);
         }
     }
 

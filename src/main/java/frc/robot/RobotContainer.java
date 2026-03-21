@@ -37,6 +37,7 @@ import frc.robot.subsystems.shootorchestrator.ShootOrchestrator;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
+import frc.robot.utils.DriverStationUtils.MatchTimeData;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
 import frc.robot.utils.PositionedSubsystem;
@@ -250,7 +251,10 @@ public final class RobotContainer {
 
     private static boolean shouldBeShooting() {
 
-        boolean hubActive = DriverStationUtils.isHubActive();
+        MatchTimeData matchData = DriverStationUtils.isHubActive();
+        boolean hubActive = matchData.hubActive();
+
+        SmartDashboard.putNumber("ShiftTime", Math.ceil(matchData.timeLeftInShift()));
 
         Logger.recordOutput("HubActive", hubActive);
 
