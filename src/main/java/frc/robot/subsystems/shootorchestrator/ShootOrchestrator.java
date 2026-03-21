@@ -297,7 +297,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
             if (shootingEnabled) {
                 if (!SmartDashboard.getBoolean("SHOOT_OVERRIDE", false)) {
-                    double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)));
+                    double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)))
+                            - Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS;
                     shotPitch += SmartDashboard.getNumber("SHOOT_ANGLE_OFFSET", 0);
                     RobotContainer.shooter.setTargetState(new ShooterState(
                             isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : shotPitch,

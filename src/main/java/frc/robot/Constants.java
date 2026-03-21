@@ -602,6 +602,7 @@ public final class Constants {
         public static final double HOOD_STARTING_POSITION_RADIANS = Units.degreesToRadians(68.906250);
         public static final double HOOD_MAX_POSITION_RADIANS = HOOD_STARTING_POSITION_RADIANS;
         public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(35.871753);
+        public static final double HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS = Units.degreesToRadians(4);
 
         private Shooter() {}
     }
