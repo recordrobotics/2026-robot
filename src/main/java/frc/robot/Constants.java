@@ -502,9 +502,9 @@ public final class Constants {
 
         public static final double ARM_DOWN_FF = -0.5;
 
-        public static final double WHEEL_INTAKE_VELOCITY_MPS = 4;
-        public static final double WHEEL_JAMMED_VELOCITY_MPS = 5;
-        public static final double WHEEL_EJECT_VELOCITY_MPS = -4;
+        public static final double WHEEL_INTAKE_VELOCITY_MPS = 1.6; // 4;
+        public static final double WHEEL_JAMMED_VELOCITY_MPS = 1.6; // 5;
+        public static final double WHEEL_EJECT_VELOCITY_MPS = -1.6; // -4;
 
         public static final double ARM_GEAR_RATIO = 12.8571428571;
         public static final double ARM_GRAVITY_POSITION_OFFSET_ROTATIONS = -0.082671;

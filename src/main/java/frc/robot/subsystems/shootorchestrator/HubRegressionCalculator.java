@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class HubRegressionCalculator implements ShotCalculator {
 
-    private static final double FLYWHEEL_TO_FUEL_RATIO = 0.44;
+    private static final double FLYWHEEL_TO_FUEL_RATIO = 0.385;
 
     static {
         SmartDashboard.putNumber("FLYWHEEL_RATIO", FLYWHEEL_TO_FUEL_RATIO);
@@ -39,21 +39,21 @@ public class HubRegressionCalculator implements ShotCalculator {
         double robotVelocity2 = robotVelocity * robotVelocity;
         double robotVelocity3 = robotVelocity2 * robotVelocity;
         double robotVelocity4 = robotVelocity3 * robotVelocity;
-        return 93.4876402699
-                + 7.50657522373 * robotVelocity
-                + 0.836207774564 * robotVelocity2
-                + -0.0580081295263 * robotVelocity3
-                + -0.00865669534907 * robotVelocity4
-                + -25.9129470879 * distance
-                + -0.366647509675 * distance * robotVelocity
-                + -0.218161409577 * distance * robotVelocity2
-                + 0.00938902627082 * distance * robotVelocity3
-                + 7.79974599763 * distance2
-                + -0.131863606838 * distance2 * robotVelocity
-                + 0.0212856707222 * distance2 * robotVelocity2
-                + -1.13272814726 * distance3
-                + 0.0129857323031 * distance3 * robotVelocity
-                + 0.0593987888648 * distance4;
+        return 95.0476215151
+                + 7.22781779628 * robotVelocity
+                + 0.446187166766 * robotVelocity2
+                + -0.143025576382 * robotVelocity3
+                + -0.0178376322206 * robotVelocity4
+                + -25.4495442603 * distance
+                + 0.27772525426 * distance * robotVelocity
+                + 0.0236510086091 * distance * robotVelocity2
+                + 0.0194862031565 * distance * robotVelocity3
+                + 6.92921040811 * distance2
+                + -0.186088818887 * distance2 * robotVelocity
+                + -0.00120770883884 * distance2 * robotVelocity2
+                + -0.89854631409 * distance3
+                + 0.0108330719224 * distance3 * robotVelocity
+                + 0.0416242296937 * distance4;
     }
 
     public static double calculateBallVelocity(double distance, double robotVelocity) {
@@ -63,21 +63,21 @@ public class HubRegressionCalculator implements ShotCalculator {
         double robotVelocity2 = robotVelocity * robotVelocity;
         double robotVelocity3 = robotVelocity2 * robotVelocity;
         double robotVelocity4 = robotVelocity3 * robotVelocity;
-        return 5.74012474728
-                + -0.539058185805 * robotVelocity
-                + 0.0820413980332 * robotVelocity2
-                + 0.00171418522627 * robotVelocity3
-                + -0.000528210655164 * robotVelocity4
-                + -0.173086182149 * distance
-                + 0.0451770736047 * distance * robotVelocity
-                + -0.0135844476726 * distance * robotVelocity2
-                + -0.000321450063114 * distance * robotVelocity3
-                + 0.31693651342 * distance2
-                + -0.0193555976086 * distance2 * robotVelocity
-                + 0.000879636893034 * distance2 * robotVelocity2
-                + -0.0461698678218 * distance3
-                + 0.00155733901075 * distance3 * robotVelocity
-                + 0.00229893444873 * distance4;
+        return 6.36807950256
+                + -0.318415367375 * robotVelocity
+                + 0.0568602191061 * robotVelocity2
+                + -0.00155522629749 * robotVelocity3
+                + -0.000626428266815 * robotVelocity4
+                + -0.791430248818 * distance
+                + -0.119230385626 * distance * robotVelocity
+                + -0.0024168567017 * distance * robotVelocity2
+                + 0.000168717081825 * distance * robotVelocity3
+                + 0.51592576216 * distance2
+                + 0.0212946084093 * distance2 * robotVelocity
+                + -5.69927539992e-05 * distance2 * robotVelocity2
+                + -0.0741889239284 * distance3
+                + -0.00147749738957 * distance3 * robotVelocity
+                + 0.00363337018461 * distance4;
     }
 
     public static double calculateTimeOfFlight(double distance, double robotVelocity) {
