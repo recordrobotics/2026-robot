@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class HubRegressionCalculator implements ShotCalculator {
 
-    private static final double FLYWHEEL_TO_FUEL_RATIO = 0.385;
+    private static final double FLYWHEEL_TO_FUEL_RATIO = 0.38981;
 
     static {
         SmartDashboard.putNumber("FLYWHEEL_RATIO", FLYWHEEL_TO_FUEL_RATIO);

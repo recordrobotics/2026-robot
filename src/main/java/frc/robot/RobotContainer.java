@@ -293,18 +293,20 @@ public final class RobotContainer {
             }
         }));
 
-        new Trigger(() -> ClimberSim.isWithinDistanceOfClimbing(
-                                CLIMBER_AUTORAISE_DISTANCE_METERS,
-                                poseSensorFusion.getEstimatedPosition(),
-                                climber.getCurrentHeight())
-                        && DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE)
-                                < CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING)
-                .onTrue(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.UP)))
-                .onFalse(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.DOWN)));
+        // new Trigger(() -> ClimberSim.isWithinDistanceOfClimbing(
+        //                         CLIMBER_AUTORAISE_DISTANCE_METERS,
+        //                         poseSensorFusion.getEstimatedPosition(),
+        //                         climber.getCurrentHeight())
+        //                 && DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE)
+        //                         < CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING)
+        //         .onTrue(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.UP)))
+        //         .onFalse(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.DOWN)));
 
         new Trigger(RobotContainer::shouldBeShooting)
-                .whileTrue(new InstantCommand(() -> shootOrchestrator.setEnableShooting(true), shooter))
-                .whileFalse(new InstantCommand(() -> shootOrchestrator.setEnableShooting(false), shooter));
+                .whileTrue(new InstantCommand(() -> shootOrchestrator.setEnableShooting(true), shooter)
+                        .ignoringDisable(true))
+                .whileFalse(new InstantCommand(() -> shootOrchestrator.setEnableShooting(false), shooter)
+                        .ignoringDisable(true));
 
         // Kill subsystems trigger
         /*

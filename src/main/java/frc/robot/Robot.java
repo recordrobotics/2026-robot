@@ -18,6 +18,7 @@ import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.maplesim.ImprovedMapleMatch;
+import frc.robot.utils.maplesim.OpponentRobot;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -168,6 +169,8 @@ public final class Robot extends LoggedRobot {
         if (Constants.RobotState.getMode() == Constants.RobotState.Mode.SIM) {
             // Reset simulation field
             SimulatedArena.getInstance().resetFieldForAuto();
+            // Create opponent robots
+            OpponentRobot.create(5);
         }
 
         // MAKE SURE FIRST CALL TO ELASTIC IS NOT IN TELEOP OR AUTO INIT!!
@@ -207,6 +210,7 @@ public final class Robot extends LoggedRobot {
 
         if (Constants.RobotState.getMode() == Constants.RobotState.Mode.SIM) {
             ImprovedMapleMatch.getInstance().periodic();
+            OpponentRobot.logPoses();
         }
 
         try {
@@ -262,6 +266,7 @@ public final class Robot extends LoggedRobot {
             SimulatedArena.getInstance().resetFieldForAuto();
             RobotContainer.model.fuelManager.preloadFuel();
             ImprovedMapleMatch.getInstance().autonomousInit();
+            OpponentRobot.randomizeRobots();
         }
 
         RobotContainer.model.intakeModel.resetHopperExtension();

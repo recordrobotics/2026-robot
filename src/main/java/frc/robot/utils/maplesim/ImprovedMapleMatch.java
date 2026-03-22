@@ -45,6 +45,7 @@ public class ImprovedMapleMatch {
         boolean flash = hasTeleopStarted
                 && timeLeftInShift < 3
                 && (timeLeftInShift % 0.5 < 0.25); // Flash in the last 3 seconds of a shift
+
         SmartDashboard.putBoolean(RED_ACTIVE_KEY, redActive && (!flash || nextShiftRedActive));
         SmartDashboard.putBoolean(BLUE_ACTIVE_KEY, blueActive && (!flash || nextShiftBlueActive));
     }
@@ -111,7 +112,7 @@ public class ImprovedMapleMatch {
             redActive = true;
             blueActive = true;
         } else if (DriverStation.isTeleopEnabled()) {
-            double matchTime = DriverStation.getMatchTime();
+            double matchTime = Math.floor(DriverStation.getMatchTime());
 
             if (matchTime > 130) {
                 // Transition shift, hub is active.
