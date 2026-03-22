@@ -124,7 +124,7 @@ public class JoystickControls implements AbstractControl {
                 1,
                 -1,
                 Constants.Control.SPIN_SPEED_METER_LOW,
-                Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS / 2);
+                Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS / 3);
 
         return speed;
     }
