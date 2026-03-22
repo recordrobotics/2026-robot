@@ -118,8 +118,8 @@ public class XboxControls implements AbstractControl {
     }
 
     public Pair<Boolean, Rotation2d> getSpinRotation2d() {
-        double x = xbox.getRightX();
-        double y = xbox.getRightY();
+        double x = xbox.getRightStickButton() ? xbox.getLeftX() : xbox.getRightX();
+        double y = xbox.getRightStickButton() ? xbox.getLeftY() : xbox.getRightY();
         double angle = -Math.atan2(y, x) + Math.PI / 2;
 
         if (DriverStationUtils.getCurrentAlliance() == Alliance.Red) {
@@ -127,7 +127,10 @@ public class XboxControls implements AbstractControl {
         }
 
         double magnitude = Math.hypot(x, y);
-        if (magnitude < Constants.Control.JOYSTICK_ABSOLUTE_SPIN_THRESHOLD) {
+        if (magnitude
+                < (xbox.getRightStickButton()
+                        ? Constants.Control.JOYSTICK_ABSOLUTE_SPIN_THRESHOLD_PACMAN
+                        : Constants.Control.JOYSTICK_ABSOLUTE_SPIN_THRESHOLD)) {
             return new Pair<>(false, new Rotation2d());
         }
         return new Pair<>(true, new Rotation2d(angle));

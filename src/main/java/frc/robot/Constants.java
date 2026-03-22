@@ -290,6 +290,7 @@ public final class Constants {
         public static final Constraints SPIN_CONSTRAINTS = new Constraints(
                 Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS, Constants.Swerve.MAX_ANGULAR_ACCELERATION_RADIANS);
         public static final double JOYSTICK_ABSOLUTE_SPIN_THRESHOLD = 0.9;
+        public static final double JOYSTICK_ABSOLUTE_SPIN_THRESHOLD_PACMAN = 0.2;
 
         private Control() {}
     }
