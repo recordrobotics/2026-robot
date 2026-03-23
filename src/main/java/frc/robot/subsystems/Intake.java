@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -52,6 +53,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     private static final Voltage SYSID_WHEEL_STEP_VOLTAGE = Volts.of(4.3);
     private static final Time SYSID_WHEEL_TIMEOUT = Seconds.of(1.5);
 
+    private static final double RESET_VOLTAGE = -2.0;
+    private static final double RESET_VELOCITY_THRESHOLD = 0.001;
+    private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
+
     private final IntakeIO io;
     private final SysIdRoutine sysIdRoutineArm;
     private final SysIdRoutine sysIdRoutineWheel;
@@ -69,6 +74,12 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     private double lastNotJammedTime = 0;
 
     private PositionStatus positionStatus = PositionStatus.UNKNOWN;
+    private boolean hasStartedMovingDown = false;
+    private boolean runExtendHoming = false;
+    private double lastMovementTime = 0;
+
+    private final VoltageOut armVoltageRequest;
+    private final VoltageOut wheelVoltageRequest;
 
     public enum IntakeState {
         INTAKE,
@@ -89,6 +100,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
                 new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS));
         armFollowerRequest = io.createArmFollower();
         wheelRequest = new MotionMagicVelocityVoltage(RotationsPerSecond.of(0.0));
+
+        armVoltageRequest = new VoltageOut(0);
+        wheelVoltageRequest = new VoltageOut(0);
 
         TalonFXConfiguration configLeader = new TalonFXConfiguration();
 
@@ -129,7 +143,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         io.applyArmFollowerTalonFXConfig(
                 configLeader.withMotorOutput(configLeader.MotorOutput.withInverted(InvertedValue.Clockwise_Positive)));
 
-        io.setArmFollowerMotionMagic(armFollowerRequest);
+        io.setArmFollowerControl(armFollowerRequest);
 
         TalonFXConfiguration configWheel = new TalonFXConfiguration();
 
@@ -166,8 +180,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
                         SYSID_ARM_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Arm/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(
-                        v -> io.setArmVoltage(
-                                v.in(Volts) + 0.9 * Math.cos(Units.rotationsToRadians(getArmPositionRotations()))),
+                        v -> io.setArmLeaderControl(armVoltageRequest.withOutput(
+                                v.in(Volts) + 0.9 * Math.cos(Units.rotationsToRadians(getArmPositionRotations())))),
                         null,
                         this));
 
@@ -177,7 +191,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
                         SYSID_WHEEL_STEP_VOLTAGE, // default 7 volt step voltage
                         SYSID_WHEEL_TIMEOUT,
                         state -> Logger.recordOutput("Intake/Wheel/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setWheelVoltage(v.in(Volts)), null, this));
+                new SysIdRoutine.Mechanism(
+                        v -> io.setWheelControl(wheelVoltageRequest.withOutput(v.in(Volts))), null, this));
 
         SmartDashboard.putBoolean("Intake/DisableWheel", false);
 
@@ -196,7 +211,36 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     public void periodicManaged() {
         RobotContainer.model.intakeModel.update(Units.rotationsToRadians(getArmPositionRotations()));
 
-        updateWheel();
+        if (!isForceDisabled()
+                && (targetState == IntakeState.INTAKE || targetState == IntakeState.EJECT)
+                && positionStatus == PositionStatus.UNKNOWN) {
+            if (runExtendHoming) {
+                if (SimpleMath.isAFartherFromZeroThanB(getArmVoltage(), RESET_VOLTAGE / 3)) {
+                    if (Math.abs(getArmVelocityRotationsPerSecond()) > RESET_VELOCITY_THRESHOLD) {
+                        lastMovementTime = Timer.getTimestamp();
+                    } else if (Timer.getTimestamp() - lastMovementTime > RESET_VELOCITY_THRESHOLD_TIME) {
+                        positionStatus = PositionStatus.KNOWN;
+                        runExtendHoming = false;
+                        hasStartedMovingDown = false;
+                        io.setArmPositionRotations(
+                                Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS));
+                        setArmControl();
+                    }
+                } else {
+                    lastMovementTime = Timer.getTimestamp();
+                }
+            } else {
+                if (getArmVoltage() > -1.0 && hasStartedMovingDown) {
+                    runExtendHoming = true;
+                    lastMovementTime = Timer.getTimestamp();
+                    setArmControl();
+                } else if (getArmVoltage() < -1.0) {
+                    hasStartedMovingDown = true;
+                }
+            }
+        }
+
+        setWheelControl();
     }
 
     public void setState(IntakeState state) {
@@ -213,31 +257,44 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             case STARTING -> WheelMode.OFF;
         };
 
-        if (!isForceDisabled()
-                && !(SysIdManager.getProvider() instanceof SysIdArm)
-                && !(SysIdManager.getProvider() instanceof Turret.SysId))
-            io.setArmLeaderMotionMagic(armLeaderRequest
-                    .withPosition(armTargetRotations)
-                    .withFeedForward(
-                            state == IntakeState.INTAKE || state == IntakeState.EJECT
-                                    ? Constants.Intake.ARM_DOWN_FF
-                                    : 0)); // follower will follow this
+        if (state == IntakeState.STARTING || state == IntakeState.RETRACTED) {
+            runExtendHoming = false;
+            hasStartedMovingDown = false;
+        }
 
-        updateWheel();
+        if (!isForceDisabled()
+                && !runExtendHoming
+                && !(SysIdManager.getProvider() instanceof SysIdArm)
+                && !(SysIdManager.getProvider() instanceof Turret.SysId)) setArmControl();
+
+        setWheelControl();
     }
 
     @Override
     protected void onForceDisabledChange(boolean isNowForceDisabled) {
         if (isNowForceDisabled) {
-            io.setArmVoltage(0.0);
-            io.setWheelVoltage(0.0);
+            io.setArmLeaderControl(armVoltageRequest.withOutput(0.0));
+            io.setWheelControl(wheelVoltageRequest.withOutput(0.0));
         } else {
-            io.setArmLeaderMotionMagic(armLeaderRequest.withPosition(armTargetRotations)); // follower will follow this
-            io.setWheelMotionMagic(wheelRequest.withVelocity(actualWheelTargetVelocityMps));
+            setArmControl();
+            setWheelControl();
         }
     }
 
-    private void updateWheel() {
+    private void setArmControl() {
+        if (runExtendHoming && positionStatus == PositionStatus.UNKNOWN) {
+            io.setArmLeaderControl(armVoltageRequest.withOutput(RESET_VOLTAGE).withIgnoreSoftwareLimits(true));
+        } else {
+            io.setArmLeaderControl(armLeaderRequest
+                    .withPosition(armTargetRotations)
+                    .withFeedForward(
+                            targetState == IntakeState.INTAKE || targetState == IntakeState.EJECT
+                                    ? Constants.Intake.ARM_DOWN_FF
+                                    : 0)); // follower will follow this
+        }
+    }
+
+    private void setWheelControl() {
 
         switch (wheelTargetState) {
             case OFF:
@@ -267,10 +324,12 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         if (armNearGoal || Math.abs(wheelTargetVelocityMps) < Math.abs(actualWheelTargetVelocityMps)) {
             actualWheelTargetVelocityMps = wheelTargetVelocityMps;
 
-            if (SmartDashboard.getBoolean("Intake/DisableWheel", false)) {
-                io.setWheelMotionMagic(wheelRequest.withVelocity(0));
-            } else if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdWheel)) {
-                io.setWheelMotionMagic(wheelRequest.withVelocity(actualWheelTargetVelocityMps));
+            if (!isForceDisabled()) {
+                if (SmartDashboard.getBoolean("Intake/DisableWheel", false)) {
+                    io.setWheelControl(wheelRequest.withVelocity(0));
+                } else if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdWheel)) {
+                    io.setWheelControl(wheelRequest.withVelocity(actualWheelTargetVelocityMps));
+                }
             }
         }
     }
@@ -338,6 +397,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     @Override
     public void resetToStartPosition() {
         positionStatus = PositionStatus.UNKNOWN;
+        hasStartedMovingDown = false;
+        runExtendHoming = false;
         io.setArmPositionRotations(Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS));
     }
 

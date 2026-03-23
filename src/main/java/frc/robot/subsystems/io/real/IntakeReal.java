@@ -1,9 +1,8 @@
 package frc.robot.subsystems.io.real;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import frc.robot.RobotMap;
@@ -48,27 +47,17 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public void setArmVoltage(double outputVolts) {
-        armLeader.setVoltage(outputVolts);
-    }
-
-    @Override
-    public void setWheelVoltage(double outputVolts) {
-        wheel.setVoltage(outputVolts);
-    }
-
-    @Override
-    public void setArmLeaderMotionMagic(MotionMagicExpoVoltage request) {
+    public void setArmLeaderControl(ControlRequest request) {
         armLeader.setControl(request);
     }
 
     @Override
-    public void setArmFollowerMotionMagic(Follower request) {
+    public void setArmFollowerControl(ControlRequest request) {
         armFollower.setControl(request);
     }
 
     @Override
-    public void setWheelMotionMagic(MotionMagicVelocityVoltage request) {
+    public void setWheelControl(ControlRequest request) {
         wheel.setControl(request);
     }
 

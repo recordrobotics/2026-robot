@@ -1,9 +1,8 @@
 package frc.robot.subsystems.io;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 
 public interface IntakeIO {
     void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration);
@@ -14,15 +13,11 @@ public interface IntakeIO {
 
     void applyWheelTalonFXConfig(TalonFXConfiguration configuration);
 
-    void setArmLeaderMotionMagic(MotionMagicExpoVoltage request); // test
+    void setArmLeaderControl(ControlRequest request);
 
-    void setArmFollowerMotionMagic(Follower request);
+    void setArmFollowerControl(ControlRequest request);
 
-    void setWheelMotionMagic(MotionMagicVelocityVoltage request);
-
-    void setArmVoltage(double newValue); // follower will mirror leader voltage
-
-    void setWheelVoltage(double newValue);
+    void setWheelControl(ControlRequest request);
 
     double getArmLeaderPositionRotations();
 

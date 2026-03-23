@@ -1,9 +1,8 @@
 package frc.robot.subsystems.io.stub;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import frc.robot.subsystems.io.IntakeIO;
 
@@ -29,27 +28,17 @@ public class IntakeStub implements IntakeIO {
     }
 
     @Override
-    public void setWheelVoltage(double outputVolts) {
+    public void setArmLeaderControl(ControlRequest request) {
         // stub
     }
 
     @Override
-    public void setArmVoltage(double outputVolts) {
+    public void setArmFollowerControl(ControlRequest request) {
         // stub
     }
 
     @Override
-    public void setArmLeaderMotionMagic(MotionMagicExpoVoltage request) {
-        // stub
-    }
-
-    @Override
-    public void setArmFollowerMotionMagic(Follower request) {
-        // stub
-    }
-
-    @Override
-    public void setWheelMotionMagic(MotionMagicVelocityVoltage request) {
+    public void setWheelControl(ControlRequest request) {
         // stub
     }
 
