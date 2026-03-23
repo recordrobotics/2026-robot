@@ -170,7 +170,7 @@ public final class Robot extends LoggedRobot {
             // Reset simulation field
             SimulatedArena.getInstance().resetFieldForAuto();
             // Create opponent robots
-            OpponentRobot.create(5);
+            // OpponentRobot.create(5);
         }
 
         // MAKE SURE FIRST CALL TO ELASTIC IS NOT IN TELEOP OR AUTO INIT!!
