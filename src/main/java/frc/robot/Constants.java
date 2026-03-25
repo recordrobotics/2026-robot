@@ -545,9 +545,9 @@ public final class Constants {
         public static final double GEAR_RATIO = 15.5428571429;
 
         public static final double ROTATION_LIMIT_INSET_ROTATIONS = 0.002;
-        public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.607 - ROTATION_LIMIT_INSET_ROTATIONS;
+        public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.569 - ROTATION_LIMIT_INSET_ROTATIONS;
         public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS =
-                -0.509 + ROTATION_LIMIT_INSET_ROTATIONS; // slightly not symmetric
+                -0.514 + ROTATION_LIMIT_INSET_ROTATIONS; // slightly not symmetric
 
         public static final double TURRET_SPRING_START_POS = 0.21;
         public static final double TURRET_SPRING_START_NEG = -0.159;
