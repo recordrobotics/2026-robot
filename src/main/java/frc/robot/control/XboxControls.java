@@ -109,7 +109,7 @@ public class XboxControls implements AbstractControl {
         double x = Math.copySign(Math.pow(unsquaredX, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredX);
         double y = Math.copySign(Math.pow(unsquaredY, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredY);
 
-        return new Pair<>(x, y);
+        return new Pair<>(x / 2, y / 2);
     }
 
     public Pair<Double, Double> getXYOriented() {
