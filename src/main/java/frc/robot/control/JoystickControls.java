@@ -145,8 +145,18 @@ public class JoystickControls implements AbstractControl {
     }
 
     @Override
-    public boolean isForceIntakePressed() {
+    public boolean isIntakeInvertPressed() {
         return joystick.getRawButton(2);
+    }
+
+    @Override
+    public boolean isIntakePressed() {
+        return false;
+    }
+
+    @Override
+    public boolean isIntakeUpPressed() {
+        return false;
     }
 
     @Override

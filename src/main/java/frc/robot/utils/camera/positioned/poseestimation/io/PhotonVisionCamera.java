@@ -18,6 +18,7 @@ import frc.robot.utils.camera.positioned.poseestimation.PoseEstimationCamera;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -206,6 +207,7 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
 
             Optional<EstimatedRobotPose> constrainedEst;
             if (unconstrainedEst.isPresent() && cameraMatrix.isPresent() && distortionCoeffs.isPresent()) {
+                Logger.recordOutput(getName() + "/" + "TEMP1", unconstrainedEst.get().estimatedPose);
                 constrainedEst = photonEstimator.estimateConstrainedSolvepnpPose(
                         result,
                         cameraMatrix.get(),
@@ -213,6 +215,7 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
                         unconstrainedEst.get().estimatedPose,
                         false,
                         1.0);
+                Logger.recordOutput(getName() + "/" + "TEMP2", constrainedEst.get().estimatedPose);
             } else {
                 constrainedEst = Optional.empty();
             }

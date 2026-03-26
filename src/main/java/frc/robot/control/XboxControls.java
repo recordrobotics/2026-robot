@@ -152,8 +152,18 @@ public class XboxControls implements AbstractControl {
     }
 
     @Override
-    public boolean isForceIntakePressed() {
+    public boolean isIntakeInvertPressed() {
+        return false;
+    }
+
+    @Override
+    public boolean isIntakePressed() {
         return xbox.getLeftTriggerAxis() > 0.75;
+    }
+
+    @Override
+    public boolean isIntakeUpPressed() {
+        return xbox.getLeftBumperButton();
     }
 
     @Override
@@ -163,7 +173,7 @@ public class XboxControls implements AbstractControl {
 
     @Override
     public boolean isReverseIntakePressed() {
-        return xbox.getLeftBumperButton();
+        return false;
     }
 
     @Override

@@ -277,9 +277,17 @@ public final class RobotContainer {
     }
 
     private static void configureTriggers() {
-        new Trigger(() -> DashboardUI.Overview.getControl().isForceIntakePressed())
+        new Trigger(() -> DashboardUI.Overview.getControl().isIntakeInvertPressed())
                 .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED), intake))
                 .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake));
+
+        new Trigger(() -> DashboardUI.Overview.getControl().isIntakePressed())
+                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake))
+                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
+
+        new Trigger(() -> DashboardUI.Overview.getControl().isIntakeUpPressed())
+                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED), intake))
+                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
 
         new Trigger(() -> DashboardUI.Overview.getControl().isReverseIntakePressed())
                 .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.EJECT), intake))

@@ -253,7 +253,17 @@ public class TestControlBridge implements AbstractControl {
     }
 
     @Override
-    public boolean isForceIntakePressed() {
+    public boolean isIntakeInvertPressed() {
+        return false; // TODO
+    }
+
+    @Override
+    public boolean isIntakePressed() {
+        return false; // TODO
+    }
+
+    @Override
+    public boolean isIntakeUpPressed() {
         return false; // TODO
     }
 

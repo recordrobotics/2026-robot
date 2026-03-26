@@ -13,7 +13,11 @@ public interface AbstractControl {
 
     void update();
 
-    boolean isForceIntakePressed();
+    boolean isIntakeUpPressed();
+
+    boolean isIntakePressed();
+
+    boolean isIntakeInvertPressed();
 
     boolean isReverseIntakePressed();
 

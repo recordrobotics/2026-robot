@@ -83,6 +83,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
 
     public enum IntakeState {
         INTAKE,
+        OUT,
         EJECT,
         STARTING,
         RETRACTED
@@ -212,7 +213,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         RobotContainer.model.intakeModel.update(Units.rotationsToRadians(getArmPositionRotations()));
 
         if (!isForceDisabled()
-                && (targetState == IntakeState.INTAKE || targetState == IntakeState.EJECT)
+                && (targetState == IntakeState.INTAKE
+                        || targetState == IntakeState.EJECT
+                        || targetState == IntakeState.OUT)
                 && positionStatus == PositionStatus.UNKNOWN) {
             if (runExtendHoming) {
                 if (SimpleMath.isAFartherFromZeroThanB(getArmVoltage(), RESET_VOLTAGE / 3)) {
@@ -247,14 +250,14 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         targetState = state;
 
         armTargetRotations = switch (state) {
-            case INTAKE, EJECT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
+            case INTAKE, EJECT, OUT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
             case STARTING -> Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
             case RETRACTED -> Units.radiansToRotations(Constants.Intake.ARM_RETRACTED_POSITION_RADIANS);
         };
         wheelTargetState = switch (state) {
             case INTAKE, RETRACTED -> WheelMode.INTAKE;
             case EJECT -> WheelMode.EJECT;
-            case STARTING -> WheelMode.OFF;
+            case STARTING, OUT -> WheelMode.OFF;
         };
 
         if (state == IntakeState.STARTING || state == IntakeState.RETRACTED) {
@@ -288,7 +291,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             io.setArmLeaderControl(armLeaderRequest
                     .withPosition(armTargetRotations)
                     .withFeedForward(
-                            targetState == IntakeState.INTAKE || targetState == IntakeState.EJECT
+                            targetState == IntakeState.INTAKE
+                                            || targetState == IntakeState.EJECT
+                                            || targetState == IntakeState.OUT
                                     ? Constants.Intake.ARM_DOWN_FF
                                     : 0)); // follower will follow this
         }

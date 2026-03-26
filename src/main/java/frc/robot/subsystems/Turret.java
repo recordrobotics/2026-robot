@@ -164,7 +164,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                                 Constants.Turret.KV * velocityRotationsPerSecond
                                         + Constants.Turret.KA * accelerationRotationsPerSecondSquared
                                         + Constants.Turret.KS * Math.signum(velocityRotationsPerSecond)
-                                        + Constants.Turret.KVP * velocityError))
+                                        + Constants.Turret.KVP * velocityError
+                                        + getSpringFeedforward()))
                 * Constants.Turret.FF_MUL;
     }
 
