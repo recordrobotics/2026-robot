@@ -272,9 +272,8 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
 
         return new CameraPoseEstimate(
                 (getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
-                                ? unconstrainedEst.estimatedPose
-                                : calculateRobotPose(unconstrainedEst.estimatedPose, unconstrainedEst.timestampSeconds))
-                        .toPose2d(),
+                        ? unconstrainedEst.estimatedPose
+                        : calculateRobotPose(unconstrainedEst.estimatedPose, unconstrainedEst.timestampSeconds)),
                 constrainedEst.map(e -> (getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
                                 ? e.estimatedPose
                                 : calculateRobotPose(e.estimatedPose, e.timestampSeconds))

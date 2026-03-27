@@ -318,6 +318,12 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      */
     public void addVisionMeasurements(PoseSensorFusion fusion, Pose2d currentEstimate, int txtyId) {
         for (CameraPoseEstimate estimate : cachedEstimates) {
+
+            if (computeRobotToCamera) {
+                Transform3d robotToCamera = getRobotToCamera(knownRobotPose, estimate);
+                setMechanismToCamera(robotToCamera);
+            }
+
             double stdDev = calculateStdDevs(fusion, estimate);
 
             Optional<Pose2d> pose;
@@ -450,6 +456,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         }
 
         Logger.recordOutput(prefix + "HasVision", hasVision());
+        Logger.recordOutput(prefix + "ToCamera", getMechanismToCamera());
 
         // Update from SmartDashboard
         useRotation = SmartDashboard.getBoolean(prefix + USE_ROTATION_ENTRY, true);

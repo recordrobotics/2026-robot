@@ -172,9 +172,8 @@ public class LimelightCamera extends PoseEstimationCamera {
 
         CameraPoseEstimate estimate = new CameraPoseEstimate(
                 getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
-                        ? measurements.mt1().pose
-                        : calculateRobotPose(new Pose3d(measurements.mt1().pose), measurements.mt1().timestampSeconds)
-                                .toPose2d(),
+                        ? new Pose3d(measurements.mt1().pose)
+                        : calculateRobotPose(new Pose3d(measurements.mt1().pose), measurements.mt1().timestampSeconds),
                 Optional.ofNullable(measurements.mt2())
                         .map(m -> getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
                                 ? m.pose

@@ -2,6 +2,7 @@ package frc.robot.utils.camera.positioned.poseestimation.io;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
@@ -83,7 +84,7 @@ public class MapleSimCamera extends PoseEstimationCamera {
         final Pose2d finalMaplePose = maplePose;
 
         return List.of(new CameraPoseEstimate(
-                finalMaplePose,
+                new Pose3d(finalMaplePose),
                 Optional.of(finalMaplePose),
                 MAPLE_SIM_TAGS.stream()
                         .map(tag -> new TXTYMeasurement(
