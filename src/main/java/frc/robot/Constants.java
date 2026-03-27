@@ -549,6 +549,15 @@ public final class Constants {
         public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS =
                 -0.514 + ROTATION_LIMIT_INSET_ROTATIONS; // slightly not symmetric
 
+        public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW = -0.044678;
+        public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CCW = -0.02;
+
+        public static final double BACK_LEFT_MAGNET_MOTOR_ROTATIONS_CW = 0.1255;
+        public static final double BACK_LEFT_MAGNET_MOTOR_ROTATIONS_CCW = 0.1253;
+
+        public static final double BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CW = 0.3753;
+        public static final double BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CCW = 0.375;
+
         public static final double TURRET_SPRING_START_POS = 0.21;
         public static final double TURRET_SPRING_START_NEG = -0.159;
         public static final double TURRET_SPRING_VOLTS = 0.2;

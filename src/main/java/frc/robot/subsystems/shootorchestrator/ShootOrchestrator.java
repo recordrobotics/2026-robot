@@ -73,6 +73,12 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private static final double TRENCH_WIDTH_METERS = 1.361281;
     private static final double TRENCH_OFFSET_METERS = 0.3;
 
+    private static final ShotCalculation FIXED_SHOT_CALCULATION = hubCalculator.calculateShot(2.944349, 0);
+    private static final double FIXED_TURRET_ANGLE_RADIANS = Units.degreesToRadians(90);
+    private static final double FIXED_SHOOTER_ANGLE_RADIANS =
+            FIXED_SHOT_CALCULATION.shootAngleRadians() - Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS;
+    private static final double FIXED_FUEL_VELOCITY = FIXED_SHOT_CALCULATION.fuelVelocityMagnitudeMps();
+
     public enum FeedMode {
         AUTO,
         ALWAYS,
@@ -89,6 +95,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     private ShotTarget target;
     private boolean shootingEnabled = false;
+    private boolean fixedMode = false;
+    private boolean useFixedShooting = false;
 
     private double lastShotYaw = 0;
     private boolean hasLastShotYaw = false;
@@ -115,6 +123,13 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     public void setEnableShooting(boolean enable) {
         this.shootingEnabled = enable;
+    }
+
+    public void setFixedMode(boolean fixed) {
+        this.fixedMode = fixed;
+        if (!fixed) {
+            useFixedShooting = false;
+        }
     }
 
     public final void setTarget(ShotTarget target) {
@@ -183,10 +198,12 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                                 : RED_PASSING_TARGET_DEPOT_SIDE,
                         passingCalculator));
             }
+            useFixedShooting = false;
         } else {
             setTarget(new ShotTarget(
                     DriverStationUtils.getCurrentAlliance() == Alliance.Blue ? BLUE_HUB_POSITION : RED_HUB_POSITION,
                     hubCalculator));
+            useFixedShooting = fixedMode;
         }
     }
 
@@ -275,10 +292,14 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             hasLastShotYaw = true;
 
             if (!RobotContainer.intake.isNearStartPosition()) {
-                RobotContainer.turret.setTarget(
-                        shotYaw - robotPose.getRotation().getRadians(),
-                        shotYawVelocity - RobotContainer.drivetrain.getChassisSpeeds().omegaRadiansPerSecond,
-                        -RobotContainer.drivetrain.getChassisAcceleration().omegaRadiansPerSecond);
+                if (useFixedShooting) {
+                    RobotContainer.turret.setTarget(FIXED_TURRET_ANGLE_RADIANS, 0, 0);
+                } else {
+                    RobotContainer.turret.setTarget(
+                            shotYaw - robotPose.getRotation().getRadians(),
+                            shotYawVelocity - RobotContainer.drivetrain.getChassisSpeeds().omegaRadiansPerSecond,
+                            -RobotContainer.drivetrain.getChassisAcceleration().omegaRadiansPerSecond);
+                }
             } else {
                 double turretPos = Units.rotationsToRadians(RobotContainer.turret.getPositionRotations());
                 RobotContainer.turret.setTarget(
@@ -301,8 +322,11 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                             - Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS;
                     shotPitch += SmartDashboard.getNumber("SHOOT_ANGLE_OFFSET", 0);
                     RobotContainer.shooter.setTargetState(new ShooterState(
-                            isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : shotPitch,
-                            target.shotCalculator.fuelToFlywheelVelocity(shotVector.norm()),
+                            isInTrench
+                                    ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS
+                                    : (useFixedShooting ? FIXED_SHOOTER_ANGLE_RADIANS : shotPitch),
+                            target.shotCalculator.fuelToFlywheelVelocity(
+                                    useFixedShooting ? FIXED_FUEL_VELOCITY : shotVector.norm()),
                             shooterFeedforward));
                 } else if (overrideShootAngleVelocity) {
                     RobotContainer.shooter.setTargetState(new ShooterState(

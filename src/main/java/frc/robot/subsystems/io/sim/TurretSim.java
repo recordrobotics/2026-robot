@@ -1,7 +1,7 @@
 package frc.robot.subsystems.io.sim;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
 import frc.robot.RobotMap;
+import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.io.TurretIO;
 
 public class TurretSim implements TurretIO {
@@ -99,13 +100,18 @@ public class TurretSim implements TurretIO {
     }
 
     @Override
-    public void setMotionMagic(MotionMagicExpoVoltage request) {
+    public void setControl(ControlRequest request) {
         turret.setControl(request);
     }
 
     @Override
-    public void setVoltage(double newValue) {
-        turret.setVoltage(newValue);
+    public boolean hasHitForwardSoftLimit() {
+        return turret.getFault_ForwardSoftLimit().getValue().booleanValue();
+    }
+
+    @Override
+    public boolean hasHitReverseSoftLimit() {
+        return turret.getFault_ReverseSoftLimit().getValue().booleanValue();
     }
 
     @Override
@@ -191,7 +197,8 @@ public class TurretSim implements TurretIO {
     }
 
     private void updateLimitSwitches() {
-        double turretPositionRad = turretSimModel.getAngularPositionRad();
+        double turretPositionRad = Units.rotationsToRadians(
+                turretSimModel.getAngularPositionRotations() + Turret.MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
 
         // Wrap turret position within one rotation
         turretPositionRad = MathUtil.inputModulus(

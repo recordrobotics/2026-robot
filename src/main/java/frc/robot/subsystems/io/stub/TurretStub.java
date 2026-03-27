@@ -1,7 +1,7 @@
 package frc.robot.subsystems.io.stub;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 import frc.robot.subsystems.io.TurretIO;
 
 public class TurretStub implements TurretIO {
@@ -12,13 +12,18 @@ public class TurretStub implements TurretIO {
     }
 
     @Override
-    public void setMotionMagic(MotionMagicExpoVoltage request) {
+    public void setControl(ControlRequest request) {
         // stub
     }
 
     @Override
-    public void setVoltage(double newValue) {
-        // stub
+    public boolean hasHitForwardSoftLimit() {
+        return false;
+    }
+
+    @Override
+    public boolean hasHitReverseSoftLimit() {
+        return false;
     }
 
     @Override

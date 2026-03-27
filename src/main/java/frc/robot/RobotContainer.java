@@ -90,7 +90,8 @@ public final class RobotContainer {
     public enum ShootMode {
         DISABLED,
         AUTO,
-        FORCE
+        FORCE,
+        FIXED
     }
 
     public static LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
@@ -132,7 +133,7 @@ public final class RobotContainer {
         noEncoderResetAlert = new Alert("Encoders not reset!", AlertType.kError);
 
         EnumSet.allOf(ShootMode.class).forEach(v -> shootModeChooser.addOption(v.name(), v));
-        shootModeChooser.addDefaultOption(ShootMode.DISABLED.name(), ShootMode.DISABLED);
+        shootModeChooser.addDefaultOption(ShootMode.AUTO.name(), ShootMode.AUTO);
 
         try {
             drivetrain = new Drivetrain();
@@ -271,6 +272,8 @@ public final class RobotContainer {
                 } else {
                     return DashboardUI.Overview.getControl().isShooterInvertPressed();
                 }
+            case FIXED:
+                return DashboardUI.Overview.getControl().isShooterInvertPressed();
             default:
                 return false;
         }
@@ -311,9 +314,19 @@ public final class RobotContainer {
         //         .onFalse(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.DOWN)));
 
         new Trigger(RobotContainer::shouldBeShooting)
-                .whileTrue(new InstantCommand(() -> shootOrchestrator.setEnableShooting(true), shooter)
+                .whileTrue(new InstantCommand(
+                                () -> {
+                                    shootOrchestrator.setEnableShooting(true);
+                                    shootOrchestrator.setFixedMode(shootModeChooser.get() == ShootMode.FIXED);
+                                },
+                                shooter)
                         .ignoringDisable(true))
-                .whileFalse(new InstantCommand(() -> shootOrchestrator.setEnableShooting(false), shooter)
+                .whileFalse(new InstantCommand(
+                                () -> {
+                                    shootOrchestrator.setEnableShooting(false);
+                                    shootOrchestrator.setFixedMode(shootModeChooser.get() == ShootMode.FIXED);
+                                },
+                                shooter)
                         .ignoringDisable(true));
 
         // Kill subsystems trigger

@@ -1,15 +1,17 @@
 package frc.robot.subsystems.io;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 
 public interface TurretIO {
 
     void applyTalonFXConfig(TalonFXConfiguration configuration);
 
-    void setMotionMagic(MotionMagicExpoVoltage request);
+    void setControl(ControlRequest request);
 
-    void setVoltage(double newValue);
+    boolean hasHitForwardSoftLimit();
+
+    boolean hasHitReverseSoftLimit();
 
     double getPositionRotations();
 
@@ -33,6 +35,11 @@ public interface TurretIO {
 
         public boolean isAnyHit() {
             return frontLeft || backLeft || backRight;
+        }
+
+        public boolean hasFault() {
+            // If more than one switch is hit at the same time, it's likely a fault (e.g. wiring issue)
+            return (frontLeft ? 1 : 0) + (backLeft ? 1 : 0) + (backRight ? 1 : 0) > 1;
         }
     }
 }

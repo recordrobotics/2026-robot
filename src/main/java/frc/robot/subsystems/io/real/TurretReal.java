@@ -1,7 +1,7 @@
 package frc.robot.subsystems.io.real;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.RobotMap;
@@ -30,13 +30,17 @@ public class TurretReal implements TurretIO {
     }
 
     @Override
-    public void setMotionMagic(MotionMagicExpoVoltage request) {
-        turret.setControl(request);
+    public boolean hasHitForwardSoftLimit() {
+        return turret.getFault_ForwardSoftLimit().getValue().booleanValue();
     }
 
     @Override
-    public void setVoltage(double newValue) {
-        turret.setVoltage(newValue);
+    public boolean hasHitReverseSoftLimit() {
+        return turret.getFault_ReverseSoftLimit().getValue().booleanValue();
+    }
+
+    public void setControl(ControlRequest request) {
+        turret.setControl(request);
     }
 
     @Override

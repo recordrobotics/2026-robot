@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -44,21 +45,38 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
     private static final Time SYSID_TIMEOUT = Seconds.of(1.0);
 
+    private static final double RESET_VOLTAGE = 0.7;
+    private static final double RESET_VELOCITY_THRESHOLD = 0.001;
+    private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
+
     private static final double TWO_PI = 2.0 * Math.PI;
 
     private final TurretIO io;
     private final SysIdRoutine sysIdRoutine;
     private final MotionMagicExpoVoltage turretRequest;
+    private final VoltageOut voltageRequest;
     private double targetPositionRotations;
     private double targetVelocityRotationsPerSecond;
     private double targetAccelerationRotationsPerSecondSquared;
 
     private PositionStatus positionStatus = PositionStatus.UNKNOWN;
 
+    private enum ResetState {
+        NOT_RESETTING,
+        SPIN_CW,
+        SPIN_CCW,
+        WAIT_FOR_INTAKE
+    }
+
+    private ResetState resetState = ResetState.NOT_RESETTING;
+    private double lastMovementTime = 0;
+    private boolean overrideKnown = false;
+
     public Turret(TurretIO io) {
         this.io = io;
         turretRequest = new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS)
                 - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+        voltageRequest = new VoltageOut(0.0);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -99,7 +117,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                         SYSID_STEP_VOLTAGE,
                         SYSID_TIMEOUT,
                         state -> Logger.recordOutput("Turret/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
+                new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v.in(Volts))), null, this));
 
         SmartDashboard.putNumber("TURRET_FFMUL", 1.0);
 
@@ -107,17 +125,25 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     }
 
     @Override
+    public void setOverrideKnown(boolean overrideKnown) {
+        this.overrideKnown = overrideKnown;
+    }
+
+    @Override
     public void periodicManaged() {
         Constants.Turret.FF_MUL = SmartDashboard.getNumber("TURRET_FFMUL", 1.0);
 
-        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
-            io.setMotionMagic(turretRequest
-                    .withPosition(targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
-                    .withIgnoreSoftwareLimits(false)
-                    .withFeedForward(feedforward(
-                            SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
-                            SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001))));
+        if (getLimitSwitchStates().hasFault()) {
+            positionStatus = PositionStatus.SENSOR_FAULT;
+        } else if (positionStatus == PositionStatus.SENSOR_FAULT) {
+            positionStatus = PositionStatus.UNKNOWN;
         }
+
+        if (overrideKnown) {
+            positionStatus = PositionStatus.KNOWN;
+        }
+
+        setControl();
 
         RobotContainer.model.shooterModel.updateTurret(Units.rotationsToRadians(getPositionRotations()));
 
@@ -131,6 +157,84 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                 feedforward(
                         SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
                         SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001)));
+    }
+
+    private void setControl() {
+        if (positionStatus == PositionStatus.UNKNOWN) {
+            switch (resetState) {
+                case NOT_RESETTING:
+                    resetState = ResetState.SPIN_CW;
+                    io.setControl(voltageRequest.withOutput(-RESET_VOLTAGE));
+                    break;
+                case SPIN_CW:
+                    checkMagnet();
+                    if (isForceDisabled()
+                            || (!SimpleMath.isAFartherFromZeroThanB(getVoltage(), -RESET_VOLTAGE / 3)
+                                    && !io.hasHitReverseSoftLimit())
+                            || Math.abs(getVelocityRotationsPerSecond()) > RESET_VELOCITY_THRESHOLD) {
+                        lastMovementTime = Timer.getTimestamp();
+                    } else if (Timer.getTimestamp() - lastMovementTime > RESET_VELOCITY_THRESHOLD_TIME) {
+                        resetState = ResetState.SPIN_CCW;
+                        io.setControl(voltageRequest.withOutput(RESET_VOLTAGE));
+                    }
+                    break;
+                case SPIN_CCW:
+                    checkMagnet();
+                    if (isForceDisabled()
+                            || (!SimpleMath.isAFartherFromZeroThanB(getVoltage(), RESET_VOLTAGE / 3)
+                                    && !io.hasHitForwardSoftLimit())
+                            || Math.abs(getVelocityRotationsPerSecond()) > RESET_VELOCITY_THRESHOLD) {
+                        lastMovementTime = Timer.getTimestamp();
+                    } else if (Timer.getTimestamp() - lastMovementTime > RESET_VELOCITY_THRESHOLD_TIME) {
+                        if (RobotContainer.intake.isNearStartPosition()) {
+                            resetState = ResetState.WAIT_FOR_INTAKE;
+                        } else {
+                            positionStatus = PositionStatus.MECHANICAL_FAULT;
+                            resetState = ResetState.NOT_RESETTING;
+                        }
+                        io.setControl(voltageRequest.withOutput(0));
+                    }
+                    break;
+                case WAIT_FOR_INTAKE:
+                    if (!RobotContainer.intake.isNearStartPosition()) {
+                        resetState = ResetState.NOT_RESETTING;
+                    }
+                    break;
+            }
+        } else if (positionStatus == PositionStatus.KNOWN
+                && !isForceDisabled()
+                && !(SysIdManager.getProvider() instanceof SysId)) {
+            io.setControl(turretRequest
+                    .withPosition(targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
+                    .withIgnoreSoftwareLimits(false)
+                    .withFeedForward(feedforward(
+                            SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
+                            SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001))));
+        }
+    }
+
+    public void checkMagnet() {
+        LimitSwitchStates limitSwitchStates = getLimitSwitchStates();
+        boolean isCcw = io.getVoltage() < 0.1;
+        if (limitSwitchStates.frontLeft()) {
+            io.setPositionRotations(
+                    isCcw
+                            ? Constants.Turret.FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CCW
+                            : Constants.Turret.FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW);
+            positionStatus = PositionStatus.KNOWN;
+        } else if (limitSwitchStates.backLeft()) {
+            io.setPositionRotations(
+                    isCcw
+                            ? Constants.Turret.BACK_LEFT_MAGNET_MOTOR_ROTATIONS_CCW
+                            : Constants.Turret.BACK_LEFT_MAGNET_MOTOR_ROTATIONS_CW);
+            positionStatus = PositionStatus.KNOWN;
+        } else if (limitSwitchStates.backRight()) {
+            io.setPositionRotations(
+                    isCcw
+                            ? Constants.Turret.BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CCW
+                            : Constants.Turret.BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CW);
+            positionStatus = PositionStatus.KNOWN;
+        }
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
@@ -215,27 +319,15 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         this.targetVelocityRotationsPerSecond = Units.radiansToRotations(targetVelocityRadiansPerSecond);
         this.targetAccelerationRotationsPerSecondSquared =
                 Units.radiansToRotations(targetAccelerationRadiansPerSecondSquared);
-        if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
-            io.setMotionMagic(turretRequest
-                    .withPosition(this.targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
-                    .withIgnoreSoftwareLimits(false)
-                    .withFeedForward(feedforward(
-                            SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
-                            SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001))));
-        }
+        setControl();
     }
 
     @Override
     protected void onForceDisabledChange(boolean isNowForceDisabled) {
         if (isNowForceDisabled) {
-            io.setVoltage(0.0);
+            io.setControl(voltageRequest.withOutput(0));
         } else {
-            io.setMotionMagic(turretRequest
-                    .withPosition(this.targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
-                    .withIgnoreSoftwareLimits(false)
-                    .withFeedForward(feedforward(
-                            SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
-                            SimpleMath.rawDeadband(targetAccelerationRotationsPerSecondSquared, 0.0001))));
+            setControl();
         }
     }
 
@@ -266,7 +358,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     @Override
     public void resetToStartPosition() {
-        positionStatus = PositionStatus.KNOWN; // TODO: add magnet sensor homing
+        positionStatus = PositionStatus.UNKNOWN;
+        resetState = ResetState.NOT_RESETTING;
         io.setPositionRotations(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS)
                 - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
     }

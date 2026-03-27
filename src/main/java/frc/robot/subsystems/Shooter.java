@@ -62,6 +62,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
     private PositionStatus positionStatus = PositionStatus.UNKNOWN;
     private double lastMovementTime = 0;
+    private boolean overrideKnown = false;
 
     public Shooter(ShooterIO io) {
         this.io = io;
@@ -157,6 +158,11 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
 
+    @Override
+    public void setOverrideKnown(boolean overrideKnown) {
+        this.overrideKnown = overrideKnown;
+    }
+
     public void setTargetState(ShooterState targetState) {
         hoodTargetPositionRotations = Units.radiansToRotations(targetState.hoodAngle);
         flywheelTargetVelocityMps = targetState.flywheelVelocityMps;
@@ -193,6 +199,10 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     @Override
     public void periodicManaged() {
         RobotContainer.model.shooterModel.updateHood(Units.rotationsToRadians(getHoodPositionRotations()));
+
+        if (overrideKnown) {
+            positionStatus = PositionStatus.KNOWN;
+        }
 
         if (!isForceDisabled()
                 && positionStatus == PositionStatus.UNKNOWN

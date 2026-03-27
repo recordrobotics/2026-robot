@@ -77,6 +77,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     private boolean hasStartedMovingDown = false;
     private boolean runExtendHoming = false;
     private double lastMovementTime = 0;
+    private boolean overrideKnown = false;
 
     private final VoltageOut armVoltageRequest;
     private final VoltageOut wheelVoltageRequest;
@@ -200,6 +201,11 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
 
+    @Override
+    public void setOverrideKnown(boolean overrideKnown) {
+        this.overrideKnown = overrideKnown;
+    }
+
     public IntakeSim getSimIO() {
         if (io instanceof IntakeSim sim) {
             return sim;
@@ -211,6 +217,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     @Override
     public void periodicManaged() {
         RobotContainer.model.intakeModel.update(Units.rotationsToRadians(getArmPositionRotations()));
+
+        if (overrideKnown) {
+            positionStatus = PositionStatus.KNOWN;
+        }
 
         if (!isForceDisabled()
                 && (targetState == IntakeState.INTAKE

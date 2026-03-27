@@ -56,6 +56,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
 
     private PositionStatus positionStatus = PositionStatus.UNKNOWN;
     private double lastMovementTime = 0;
+    private boolean overrideKnown = false;
 
     public Climber(ClimberIO io) {
         this.io = io;
@@ -110,6 +111,11 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
 
+    @Override
+    public void setOverrideKnown(boolean overrideKnown) {
+        this.overrideKnown = overrideKnown;
+    }
+
     /** Height of the climber in meters */
     @AutoLogLevel(level = Level.SYSID)
     public double getCurrentHeight() {
@@ -130,6 +136,10 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     public void periodicManaged() {
         // Update mechanism
         RobotContainer.model.climberModel.update(getCurrentHeight());
+
+        if (overrideKnown) {
+            positionStatus = PositionStatus.KNOWN;
+        }
 
         if (!isForceDisabled()
                 && positionStatus == PositionStatus.UNKNOWN
