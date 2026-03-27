@@ -508,14 +508,14 @@ public final class Constants {
 
         public static final double ARM_DOWN_FF = -0.5;
 
-        public static final double WHEEL_INTAKE_VELOCITY_MPS = 1.6; // 4;
-        public static final double WHEEL_JAMMED_VELOCITY_MPS = 1.6; // 5;
-        public static final double WHEEL_EJECT_VELOCITY_MPS = -1.6; // -4;
+        public static final double WHEEL_INTAKE_VELOCITY_MPS = 3.76036363636;
+        public static final double WHEEL_JAMMED_VELOCITY_MPS = 3.76036363636;
+        public static final double WHEEL_EJECT_VELOCITY_MPS = -3.76036363636;
 
         public static final double ARM_GEAR_RATIO = 12.8571428571;
         public static final double ARM_GRAVITY_POSITION_OFFSET_ROTATIONS = -0.082671;
 
-        public static final double WHEEL_GEAR_RATIO = 3.0;
+        public static final double WHEEL_GEAR_RATIO = 3.05555555556;
 
         public static final Distance ROLLER_DIAMETER = Inches.of(1.875);
 
