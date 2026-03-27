@@ -1,6 +1,7 @@
 package frc.robot.utils.camera.positioned.poseestimation;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +17,7 @@ import java.util.Optional;
  * @param avgTagArea The average area of the detected tags.
  */
 public record CameraPoseEstimate(
-        Pose2d unconstrainedPose,
+        Pose3d unconstrainedPose,
         Optional<Pose2d> constrainedPose,
         List<TXTYMeasurement> txtyMeasurements,
         double timestampSeconds,

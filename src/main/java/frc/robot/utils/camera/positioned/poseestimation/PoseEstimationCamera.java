@@ -2,6 +2,7 @@ package frc.robot.utils.camera.positioned.poseestimation;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -57,6 +58,16 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * Whether to force using unconstrained measurements.
      */
     private boolean forceUnconstrained = false;
+
+    /**
+     * Whether to compute robot-to-camera transforms for each estimate based on a known robot pose.
+     */
+    private boolean computeRobotToCamera = false;
+
+    /**
+     * A known robot pose to use for calculating robot-to-camera transforms for each estimate.
+     */
+    private Pose3d knownRobotPose = Pose3d.kZero;
 
     /**
      * Maximum distance from last pose to accept vision measurements.
@@ -163,6 +174,23 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
     public void setForceUnconstrained(boolean forceUnconstrained) {
         this.forceUnconstrained = forceUnconstrained;
         SmartDashboard.putBoolean(getPrefix() + FORCE_UNCONSTRAINED_ENTRY, forceUnconstrained);
+    }
+
+    public void setComputeRobotToCamera(boolean computeRobotToCamera, Pose3d knownRobotPose) {
+        this.computeRobotToCamera = computeRobotToCamera;
+        this.knownRobotPose = knownRobotPose;
+    }
+
+    public void setComputeRobotToCamera(boolean computeRobotToCamera) {
+        this.computeRobotToCamera = computeRobotToCamera;
+    }
+
+    public boolean isComputingRobotToCamera() {
+        return computeRobotToCamera;
+    }
+
+    public Pose3d getKnownRobotPose() {
+        return knownRobotPose;
     }
 
     /**
@@ -295,7 +323,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
             Optional<Pose2d> pose;
 
             if (forceUnconstrained) {
-                pose = Optional.of(estimate.unconstrainedPose());
+                pose = Optional.of(estimate.unconstrainedPose().toPose2d());
             } else {
                 Optional<TXTYMeasurement> txtyMeasurement = findValidTXTY(estimate, txtyId);
 
@@ -338,6 +366,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         Optional<Pose2d> closestPose = fusion.getEstimatedPositionAt(estimate.timestampSeconds());
         if (closestPose.isPresent() && SimpleMath.isInField(closestPose.get())) {
             double distanceToClosest = estimate.unconstrainedPose()
+                    .toPose2d()
                     .getTranslation()
                     .getDistance(closestPose.get().getTranslation());
             stdDev += distanceToClosest / 2.0;
@@ -369,10 +398,25 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      */
     private Optional<Pose2d> choosePoseEstimate(CameraPoseEstimate estimate) {
         if (estimate.avgTagDist() <= unconstrainedMaxDistance) {
-            return Optional.of(estimate.unconstrainedPose());
+            return Optional.of(estimate.unconstrainedPose().toPose2d());
         } else {
-            return estimate.constrainedPose().or(() -> Optional.of(estimate.unconstrainedPose()));
+            return estimate.constrainedPose()
+                    .or(() -> Optional.of(estimate.unconstrainedPose().toPose2d()));
         }
+    }
+
+    /**
+     * Calculates the robot-to-camera transform for a given estimate based on a known robot pose.
+     * @param robotPose The known robot pose.
+     * @param estimate The camera pose estimate.
+     * @return The robot-to-camera transform.
+     */
+    private Transform3d getRobotToCamera(Pose3d robotPose, CameraPoseEstimate estimate) {
+        Transform3d currentRobotToCamera = getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                ? getRobotToCameraAt(estimate.timestampSeconds()).orElse(getRobotToCamera())
+                : getMechanismToCamera();
+        Pose3d cameraPose = estimate.unconstrainedPose().transformBy(currentRobotToCamera.inverse());
+        return cameraPose.minus(robotPose);
     }
 
     /**
