@@ -45,7 +45,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
     private static final Time SYSID_TIMEOUT = Seconds.of(1.0);
 
-    private static final double RESET_VOLTAGE = 0.7;
+    private static final double RESET_VOLTAGE = 0.3;
     private static final double RESET_VELOCITY_THRESHOLD = 0.001;
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 

@@ -17,9 +17,9 @@ public final class RobotMap {
     public static final class Turret {
         public static final int MOTOR_ID = 19;
 
-        public static final int FRONT_LEFT_LIMIT_SWITCH_ID = 2; // TODO
-        public static final int BACK_LEFT_LIMIT_SWITCH_ID = 3; // TODO
-        public static final int BACK_RIGHT_LIMIT_SWITCH_ID = 4; // TODO
+        public static final int FRONT_LEFT_LIMIT_SWITCH_ID = 3;
+        public static final int BACK_LEFT_LIMIT_SWITCH_ID = 2;
+        public static final int BACK_RIGHT_LIMIT_SWITCH_ID = 4;
 
         private Turret() {}
     }
