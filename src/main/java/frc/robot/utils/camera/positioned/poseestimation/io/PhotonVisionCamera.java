@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Vision.PhotonVisionSimPerformanceMode;
@@ -31,6 +32,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
  * PhotonVision protocol camera for pose estimation.
  */
 public class PhotonVisionCamera extends PoseEstimationCamera {
+
+    private static final int THROTTLE_FPS = 3;
 
     /**
      * The PhotonCamera instance.
@@ -172,6 +175,12 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
 
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
             RobotContainer.visionSim.adjustCamera(cameraSim, convertRobotToCamera(getRobotToCamera()));
+        }
+
+        if (DriverStation.isEnabled() || isForcingUnthrottled()) {
+            camera.setFPSLimit(-1);
+        } else {
+            camera.setFPSLimit(THROTTLE_FPS);
         }
     }
 

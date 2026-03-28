@@ -31,10 +31,14 @@ public class LimelightCamera extends PoseEstimationCamera {
     private static final double TIMEOUT_FPS = 3.0;
     private static final double TIMEOUT_SECONDS = 1.0 / TIMEOUT_FPS;
 
+    private static final int THROTTLE_VALUE = 150;
+
     private double lastHeartbeatIncrementTime = 0.0;
     private double lastHeartbeatValue = -1.0;
 
     private LimelightIMUMode imuMode = LimelightIMUMode.EXTERNAL_SEED;
+
+    private int throttle = 0;
 
     public enum LimelightIMUMode {
         /**
@@ -141,6 +145,14 @@ public class LimelightCamera extends PoseEstimationCamera {
         imuMode = mode;
     }
 
+    public int getThrottle() {
+        return throttle;
+    }
+
+    public void setThrottle(int framesToSkip) {
+        throttle = framesToSkip;
+    }
+
     /**
      * Sets the current pipeline index.
      * @param pipeline The pipeline index to set.
@@ -160,6 +172,12 @@ public class LimelightCamera extends PoseEstimationCamera {
             setLimelightIMUMode(LimelightIMUMode.INTERNAL_EXTERNAL_ASSIST);
         } else {
             setLimelightIMUMode(LimelightIMUMode.EXTERNAL_SEED);
+        }
+
+        if (DriverStation.isEnabled() || isForcingUnthrottled()) {
+            setThrottle(0);
+        } else {
+            setThrottle(THROTTLE_VALUE);
         }
 
         updateCameraOrientation();
@@ -221,6 +239,8 @@ public class LimelightCamera extends PoseEstimationCamera {
                 .plus(getLastRobotToMechanism().getRotation());
 
         LimelightHelpers.SetIMUMode(getName(), imuMode.num);
+
+        LimelightHelpers.SetThrottle(getName(), throttle);
 
         LimelightHelpers.SetRobotOrientation(
                 getName(),

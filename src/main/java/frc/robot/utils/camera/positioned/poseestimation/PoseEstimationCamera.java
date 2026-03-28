@@ -37,6 +37,10 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * <p>Useful for setting initial rotation on the field.
      */
     private static final String FORCE_UNCONSTRAINED_ENTRY = "ForceUnconstrained";
+    /**
+     * The SmartDashboard entry for forcing unthrottled measurements.
+     */
+    private static final String FORCE_UNTHROTTLED_ENTRY = "ForceUnthrottled";
 
     /**
      * List of estimates from the camera from last periodic.
@@ -58,6 +62,11 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * Whether to force using unconstrained measurements.
      */
     private boolean forceUnconstrained = false;
+
+    /**
+     * Whether to force unthrottled detections
+     */
+    private boolean forceUnthrottled = false;
 
     /**
      * Whether to compute robot-to-camera transforms for each estimate based on a known robot pose.
@@ -140,6 +149,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         // Allow configuration from SmartDashboard
         SmartDashboard.putBoolean(getPrefix() + USE_ROTATION_ENTRY, useRotation);
         SmartDashboard.putBoolean(getPrefix() + FORCE_UNCONSTRAINED_ENTRY, forceUnconstrained);
+        SmartDashboard.putBoolean(getPrefix() + FORCE_UNTHROTTLED_ENTRY, forceUnthrottled);
     }
 
     /**
@@ -158,6 +168,10 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         return forceUnconstrained;
     }
 
+    public boolean isForcingUnthrottled() {
+        return forceUnthrottled;
+    }
+
     /**
      * Sets whether to trust rotation measurements.
      * @param useRotation True to trust rotation measurements, false to ignore them.
@@ -174,6 +188,11 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
     public void setForceUnconstrained(boolean forceUnconstrained) {
         this.forceUnconstrained = forceUnconstrained;
         SmartDashboard.putBoolean(getPrefix() + FORCE_UNCONSTRAINED_ENTRY, forceUnconstrained);
+    }
+
+    public void setForceUnthrottled(boolean forceUnthrottled) {
+        this.forceUnthrottled = forceUnthrottled;
+        SmartDashboard.putBoolean(getPrefix() + FORCE_UNTHROTTLED_ENTRY, forceUnthrottled);
     }
 
     public void setComputeRobotToCamera(boolean computeRobotToCamera, Pose3d knownRobotPose) {
