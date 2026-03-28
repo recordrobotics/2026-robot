@@ -5,9 +5,21 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Hopper"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "TrenchDDEPO"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Mixer"
           }
         }
       ]

@@ -13,7 +13,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "TrenchD"
+            "pathName": "TrenchOutpost"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Mixer"
           }
         }
       ]

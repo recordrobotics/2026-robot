@@ -6,6 +6,7 @@ import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -37,6 +38,29 @@ public final class AutoPath {
                 "Intake",
                 Commands.run(() -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake));
         NamedCommands.registerCommand(
+                "IntakeOff",
+                Commands.runOnce(() -> RobotContainer.intake.setState(IntakeState.OUT), RobotContainer.intake));
+        NamedCommands.registerCommand(
+                "Hopper",
+                Commands.run(
+                                () -> AutoControlModifier.getDefault()
+                                        .drive(new ChassisSpeeds(0, 0, 3), new double[4], new double[4]),
+                                RobotContainer.drivetrain)
+                        .withTimeout(0.5)
+                        .andThen(
+                                Commands.run(
+                                                () -> AutoControlModifier.getDefault()
+                                                        .drive(
+                                                                new ChassisSpeeds(0, 0, -3),
+                                                                new double[4],
+                                                                new double[4]),
+                                                RobotContainer.drivetrain)
+                                        .withTimeout(0.5),
+                                Commands.runOnce(
+                                        () -> AutoControlModifier.getDefault()
+                                                .drive(new ChassisSpeeds(0, 0, 0), new double[4], new double[4]),
+                                        RobotContainer.drivetrain)));
+        NamedCommands.registerCommand(
                 "IntakeDepot",
                 Commands.run(() -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake)
                         .withTimeout(1.2));
@@ -44,10 +68,9 @@ public final class AutoPath {
                 "Mixer",
                 Commands.repeatingSequence(
                         Commands.runOnce(
-                                () -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake),
-                        Commands.waitSeconds(0.5),
-                        Commands.runOnce(
                                 () -> RobotContainer.intake.setState(IntakeState.RETRACTED), RobotContainer.intake),
+                        Commands.waitSeconds(0.5),
+                        Commands.runOnce(() -> RobotContainer.intake.setState(IntakeState.OUT), RobotContainer.intake),
                         Commands.waitSeconds(0.5)));
 
         // Configures auto builder

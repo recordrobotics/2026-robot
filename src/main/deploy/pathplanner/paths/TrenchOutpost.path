@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.56,
-        "y": 7.418
+        "x": 3.55,
+        "y": 0.713
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.259202017771514,
-        "y": 7.400275595964456
+        "x": 2.893363421805725,
+        "y": 0.6331687449069544
       },
       "isLocked": false,
-      "linkedName": "DepotTrench"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.587132530120481,
-        "y": 7.1493975903614455
+        "x": 8.444843373493974,
+        "y": 0.9752409638554218
       },
       "prevControl": {
-        "x": 6.00366387986089,
-        "y": 7.346132339489077
+        "x": 8.474270866459193,
+        "y": 0.7269789597996622
       },
       "nextControl": {
-        "x": 7.3976126790792,
-        "y": 6.876118796878062
+        "x": 8.415415880528755,
+        "y": 1.2235029679111813
       },
       "isLocked": false,
       "linkedName": null
@@ -33,104 +33,94 @@
     {
       "anchor": {
         "x": 7.898457831325301,
-        "y": 6.898060240963855
+        "y": 3.9038674698795175
       },
       "prevControl": {
-        "x": 7.713249035804403,
-        "y": 7.078913027282447
+        "x": 8.785586949621862,
+        "y": 3.7661262416200953
       },
       "nextControl": {
-        "x": 8.39546633436872,
-        "y": 6.412741105084623
+        "x": 6.849025267826569,
+        "y": 4.0668089485103955
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.571312410841653,
-        "y": 4.300242510699002
+        "x": 7.54877108433735,
+        "y": 0.84410843373494
       },
       "prevControl": {
-        "x": 8.576761310416163,
-        "y": 4.073249463892299
+        "x": 8.358958467913112,
+        "y": 1.1348101035839853
       },
       "nextControl": {
-        "x": 6.5278173737760525,
-        "y": 4.5358249633641075
+        "x": 6.303712056910118,
+        "y": 0.3973713631867677
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.946014234875446,
-        "y": 7.655468564650059
+        "x": 3.8005662650602403,
+        "y": 0.49442168674698794
       },
       "prevControl": {
-        "x": 7.433786049488178,
-        "y": 7.614243807079081
+        "x": 4.370980571826377,
+        "y": 0.32173871432243983
       },
       "nextControl": {
-        "x": 4.219435921622435,
-        "y": 7.703310425674756
+        "x": 3.254857332252497,
+        "y": 0.6596255385404604
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.0137710843373493,
-        "y": 6.898060240963855
+        "x": 3.0465542168674697,
+        "y": 0.9752409638554218
       },
       "prevControl": {
-        "x": 3.8224216867469876,
-        "y": 7.214963855421687
+        "x": 3.057125871434181,
+        "y": 0.7217925833439931
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotTrenchShoot"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.7,
+      "waypointRelativePos": 0.568464730290482,
       "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 2.2,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 1.2489626556016513,
+      "rotationDegrees": -76.0
     },
     {
-      "waypointRelativePos": 2.9,
-      "rotationDegrees": 59.99999999999999
+      "waypointRelativePos": 1.61410788381749,
+      "rotationDegrees": -74.41606211244417
     },
     {
-      "waypointRelativePos": 4.1,
-      "rotationDegrees": 180.0
-    }
-  ],
-  "constraintZones": [
+      "waypointRelativePos": 2.178423236514492,
+      "rotationDegrees": 80.0
+    },
     {
-      "name": "Constraints Zone",
-      "minWaypointRelativePos": 2.05,
-      "maxWaypointRelativePos": 2.85,
-      "constraints": {
-        "maxVelocity": 2.0,
-        "maxAcceleration": 8.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
+      "waypointRelativePos": 3.257261410788354,
+      "rotationDegrees": 0.0
     }
   ],
+  "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "Intake",
-      "waypointRelativePos": 1.1265508684863346,
-      "endWaypointRelativePos": 3.9255583126550815,
+      "waypointRelativePos": 0.8486352357320084,
+      "endWaypointRelativePos": 3.3498759305210917,
       "command": {
         "type": "named",
         "data": {
@@ -140,7 +130,7 @@
     },
     {
       "name": "IntakeOff",
-      "waypointRelativePos": 4.183622828784115,
+      "waypointRelativePos": 3.379652605459053,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -160,7 +150,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 170.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,

@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
@@ -24,6 +25,8 @@ public class XboxControls implements AbstractControl {
             Constants.Control.SPIN_KP, 0, Constants.Control.SPIN_KD, Constants.Control.SPIN_CONSTRAINTS);
     private double spinOutput = 0;
     private double spinTarget = 0;
+
+    private double lastSpinTime = -1000;
 
     private Transform2d lastVelocity = new Transform2d();
     private Transform2d lastAcceleration = new Transform2d();
@@ -50,13 +53,19 @@ public class XboxControls implements AbstractControl {
             target = new Rotation2d(spinTarget);
         } else {
             spinTarget = target.getRadians();
+            lastSpinTime = Timer.getTimestamp();
         }
-        spinOutput = spinController.calculate(
-                RobotContainer.poseSensorFusion
-                        .getEstimatedPosition()
-                        .getRotation()
-                        .getRadians(),
-                target.getRadians());
+
+        if (hasTarget || Timer.getTimestamp() - lastSpinTime < 1.8) {
+            spinOutput = spinController.calculate(
+                    RobotContainer.poseSensorFusion
+                            .getEstimatedPosition()
+                            .getRotation()
+                            .getRadians(),
+                    target.getRadians());
+        } else {
+            spinOutput = 0;
+        }
 
         Pair<Double, Double> xy = getXYOriented();
 
