@@ -14,6 +14,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
@@ -60,6 +61,10 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      * The standard deviation to use for the independent swerve pose estimator corrections
      */
     private static final double ISPE_STD_DEV = 0.7;
+
+    private static final int[] BLUE_HUB_TAG_FILTER = new int[] {18, 19, 20, 21, 24, 25, 26, 27};
+
+    private static final int[] RED_HUB_TAG_FILTER = new int[] {2, 3, 4, 5, 8, 9, 10, 11};
 
     public enum RTCMode {
         OFF(Pose2d.kZero),
@@ -160,6 +165,8 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
     private Rotation2d lastRawNavAngle = Rotation2d.kZero;
 
+    private double lastTurretVisionTime = 0;
+
     /**
      * Creates a new PoseSensorFusion subsystem
      * @param initialPose the initial pose of the robot on the field
@@ -200,6 +207,9 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         EnumSet.allOf(RTCMode.class).forEach(v -> rtcModeChooser.addOption(v.name(), v));
         rtcModeChooser.addDefaultOption(RTCMode.OFF.name(), RTCMode.OFF);
+
+        SmartDashboard.putBoolean("Camera/FilterTags", false);
+        SmartDashboard.putBoolean("Camera/PrioritizeTurret", false);
     }
 
     public record DeferredPoseEstimation(
@@ -310,6 +320,30 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         RTCMode rtcMode = rtcModeChooser.get();
         Pose2d currentEstimate = getEstimatedPosition();
+
+        boolean filterTags = SmartDashboard.getBoolean("Camera/FilterTags", false);
+        boolean prioritizeTurret = SmartDashboard.getBoolean("Camera/PrioritizeTurret", false);
+
+        if (prioritizeTurret) {
+            if (turretCamera.hasVision()) {
+                lastTurretVisionTime = Timer.getTimestamp();
+            }
+        }
+
+        if (prioritizeTurret && Timer.getTimestamp() - lastTurretVisionTime < 0.1) {
+            cameras.stream().forEach(camera -> {
+                if (camera != turretCamera) {
+                    camera.setIgnore(true);
+                }
+            });
+        } else {
+            cameras.stream().forEach(camera -> {
+                if (camera != turretCamera) {
+                    camera.setIgnore(false);
+                }
+            });
+        }
+
         cameras.stream().forEach(camera -> {
             if (rtcMode != null && rtcMode != RTCMode.OFF && rtcMode != RTCMode.APPLY) {
                 camera.setComputeRobotToCamera(true, new Pose3d(rtcMode.getPose()));
@@ -319,8 +353,19 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                 }
                 camera.setComputeRobotToCamera(false);
             }
-            if (camera.hasRobotToMechanism()
-                    || camera.getDynamicPositionMode() != DynamicPositionMode.MECHANISM_TO_CAMERA) {
+
+            if (filterTags) {
+                camera.setFilter(
+                        DriverStationUtils.getCurrentAlliance() == Alliance.Red
+                                ? RED_HUB_TAG_FILTER
+                                : BLUE_HUB_TAG_FILTER);
+            } else {
+                camera.setFilter(Constants.Game.ALL_TAGS);
+            }
+
+            if ((camera.hasRobotToMechanism()
+                            || camera.getDynamicPositionMode() != DynamicPositionMode.MECHANISM_TO_CAMERA)
+                    && !camera.isIgnored()) {
                 camera.addVisionMeasurements(this, currentEstimate, targetTXTYId);
             }
         });

@@ -58,6 +58,10 @@ public final class Constants {
         public static final AprilTagFieldLayout APRILTAG_LAYOUT =
                 AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark);
 
+        public static final int[] ALL_TAGS = Constants.Game.APRILTAG_LAYOUT.getTags().stream()
+                .mapToInt(t -> t.ID)
+                .toArray();
+
         public interface IGamePosition {
             Pose2d getPose();
 

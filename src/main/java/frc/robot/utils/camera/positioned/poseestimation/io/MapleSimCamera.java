@@ -60,6 +60,11 @@ public class MapleSimCamera extends PoseEstimationCamera {
         this.addNoise = addNoise;
     }
 
+    @Override
+    public void setFilter(int[] filter) {
+        // noop
+    }
+
     /**
      * Checks if the camera is connected.
      * <p>In simulation, the camera is always connected.

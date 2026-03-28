@@ -57,6 +57,8 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      */
     private double lastStdDev = PoseSensorFusion.MAX_MEASUREMENT_STD_DEVS;
 
+    private boolean ignored = false;
+
     /**
      * Whether to trust rotation measurements.
      */
@@ -173,6 +175,14 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      */
     public boolean isUsingRotation() {
         return useRotation;
+    }
+
+    public boolean isIgnored() {
+        return ignored;
+    }
+
+    public void setIgnore(boolean ignore) {
+        ignored = ignore;
     }
 
     /**
@@ -329,6 +339,8 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * @return A list of camera pose estimates.
      */
     protected abstract List<CameraPoseEstimate> makeEstimates();
+
+    public abstract void setFilter(int[] filter);
 
     /**
      * Periodically updates the cached pose estimates from the camera.
@@ -517,6 +529,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
 
         Logger.recordOutput(prefix + "HasVision", hasVision());
         Logger.recordOutput(prefix + "ToCamera", getMechanismToCamera());
+        Logger.recordOutput(prefix + "Ignored", isIgnored());
 
         // Update from SmartDashboard
         useRotation = SmartDashboard.getBoolean(prefix + USE_ROTATION_ENTRY, true);

@@ -139,6 +139,11 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
         camera.setPipelineIndex(pipeline);
     }
 
+    @Override
+    public void setFilter(int[] filter) {
+        // todo
+    }
+
     /**
      * Makes pose estimates from the camera.
      * @return A list of camera pose estimates.

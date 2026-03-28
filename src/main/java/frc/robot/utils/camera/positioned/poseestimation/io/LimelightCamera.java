@@ -40,6 +40,8 @@ public class LimelightCamera extends PoseEstimationCamera {
 
     private int throttle = 0;
 
+    private int[] filter = Constants.Game.ALL_TAGS;
+
     public enum LimelightIMUMode {
         /**
          * No internal IMU processing. MT2 uses interpolated yaw from robot's gyro sent via SetRobotOrientation().
@@ -242,6 +244,8 @@ public class LimelightCamera extends PoseEstimationCamera {
 
         LimelightHelpers.SetThrottle(getName(), throttle);
 
+        LimelightHelpers.SetFiducialIDFiltersOverride(getName(), filter);
+
         LimelightHelpers.SetRobotOrientation(
                 getName(),
                 Units.radiansToDegrees(orientation.getZ()),
@@ -250,6 +254,11 @@ public class LimelightCamera extends PoseEstimationCamera {
                 useVelocity() ? pitchRate : 0,
                 use3DRotation() ? Units.radiansToDegrees(orientation.getX()) : 0,
                 useVelocity() ? rollRate : 0);
+    }
+
+    @Override
+    public void setFilter(int[] filter) {
+        this.filter = filter;
     }
 
     /**
