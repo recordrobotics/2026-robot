@@ -1,10 +1,14 @@
 package frc.robot.utils.camera.positioned.poseestimation;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.PoseSensorFusion;
 import frc.robot.utils.SimpleMath;
@@ -101,6 +105,17 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * <p>Higher values mean less trust in rotation measurements.
      */
     private double rotationStdDevMultiplier;
+
+    private LinearFilter rtcFilterX = LinearFilter.movingAverage(10);
+    private LinearFilter rtcFilterY = LinearFilter.movingAverage(10);
+    private LinearFilter rtcFilterZ = LinearFilter.movingAverage(10);
+    private LinearFilter rtcFilterQX = LinearFilter.movingAverage(10);
+    private LinearFilter rtcFilterQY = LinearFilter.movingAverage(10);
+    private LinearFilter rtcFilterQZ = LinearFilter.movingAverage(10);
+    private LinearFilter rtcFilterQW = LinearFilter.movingAverage(10);
+
+    private Transform3d lastRTC = Transform3d.kZero;
+    private double lastRTCTime = Timer.getTimestamp();
 
     /**
      * Constructs a PoseEstimationCamera with the given name and physical camera type and default settings.
@@ -339,8 +354,8 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         for (CameraPoseEstimate estimate : cachedEstimates) {
 
             if (computeRobotToCamera) {
-                Transform3d robotToCamera = getRobotToCamera(knownRobotPose, estimate);
-                setMechanismToCamera(robotToCamera);
+                lastRTC = getRobotToCamera(knownRobotPose, estimate);
+                lastRTCTime = Timer.getTimestamp();
             }
 
             double stdDev = calculateStdDevs(fusion, estimate);
@@ -376,6 +391,12 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
                                         ? stdDev * rotationStdDevMultiplier
                                         : PoseSensorFusion.MAX_MEASUREMENT_STD_DEVS));
             }
+        }
+    }
+
+    public void applyCalculatedRobotToCamera() {
+        if (Timer.getTimestamp() - lastRTCTime < 2.0) {
+            setMechanismToCamera(lastRTC);
         }
     }
 
@@ -440,8 +461,28 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         Transform3d currentRobotToCamera = getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
                 ? getRobotToCameraAt(estimate.timestampSeconds()).orElse(getRobotToCamera())
                 : getMechanismToCamera();
-        Pose3d cameraPose = estimate.unconstrainedPose().transformBy(currentRobotToCamera.inverse());
-        return cameraPose.minus(robotPose);
+        Pose3d cameraPose = estimate.unconstrainedPose().transformBy(currentRobotToCamera);
+        Logger.recordOutput(getPrefix() + "CM", cameraPose);
+
+        Transform3d rtc = cameraPose.minus(robotPose);
+
+        double filteredX = rtcFilterX.calculate(rtc.getX());
+        double filteredY = rtcFilterY.calculate(rtc.getY());
+        double filteredZ = rtcFilterZ.calculate(rtc.getZ());
+        Quaternion q = rtc.getRotation().getQuaternion();
+        double filteredQX = rtcFilterQX.calculate(q.getX());
+        double filteredQY = rtcFilterQY.calculate(q.getY());
+        double filteredQZ = rtcFilterQZ.calculate(q.getZ());
+        double filteredQW = rtcFilterQW.calculate(q.getW());
+
+        Transform3d filteredRtc = new Transform3d(
+                filteredX,
+                filteredY,
+                filteredZ,
+                new Rotation3d(new Quaternion(filteredQW, filteredQX, filteredQY, filteredQZ)));
+
+        Logger.recordOutput(getPrefix() + "RTC", filteredRtc);
+        return filteredRtc;
     }
 
     /**

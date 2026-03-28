@@ -1,9 +1,11 @@
 package frc.robot.subsystems;
 
+import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -31,6 +33,7 @@ import frc.robot.utils.camera.GenericCamera;
 import frc.robot.utils.camera.PhysicalCamera;
 import frc.robot.utils.camera.positioned.PositionedCamera.DynamicPositionMode;
 import frc.robot.utils.camera.positioned.poseestimation.PoseEstimationCamera;
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -39,11 +42,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * Subsystem for fusing multiple pose sensors (odometry, IMU, vision) into a single robot pose estimation
  */
 public final class PoseSensorFusion extends ManagedSubsystemBase {
+
+    public static LoggedDashboardChooser<RTCMode> rtcModeChooser = new LoggedDashboardChooser<>("Camera/RTCMode");
 
     /**
      * The maximum standard deviation for a vision measurement (used to indicate an untrusted measurement)
@@ -54,6 +60,31 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      * The standard deviation to use for the independent swerve pose estimator corrections
      */
     private static final double ISPE_STD_DEV = 0.7;
+
+    public enum RTCMode {
+        OFF(Pose2d.kZero),
+        CORNER_DEPOT_SIDE_FORWARD(new Pose2d(0.439, 7.614, Rotation2d.kZero)),
+        CORNER_DEPOT_SIDE_RIGHT(new Pose2d(0.439, 7.614, Rotation2d.kCW_90deg)),
+        CORNER_DEPOT_SIDE_BACK(new Pose2d(0.439, 7.614, Rotation2d.k180deg)),
+        CORNER_DEPOT_SIDE_LEFT(new Pose2d(0.439, 7.614, Rotation2d.kCCW_90deg)),
+        CORNER_OUTPOST_SIDE_FORWARD(new Pose2d(0.439, FlippingUtil.fieldSizeY - 7.614, Rotation2d.kZero)),
+        CORNER_OUTPOST_SIDE_RIGHT(new Pose2d(0.439, FlippingUtil.fieldSizeY - 7.614, Rotation2d.kCW_90deg)),
+        CORNER_OUTPOST_SIDE_BACK(new Pose2d(0.439, FlippingUtil.fieldSizeY - 7.614, Rotation2d.k180deg)),
+        CORNER_OUTPOST_SIDE_LEFT(new Pose2d(0.439, FlippingUtil.fieldSizeY - 7.614, Rotation2d.kCCW_90deg)),
+        APPLY(Pose2d.kZero);
+
+        private final Pose2d bluePose;
+        private final Pose2d redPose;
+
+        private RTCMode(Pose2d pose) {
+            this.bluePose = pose;
+            this.redPose = FlippingUtil.flipFieldPose(pose);
+        }
+
+        public Pose2d getPose() {
+            return DriverStationUtils.getCurrentAlliance() == Alliance.Red ? redPose : bluePose;
+        }
+    }
 
     /**
      * The NAV sensor used for orientation and acceleration data
@@ -166,6 +197,9 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         turretCamera.setUnconstrainedMaxDistance(0);
         turretCamera.setDynamicPositionMode(DynamicPositionMode.MECHANISM_TO_CAMERA);
+
+        EnumSet.allOf(RTCMode.class).forEach(v -> rtcModeChooser.addOption(v.name(), v));
+        rtcModeChooser.addDefaultOption(RTCMode.OFF.name(), RTCMode.OFF);
     }
 
     public record DeferredPoseEstimation(
@@ -274,8 +308,17 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         /* perform any multi-camera logic like txty selection (currently manual) */
 
+        RTCMode rtcMode = rtcModeChooser.get();
         Pose2d currentEstimate = getEstimatedPosition();
         cameras.stream().forEach(camera -> {
+            if (rtcMode != null && rtcMode != RTCMode.OFF && rtcMode != RTCMode.APPLY) {
+                camera.setComputeRobotToCamera(true, new Pose3d(rtcMode.getPose()));
+            } else if (camera.isComputingRobotToCamera()) {
+                if (rtcMode == RTCMode.APPLY) {
+                    camera.applyCalculatedRobotToCamera();
+                }
+                camera.setComputeRobotToCamera(false);
+            }
             if (camera.hasRobotToMechanism()
                     || camera.getDynamicPositionMode() != DynamicPositionMode.MECHANISM_TO_CAMERA) {
                 camera.addVisionMeasurements(this, currentEstimate, targetTXTYId);
