@@ -158,10 +158,10 @@
     },
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 3.2734638757596235,
+      "minWaypointRelativePos": 4.328535980148867,
       "maxWaypointRelativePos": 5.1,
       "constraints": {
-        "maxVelocity": 2.0,
+        "maxVelocity": 0.5,
         "maxAcceleration": 8.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -198,7 +198,7 @@
     },
     {
       "name": "Mixer",
-      "waypointRelativePos": 4.083727211343649,
+      "waypointRelativePos": 4.286848635235719,
       "endWaypointRelativePos": 4.602295746117469,
       "command": {
         "type": "named",
@@ -212,7 +212,7 @@
       "waypointRelativePos": 4.910195813639397,
       "endWaypointRelativePos": null,
       "command": {
-        "type": "parallel",
+        "type": "sequential",
         "data": {
           "commands": [
             {

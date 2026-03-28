@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "IntakeOff"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "TrenchD"

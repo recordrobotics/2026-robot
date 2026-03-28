@@ -79,6 +79,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     private double lastMovementTime = 0;
     private boolean overrideKnown = false;
 
+    private double lastNotNegativePositionTime = 0;
+
     private final VoltageOut armVoltageRequest;
     private final VoltageOut wheelVoltageRequest;
 
@@ -253,6 +255,15 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             }
         }
 
+        if (!isForceDisabled() && positionStatus == PositionStatus.KNOWN) {
+            if (getArmPositionRotations() > Units.degreesToRotations(-1.5)) {
+                lastNotNegativePositionTime = Timer.getTimestamp();
+            } else if (Timer.getTimestamp() - lastNotNegativePositionTime > 0.9) {
+                lastNotNegativePositionTime = Timer.getTimestamp();
+                io.setArmPositionRotations(Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS));
+            }
+        }
+
         setWheelControl();
     }
 
@@ -300,6 +311,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         } else {
             io.setArmLeaderControl(armLeaderRequest
                     .withPosition(armTargetRotations)
+                    .withLimitForwardMotion(targetState == IntakeState.EJECT
+                            || targetState == IntakeState.INTAKE
+                            || targetState == IntakeState.OUT)
                     .withFeedForward(
                             targetState == IntakeState.INTAKE
                                             || targetState == IntakeState.EJECT
@@ -370,6 +384,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
                 getWheelVelocityMps(), wheelTargetVelocityMps, WHEEL_VELOCITY_TOLERANCE_MPS);
     }
 
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public boolean atGoal() {
         return armAtGoal() && wheelAtGoal();
     }

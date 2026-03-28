@@ -5,8 +5,10 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -21,10 +23,17 @@ import org.littletonrobotics.junction.Logger;
 
 public final class AutoPath {
 
+    private static final ProfiledPIDController spinController = new ProfiledPIDController(
+            Constants.Control.SPIN_KP, 0, Constants.Control.SPIN_KD, Constants.Control.SPIN_CONSTRAINTS);
+
     private AutoPath() {}
 
     @SuppressWarnings("java:S109")
     public static void initialize() {
+
+        spinController.enableContinuousInput(-Math.PI, Math.PI);
+        spinController.setTolerance(Units.degreesToRadians(6));
+
         RobotConfig config = Constants.Swerve.PP_DEFAULT_CONFIG;
         try {
             config = RobotConfig.fromGUISettings();
@@ -44,18 +53,37 @@ public final class AutoPath {
                 "Hopper",
                 Commands.run(
                                 () -> AutoControlModifier.getDefault()
-                                        .drive(new ChassisSpeeds(0, 0, 3), new double[4], new double[4]),
+                                        .drive(new ChassisSpeeds(0, 0, 10), new double[4], new double[4]),
                                 RobotContainer.drivetrain)
-                        .withTimeout(0.5)
+                        .withTimeout(0.35)
                         .andThen(
                                 Commands.run(
                                                 () -> AutoControlModifier.getDefault()
                                                         .drive(
-                                                                new ChassisSpeeds(0, 0, -3),
+                                                                new ChassisSpeeds(0, 0, -10),
                                                                 new double[4],
                                                                 new double[4]),
                                                 RobotContainer.drivetrain)
                                         .withTimeout(0.5),
+                                Commands.run(
+                                                () -> AutoControlModifier.getDefault()
+                                                        .drive(
+                                                                new ChassisSpeeds(
+                                                                        0,
+                                                                        0,
+                                                                        spinController.calculate(
+                                                                                RobotContainer.poseSensorFusion
+                                                                                        .getEstimatedPosition()
+                                                                                        .getRotation()
+                                                                                        .getRadians(),
+                                                                                DriverStationUtils.getCurrentAlliance()
+                                                                                                == Alliance.Red
+                                                                                        ? Math.PI
+                                                                                        : 0)),
+                                                                new double[4],
+                                                                new double[4]),
+                                                RobotContainer.drivetrain)
+                                        .until(() -> spinController.atGoal()),
                                 Commands.runOnce(
                                         () -> AutoControlModifier.getDefault()
                                                 .drive(new ChassisSpeeds(0, 0, 0), new double[4], new double[4]),
@@ -63,7 +91,7 @@ public final class AutoPath {
         NamedCommands.registerCommand(
                 "IntakeDepot",
                 Commands.run(() -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake)
-                        .withTimeout(1.2));
+                        .withTimeout(2.2));
         NamedCommands.registerCommand(
                 "Mixer",
                 Commands.repeatingSequence(
