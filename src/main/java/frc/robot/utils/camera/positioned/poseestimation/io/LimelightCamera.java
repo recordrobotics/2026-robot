@@ -190,8 +190,8 @@ public class LimelightCamera extends PoseEstimationCamera {
 
         CameraPoseEstimate estimate = new CameraPoseEstimate(
                 getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
-                        ? new Pose3d(measurements.mt1().pose)
-                        : calculateRobotPose(new Pose3d(measurements.mt1().pose), measurements.mt1().timestampSeconds),
+                        ? measurements.mt13d()
+                        : calculateRobotPose(measurements.mt13d(), measurements.mt1().timestampSeconds),
                 Optional.ofNullable(measurements.mt2())
                         .map(m -> getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
                                 ? m.pose
@@ -257,13 +257,14 @@ public class LimelightCamera extends PoseEstimationCamera {
      * @return The measurements from the Limelight.
      */
     private Measurements getMeasurements() {
+        Pose3d pose3d = LimelightHelpers.getBotPose3d_wpiBlue(getName());
         PoseEstimate measurement = LimelightHelpers.getBotPoseEstimate_wpiBlue(getName());
         PoseEstimate measurementM2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(getName());
         List<TXTYMeasurement> txtyMeasurement = measurement == null
                 ? List.of()
                 : pnpDistanceTrigSolveStrategy(measurement.timestampSeconds, measurement.tagCount);
 
-        return new Measurements(measurement, measurementM2, txtyMeasurement);
+        return new Measurements(measurement, pose3d, measurementM2, txtyMeasurement);
     }
 
     /**
@@ -332,8 +333,9 @@ public class LimelightCamera extends PoseEstimationCamera {
     /**
      * A record representing the measurements from the Limelight.
      * @param mt1 The first pose estimate measurement.
+     * @param mt13d The first 3D pose estimate measurement.
      * @param mt2 The second pose estimate measurement.
      * @param txty The list of TXTY measurements.
      */
-    private record Measurements(PoseEstimate mt1, PoseEstimate mt2, List<TXTYMeasurement> txty) {}
+    private record Measurements(PoseEstimate mt1, Pose3d mt13d, PoseEstimate mt2, List<TXTYMeasurement> txty) {}
 }
