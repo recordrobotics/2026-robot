@@ -41,8 +41,8 @@ public final class RobotMap {
     public static final class Feeder {
         public static final int MOTOR_ID = 15;
 
-        public static final int BOTTOM_BEAM_BREAK_ID = 0; // TODO
-        public static final int TOP_BEAM_BREAK_ID = 1; // TODO
+        public static final int BOTTOM_BEAM_BREAK_ID = 0;
+        public static final int TOP_BEAM_BREAK_ID = 1;
 
         private Feeder() {}
     }
