@@ -171,7 +171,7 @@ public class LimelightCamera extends PoseEstimationCamera {
     public List<CameraPoseEstimate> makeEstimates() {
 
         if (DriverStation.isEnabled()) {
-            setLimelightIMUMode(LimelightIMUMode.INTERNAL_EXTERNAL_ASSIST);
+            setLimelightIMUMode(LimelightIMUMode.INTERNAL_MT1_ASSIST);
         } else {
             setLimelightIMUMode(LimelightIMUMode.EXTERNAL_SEED);
         }

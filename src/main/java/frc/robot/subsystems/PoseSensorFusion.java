@@ -204,6 +204,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         turretCamera.setUnconstrainedMaxDistance(0);
         turretCamera.setDynamicPositionMode(DynamicPositionMode.MECHANISM_TO_CAMERA);
+        turretCamera.setForceUnconstrainedWhenDisabled(true);
 
         EnumSet.allOf(RTCMode.class).forEach(v -> rtcModeChooser.addOption(v.name(), v));
         rtcModeChooser.addDefaultOption(RTCMode.OFF.name(), RTCMode.OFF);

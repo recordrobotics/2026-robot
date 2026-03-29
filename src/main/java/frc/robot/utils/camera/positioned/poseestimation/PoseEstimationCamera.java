@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.PoseSensorFusion;
@@ -41,6 +42,9 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * <p>Useful for setting initial rotation on the field.
      */
     private static final String FORCE_UNCONSTRAINED_ENTRY = "ForceUnconstrained";
+
+    private static final String FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY = "ForceUnconstrainedWhenDisabled";
+
     /**
      * The SmartDashboard entry for forcing unthrottled measurements.
      */
@@ -68,6 +72,8 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * Whether to force using unconstrained measurements.
      */
     private boolean forceUnconstrained = false;
+
+    private boolean forceUnconstrainedWhenDisabled = false;
 
     /**
      * Whether to force unthrottled detections
@@ -167,6 +173,8 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         SmartDashboard.putBoolean(getPrefix() + USE_ROTATION_ENTRY, useRotation);
         SmartDashboard.putBoolean(getPrefix() + FORCE_UNCONSTRAINED_ENTRY, forceUnconstrained);
         SmartDashboard.putBoolean(getPrefix() + FORCE_UNTHROTTLED_ENTRY, forceUnthrottled);
+        SmartDashboard.putBoolean(
+                getPrefix() + FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY, forceUnconstrainedWhenDisabled);
     }
 
     /**
@@ -197,6 +205,10 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         return forceUnthrottled;
     }
 
+    public boolean isForcingUnconstrainedWhenDisabled() {
+        return forceUnconstrainedWhenDisabled;
+    }
+
     /**
      * Sets whether to trust rotation measurements.
      * @param useRotation True to trust rotation measurements, false to ignore them.
@@ -218,6 +230,12 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
     public void setForceUnthrottled(boolean forceUnthrottled) {
         this.forceUnthrottled = forceUnthrottled;
         SmartDashboard.putBoolean(getPrefix() + FORCE_UNTHROTTLED_ENTRY, forceUnthrottled);
+    }
+
+    public void setForceUnconstrainedWhenDisabled(boolean forceUnconstrainedWhenDisabled) {
+        this.forceUnconstrainedWhenDisabled = forceUnconstrainedWhenDisabled;
+        SmartDashboard.putBoolean(
+                getPrefix() + FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY, forceUnconstrainedWhenDisabled);
     }
 
     public void setComputeRobotToCamera(boolean computeRobotToCamera, Pose3d knownRobotPose) {
@@ -374,7 +392,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
 
             Optional<Pose2d> pose;
 
-            if (forceUnconstrained) {
+            if (forceUnconstrained || (forceUnconstrainedWhenDisabled && DriverStation.isDisabled())) {
                 pose = Optional.of(estimate.unconstrainedPose().toPose2d());
             } else {
                 Optional<TXTYMeasurement> txtyMeasurement = findValidTXTY(estimate, txtyId);
@@ -534,5 +552,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         // Update from SmartDashboard
         useRotation = SmartDashboard.getBoolean(prefix + USE_ROTATION_ENTRY, true);
         forceUnconstrained = SmartDashboard.getBoolean(prefix + FORCE_UNCONSTRAINED_ENTRY, false);
+        forceUnconstrainedWhenDisabled =
+                SmartDashboard.getBoolean(prefix + FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY, false);
     }
 }
