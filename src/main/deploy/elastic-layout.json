@@ -120,6 +120,19 @@
               "period": 0.06,
               "data_type": "boolean"
             }
+          },
+          {
+            "title": "ShiftTime",
+            "x": 608.0,
+            "y": 512.0,
+            "width": 224.0,
+            "height": 192.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/ShiftTime",
+              "period": 0.06,
+              "data_type": "double"
+            }
           }
         ]
       }
@@ -133,7 +146,7 @@
             "x": 768.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 256.0,
+            "height": 300.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -177,6 +190,19 @@
                   "period": 0.06,
                   "data_type": "boolean"
                 }
+              },
+              {
+                "title": "ForceUnconstrainedWhenDisabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Camera/left-back/ForceUnconstrainedWhenDisabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
               }
             ]
           },
@@ -185,7 +211,7 @@
             "x": 1024.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 256.0,
+            "height": 300.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -229,6 +255,19 @@
                   "period": 0.06,
                   "data_type": "boolean"
                 }
+              },
+              {
+                "title": "ForceUnconstrainedWhenDisabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Camera/limelight-fr/ForceUnconstrainedWhenDisabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
               }
             ]
           },
@@ -237,7 +276,7 @@
             "x": 896.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 256.0,
+            "height": 300.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -281,6 +320,19 @@
                   "period": 0.06,
                   "data_type": "boolean"
                 }
+              },
+              {
+                "title": "ForceUnconstrainedWhenDisabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Camera/right-back/ForceUnconstrainedWhenDisabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
               }
             ]
           },
@@ -289,7 +341,7 @@
             "x": 1152.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 256.0,
+            "height": 300.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -333,6 +385,19 @@
                   "period": 0.06,
                   "data_type": "boolean"
                 }
+              },
+              {
+                "title": "ForceUnconstrainedWhenDisabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Camera/limelight-trt/ForceUnconstrainedWhenDisabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
               }
             ]
           },
@@ -341,7 +406,7 @@
             "x": 640.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 256.0,
+            "height": 300.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -382,6 +447,19 @@
                 "type": "Toggle Switch",
                 "properties": {
                   "topic": "/SmartDashboard/Camera/limelight-bk/UseRotation",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "ForceUnconstrainedWhenDisabled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "/SmartDashboard/Camera/limelight-bk/ForceUnconstrainedWhenDisabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -469,7 +547,7 @@
             "title": "FLYWHEEL_RATIO",
             "x": 768.0,
             "y": 128.0,
-            "width": 288.0,
+            "width": 512.0,
             "height": 128.0,
             "type": "Number Slider",
             "properties": {
@@ -578,6 +656,213 @@
               "max_value": 0.3,
               "divisions": 5,
               "update_continuously": true
+            }
+          },
+          {
+            "title": "ShiftTime",
+            "x": 416.0,
+            "y": 384.0,
+            "width": 224.0,
+            "height": 128.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/ShiftTime",
+              "period": 0.06,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "HubActive",
+            "x": 1024.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/HubActive",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "FilterTags",
+            "x": 512.0,
+            "y": 512.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Camera/FilterTags",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "PrioritizeTurret",
+            "x": 1152.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Camera/PrioritizeTurret",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Tab 3",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "limelight-trt-processed",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 352.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-trt-processed",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "left-back-processed",
+            "x": 512.0,
+            "y": 32.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/left-back-processed",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "limelight-bk-raw",
+            "x": 768.0,
+            "y": 32.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-bk-raw",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "limelight-fr-processed",
+            "x": 1120.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/limelight-fr-processed",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "right-back-processed",
+            "x": 512.0,
+            "y": 288.0,
+            "width": 448.0,
+            "height": 384.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/right-back-processed",
+              "period": 0.06,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "OverrideKnown",
+            "x": 1088.0,
+            "y": 352.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Positioned/Turret/OverrideKnown",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "RTCMode",
+            "x": 1216.0,
+            "y": 288.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Camera/RTCMode",
+              "period": 0.06,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "ForceUnthrottled",
+            "x": 352.0,
+            "y": 544.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Camera/limelight-trt/ForceUnthrottled",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "ForceUnthrottled",
+            "x": 128.0,
+            "y": 544.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Camera/limelight-fr/ForceUnthrottled",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "ForceUnthrottled",
+            "x": 0.0,
+            "y": 576.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Camera/left-back/ForceUnthrottled",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "ForceUnthrottled",
+            "x": 1024.0,
+            "y": 544.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/SmartDashboard/Camera/right-back/ForceUnthrottled",
+              "period": 0.06,
+              "data_type": "boolean"
             }
           }
         ]
