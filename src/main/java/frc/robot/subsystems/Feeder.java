@@ -7,6 +7,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -26,12 +28,22 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
 
     private static final double VELOCITY_TOLERANCE_RPS = 15.0; // TODO
 
+    private static final double BEAM_BREAK_FAULT_TIME_SECONDS = 0.5;
+
     private final FeederIO io;
     private final SysIdRoutine sysIdRoutine;
     private final MotionMagicVelocityVoltage request;
 
     private double targetVelocityRps;
     private FeederState targetState = FeederState.OFF;
+
+    private final Alert bottomBeambreakFaultAlert = new Alert("Feeder bottom beambreak fault", Alert.AlertType.kError);
+    private final Alert topBeambreakFaultAlert = new Alert("Feeder top beambreak fault", Alert.AlertType.kError);
+
+    private double lastBottomBeamNotbrokenTime = 0;
+    private double lastTopBeamNotbrokenTime = 0;
+    private boolean bottomBeamFaulted = false;
+    private boolean topBeamFaulted = false;
 
     public enum FeederState {
         OFF,
@@ -100,6 +112,33 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
     }
 
     @Override
+    public void periodicManaged() {
+        if (!io.isBottomBeamBroken()) {
+            lastBottomBeamNotbrokenTime = Timer.getTimestamp();
+        }
+
+        if (!io.isTopBeamBroken()) {
+            lastTopBeamNotbrokenTime = Timer.getTimestamp();
+        }
+
+        if (Timer.getTimestamp() - lastBottomBeamNotbrokenTime > BEAM_BREAK_FAULT_TIME_SECONDS) {
+            bottomBeamFaulted = true;
+            bottomBeambreakFaultAlert.set(true);
+        } else {
+            bottomBeamFaulted = false;
+            bottomBeambreakFaultAlert.set(false);
+        }
+
+        if (Timer.getTimestamp() - lastTopBeamNotbrokenTime > BEAM_BREAK_FAULT_TIME_SECONDS) {
+            topBeamFaulted = true;
+            topBeambreakFaultAlert.set(true);
+        } else {
+            topBeamFaulted = false;
+            topBeambreakFaultAlert.set(false);
+        }
+    }
+
+    @Override
     protected void onForceDisabledChange(boolean isNowForceDisabled) {
         if (isNowForceDisabled) {
             io.setVoltage(0.0);
@@ -115,12 +154,12 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public boolean isBottomBeamBroken() {
-        return io.isBottomBeamBroken();
+        return io.isBottomBeamBroken() && !bottomBeamFaulted;
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public boolean isTopBeamBroken() {
-        return io.isTopBeamBroken();
+        return io.isTopBeamBroken() && !topBeamFaulted;
     }
 
     public boolean atGoal() {

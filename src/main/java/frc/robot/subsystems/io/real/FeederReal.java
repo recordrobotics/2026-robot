@@ -59,8 +59,6 @@ public class FeederReal implements FeederIO {
 
     @Override
     public boolean isBottomBeamBroken() {
-        //return false;
-        // TODO: sad broken :(
         return !bottomBeambreak.get();
     }
 
