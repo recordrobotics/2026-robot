@@ -6,9 +6,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
-import edu.wpi.first.hal.SimBoolean;
-import edu.wpi.first.hal.SimDevice;
-import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -16,6 +13,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.DIOSim;
 import frc.robot.Constants;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.Turret;
@@ -52,16 +50,9 @@ public class TurretSim implements TurretIO {
             Constants.Turret.MAGNETIC_LIMIT_SWITCH_TRIGGER_ANGLE_RAD,
             Constants.Turret.MAGNETIC_LIMIT_SWITCH_DETRIGGER_ANGLE_RAD);
 
-    private final SimDevice frontLeftLimitSwitchSim =
-            SimDevice.create("DigitalInput", RobotMap.Turret.FRONT_LEFT_LIMIT_SWITCH_ID);
-    private final SimDevice backLeftLimitSwitchSim =
-            SimDevice.create("DigitalInput", RobotMap.Turret.BACK_LEFT_LIMIT_SWITCH_ID);
-    private final SimDevice backRightLimitSwitchSim =
-            SimDevice.create("DigitalInput", RobotMap.Turret.BACK_RIGHT_LIMIT_SWITCH_ID);
-
-    private final SimBoolean frontLeftLimitSwitchSimValue;
-    private final SimBoolean backLeftLimitSwitchSimValue;
-    private final SimBoolean backRightLimitSwitchSimValue;
+    private final DIOSim frontLeftLimitSwitchSim;
+    private final DIOSim backLeftLimitSwitchSim;
+    private final DIOSim backRightLimitSwitchSim;
 
     public TurretSim(double periodicDt) {
         this.periodicDt = periodicDt;
@@ -72,26 +63,12 @@ public class TurretSim implements TurretIO {
         turretSimState.Orientation = ChassisReference.CounterClockwise_Positive;
         turretSimState.setMotorType(MotorType.KrakenX44);
 
-        if (frontLeftLimitSwitchSim != null)
-            frontLeftLimitSwitchSimValue = frontLeftLimitSwitchSim.createBoolean("Value", Direction.kOutput, true);
-        else frontLeftLimitSwitchSimValue = null;
-
-        if (frontLeftLimitSwitchSim != null) frontLeftLimitSwitch.setSimDevice(frontLeftLimitSwitchSim);
-        else frontLeftLimitSwitch.close();
-
-        if (backLeftLimitSwitchSim != null)
-            backLeftLimitSwitchSimValue = backLeftLimitSwitchSim.createBoolean("Value", Direction.kOutput, true);
-        else backLeftLimitSwitchSimValue = null;
-
-        if (backLeftLimitSwitchSim != null) backLeftLimitSwitch.setSimDevice(backLeftLimitSwitchSim);
-        else backLeftLimitSwitch.close();
-
-        if (backRightLimitSwitchSim != null)
-            backRightLimitSwitchSimValue = backRightLimitSwitchSim.createBoolean("Value", Direction.kOutput, true);
-        else backRightLimitSwitchSimValue = null;
-
-        if (backRightLimitSwitchSim != null) backRightLimitSwitch.setSimDevice(backRightLimitSwitchSim);
-        else backRightLimitSwitch.close();
+        frontLeftLimitSwitchSim = new DIOSim(frontLeftLimitSwitch);
+        backLeftLimitSwitchSim = new DIOSim(backLeftLimitSwitch);
+        backRightLimitSwitchSim = new DIOSim(backRightLimitSwitch);
+        frontLeftLimitSwitchSim.setIsInput(true);
+        backLeftLimitSwitchSim.setIsInput(true);
+        backRightLimitSwitchSim.setIsInput(true);
     }
 
     @Override
@@ -156,26 +133,15 @@ public class TurretSim implements TurretIO {
     @Override
     public LimitSwitchStates getLimitSwitchStates() {
         return new LimitSwitchStates(
-                frontLeftLimitSwitchSim != null && !frontLeftLimitSwitchSimValue.get(),
-                backLeftLimitSwitchSim != null && !backLeftLimitSwitchSimValue.get(),
-                backRightLimitSwitchSim != null && !backRightLimitSwitchSimValue.get());
+                !frontLeftLimitSwitch.get(), !backLeftLimitSwitch.get(), !backRightLimitSwitch.get());
     }
 
     @Override
     public void close() {
         turret.close();
-        if (frontLeftLimitSwitchSim != null) {
-            frontLeftLimitSwitchSim.close();
-            frontLeftLimitSwitch.close();
-        }
-        if (backLeftLimitSwitchSim != null) {
-            backLeftLimitSwitchSim.close();
-            backLeftLimitSwitch.close();
-        }
-        if (backRightLimitSwitchSim != null) {
-            backRightLimitSwitchSim.close();
-            backRightLimitSwitch.close();
-        }
+        frontLeftLimitSwitch.close();
+        backLeftLimitSwitch.close();
+        backRightLimitSwitch.close();
     }
 
     @Override
@@ -208,12 +174,9 @@ public class TurretSim implements TurretIO {
         backLeftLimitSwitchSimModel.update(turretPositionRad);
         backRightLimitSwitchSimModel.update(turretPositionRad);
 
-        if (frontLeftLimitSwitchSimValue != null)
-            frontLeftLimitSwitchSimValue.set(!frontLeftLimitSwitchSimModel.isTriggered());
-        if (backLeftLimitSwitchSimValue != null)
-            backLeftLimitSwitchSimValue.set(!backLeftLimitSwitchSimModel.isTriggered());
-        if (backRightLimitSwitchSimValue != null)
-            backRightLimitSwitchSimValue.set(!backRightLimitSwitchSimModel.isTriggered());
+        frontLeftLimitSwitchSim.setValue(!frontLeftLimitSwitchSimModel.isTriggered());
+        backLeftLimitSwitchSim.setValue(!backLeftLimitSwitchSimModel.isTriggered());
+        backRightLimitSwitchSim.setValue(!backRightLimitSwitchSimModel.isTriggered());
     }
 
     private static class MagneticLimitSwitch {

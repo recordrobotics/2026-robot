@@ -52,10 +52,8 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
     private boolean bottomBeamFaulted = false;
     private boolean topBeamFaulted = false;
 
-    private CircularEventCounter bottomBeamBrokenCounter =
-            new CircularEventCounter(BEAM_BREAK_DISCONNECTED_BROKEN_COUNT, 1.0);
-    private CircularEventCounter topBeamBrokenCounter =
-            new CircularEventCounter(BEAM_BREAK_DISCONNECTED_BROKEN_COUNT, 1.0);
+    private CircularEventCounter bottomBeamBrokenCounter = new CircularEventCounter(BEAM_BREAK_BROKEN_MAX_COUNT, 1.0);
+    private CircularEventCounter topBeamBrokenCounter = new CircularEventCounter(BEAM_BREAK_BROKEN_MAX_COUNT, 1.0);
     private boolean lastBottomBeamBroken = false;
     private boolean lastTopBeamBroken = false;
 
@@ -169,10 +167,14 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
 
         if (bottomCount >= BEAM_BREAK_DISCONNECTED_BROKEN_COUNT && topCount == 0) {
             topBeambreakDisconnectedAlert.set(true);
+        } else if (isTopBeamBroken()) {
+            topBeambreakDisconnectedAlert.set(false);
         }
 
         if (topCount >= BEAM_BREAK_DISCONNECTED_BROKEN_COUNT && bottomCount == 0) {
             bottomBeambreakDisconnectedAlert.set(true);
+        } else if (isBottomBeamBroken()) {
+            bottomBeambreakDisconnectedAlert.set(false);
         }
     }
 

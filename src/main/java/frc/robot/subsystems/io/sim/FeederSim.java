@@ -5,21 +5,26 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
-import edu.wpi.first.hal.SimBoolean;
-import edu.wpi.first.hal.SimDevice;
-import edu.wpi.first.hal.SimDevice.Direction;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.simulation.DIOSim;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
+import frc.robot.subsystems.RobotModel.FuelManager.LineSegment;
 import frc.robot.subsystems.io.FeederIO;
 
 public class FeederSim implements FeederIO {
+
+    private static final LineSegment topBeambreakLine = new LineSegment(
+            new Translation3d(0.186525, 0.254875, 0.324841), new Translation3d(0.186525, -0.000875, 0.324841));
+    private static final LineSegment bottomBeambreakLine = new LineSegment(
+            new Translation3d(0.157081, 0.254875, 0.230972), new Translation3d(0.157081, -0.000875, 0.230972));
 
     private final double periodicDt;
 
@@ -35,10 +40,8 @@ public class FeederSim implements FeederIO {
 
     private final DigitalInput bottomBeambreak = new DigitalInput(RobotMap.Feeder.BOTTOM_BEAM_BREAK_ID);
     private final DigitalInput topBeambreak = new DigitalInput(RobotMap.Feeder.TOP_BEAM_BREAK_ID);
-    private final SimDevice bottomBeambreakSim = SimDevice.create("DigitalInput", RobotMap.Feeder.BOTTOM_BEAM_BREAK_ID);
-    private final SimDevice topBeambreakSim = SimDevice.create("DigitalInput", RobotMap.Feeder.TOP_BEAM_BREAK_ID);
-    private final SimBoolean bottomBeambreakSimValue;
-    private final SimBoolean topBeambreakSimValue;
+    private final DIOSim bottomBeambreakSim;
+    private final DIOSim topBeambreakSim;
 
     public FeederSim(double periodicDt) {
         this.periodicDt = periodicDt;
@@ -48,22 +51,10 @@ public class FeederSim implements FeederIO {
         feederSimState.Orientation = ChassisReference.Clockwise_Positive;
         feederSimState.setMotorType(TalonFXSimState.MotorType.KrakenX60);
 
-        if (bottomBeambreakSim != null)
-            bottomBeambreakSimValue = bottomBeambreakSim.createBoolean("Value", Direction.kOutput, true);
-        else bottomBeambreakSimValue = null;
-
-        if (bottomBeambreakSim != null) bottomBeambreak.setSimDevice(bottomBeambreakSim);
-        else bottomBeambreak.close();
-
-        if (topBeambreakSim != null)
-            topBeambreakSimValue = topBeambreakSim.createBoolean("Value", Direction.kOutput, true);
-        else topBeambreakSimValue = null;
-
-        if (topBeambreakSim != null) topBeambreak.setSimDevice(topBeambreakSim);
-        else topBeambreak.close();
-
-        SmartDashboard.putBoolean("B", false);
-        SmartDashboard.putBoolean("T", false);
+        bottomBeambreakSim = new DIOSim(bottomBeambreak);
+        topBeambreakSim = new DIOSim(topBeambreak);
+        bottomBeambreakSim.setIsInput(true);
+        topBeambreakSim.setIsInput(true);
     }
 
     @Override
@@ -103,24 +94,12 @@ public class FeederSim implements FeederIO {
 
     @Override
     public boolean isBottomBeamBroken() {
-        return SmartDashboard.getBoolean("B", false);
-        // if (bottomBeambreakSim != null) return !bottomBeambreakSimValue.get();
-        // else return false;
+        return !bottomBeambreak.get();
     }
 
     @Override
     public boolean isTopBeamBroken() {
-        return SmartDashboard.getBoolean("T", false);
-        // if (topBeambreakSim != null) return !topBeambreakSimValue.get();
-        // else return false;
-    }
-
-    public void setBottomBeamBroken(boolean newValue) {
-        if (bottomBeambreakSimValue != null) bottomBeambreakSimValue.set(!newValue);
-    }
-
-    public void setTopBeamBroken(boolean newValue) {
-        if (topBeambreakSimValue != null) topBeambreakSimValue.set(!newValue);
+        return !topBeambreak.get();
     }
 
     @Override
@@ -137,6 +116,9 @@ public class FeederSim implements FeederIO {
                 Constants.Feeder.GEAR_RATIO * Units.radiansToRotations(feederSimModel.getAngularVelocityRadPerSec()));
         feederSimState.setRotorAcceleration(Constants.Feeder.GEAR_RATIO
                 * Units.radiansToRotations(feederSimModel.getAngularAccelerationRadPerSecSq()));
+
+        bottomBeambreakSim.setValue(!RobotContainer.model.fuelManager.hasFuelIntersecting(bottomBeambreakLine));
+        topBeambreakSim.setValue(!RobotContainer.model.fuelManager.hasFuelIntersecting(topBeambreakLine));
     }
 
     public boolean isOuttaking() {
@@ -146,13 +128,7 @@ public class FeederSim implements FeederIO {
     @Override
     public void close() {
         feeder.close();
-        if (bottomBeambreakSim != null) {
-            bottomBeambreakSim.close();
-            bottomBeambreak.close();
-        }
-        if (topBeambreakSim != null) {
-            topBeambreakSim.close();
-            topBeambreak.close();
-        }
+        bottomBeambreak.close();
+        topBeambreak.close();
     }
 }

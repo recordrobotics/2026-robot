@@ -221,6 +221,29 @@ public final class RobotModel extends ManagedSubsystemBase {
             ANGULAR
         }
 
+        public record LineSegment(Translation3d start, Translation3d end) {
+
+            public boolean isIntersectingWithSphere(Translation3d center, double radius) {
+                Translation3d d = end.minus(start);
+                Translation3d f = start.minus(center);
+
+                double a = d.dot(d);
+                double b = 2 * f.dot(d);
+                double c = f.dot(f) - radius * radius;
+
+                double discriminant = b * b - 4 * a * c;
+                if (discriminant < 0) {
+                    return false; // no intersection
+                }
+
+                discriminant = Math.sqrt(discriminant);
+                double t1 = (-b - discriminant) / (2 * a);
+                double t2 = (-b + discriminant) / (2 * a);
+
+                return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1);
+            }
+        }
+
         public record FuelNode(
                 Pose3d pose,
                 ImmutableIntArray intakeNextNodes,
@@ -385,6 +408,11 @@ public final class RobotModel extends ManagedSubsystemBase {
                         velocity = Transform3d.kZero;
                     }
                 }
+            }
+
+            public boolean intersects(LineSegment lineSegment) {
+                final double fuelDiameter = 0.15; // 15 cm
+                return lineSegment.isIntersectingWithSphere(pose.getTranslation(), fuelDiameter / 2);
             }
         }
 
@@ -1058,6 +1086,10 @@ public final class RobotModel extends ManagedSubsystemBase {
                                     fuelFieldPose.getRotation())
                             .withTouchGroundHeight(FUEL_TOUCH_GROUND_HEIGHT)
                             .enableBecomesGamePieceOnFieldAfterTouchGround());
+        }
+
+        public boolean hasFuelIntersecting(LineSegment lineSegment) {
+            return fuelObjects.stream().anyMatch(fuel -> fuel.intersects(lineSegment));
         }
 
         public void moveFuel(ManagedFuelNode fromNode, ManagedFuelNode toNode) {
