@@ -14,6 +14,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.FeederIO;
@@ -60,6 +61,9 @@ public class FeederSim implements FeederIO {
 
         if (topBeambreakSim != null) topBeambreak.setSimDevice(topBeambreakSim);
         else topBeambreak.close();
+
+        SmartDashboard.putBoolean("B", false);
+        SmartDashboard.putBoolean("T", false);
     }
 
     @Override
@@ -99,14 +103,16 @@ public class FeederSim implements FeederIO {
 
     @Override
     public boolean isBottomBeamBroken() {
-        if (bottomBeambreakSim != null) return !bottomBeambreakSimValue.get();
-        else return false;
+        return SmartDashboard.getBoolean("B", false);
+        // if (bottomBeambreakSim != null) return !bottomBeambreakSimValue.get();
+        // else return false;
     }
 
     @Override
     public boolean isTopBeamBroken() {
-        if (topBeambreakSim != null) return !topBeambreakSimValue.get();
-        else return false;
+        return SmartDashboard.getBoolean("T", false);
+        // if (topBeambreakSim != null) return !topBeambreakSimValue.get();
+        // else return false;
     }
 
     public void setBottomBeamBroken(boolean newValue) {

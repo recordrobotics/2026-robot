@@ -17,6 +17,7 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.FeederIO;
 import frc.robot.subsystems.io.sim.FeederSim;
 import frc.robot.utils.AutoLogLevel;
+import frc.robot.utils.CircularEventCounter;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
@@ -29,6 +30,8 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
     private static final double VELOCITY_TOLERANCE_RPS = 15.0; // TODO
 
     private static final double BEAM_BREAK_FAULT_TIME_SECONDS = 0.5;
+    private static final int BEAM_BREAK_DISCONNECTED_BROKEN_COUNT = 3;
+    private static final int BEAM_BREAK_BROKEN_MAX_COUNT = 10; // no way we are getting above 10 bps
 
     private final FeederIO io;
     private final SysIdRoutine sysIdRoutine;
@@ -39,11 +42,22 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
 
     private final Alert bottomBeambreakFaultAlert = new Alert("Feeder bottom beambreak fault", Alert.AlertType.kError);
     private final Alert topBeambreakFaultAlert = new Alert("Feeder top beambreak fault", Alert.AlertType.kError);
+    private final Alert bottomBeambreakDisconnectedAlert =
+            new Alert("Feeder bottom beambreak disconnected", Alert.AlertType.kError);
+    private final Alert topBeambreakDisconnectedAlert =
+            new Alert("Feeder top beambreak disconnected", Alert.AlertType.kError);
 
     private double lastBottomBeamNotbrokenTime = 0;
     private double lastTopBeamNotbrokenTime = 0;
     private boolean bottomBeamFaulted = false;
     private boolean topBeamFaulted = false;
+
+    private CircularEventCounter bottomBeamBrokenCounter =
+            new CircularEventCounter(BEAM_BREAK_DISCONNECTED_BROKEN_COUNT, 1.0);
+    private CircularEventCounter topBeamBrokenCounter =
+            new CircularEventCounter(BEAM_BREAK_DISCONNECTED_BROKEN_COUNT, 1.0);
+    private boolean lastBottomBeamBroken = false;
+    private boolean lastTopBeamBroken = false;
 
     public enum FeederState {
         OFF,
@@ -135,6 +149,30 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
         } else {
             topBeamFaulted = false;
             topBeambreakFaultAlert.set(false);
+        }
+
+        if (isBottomBeamBroken() && !lastBottomBeamBroken) {
+            bottomBeamBrokenCounter.recordEvent();
+        }
+        lastBottomBeamBroken = isBottomBeamBroken();
+
+        if (isTopBeamBroken() && !lastTopBeamBroken) {
+            topBeamBrokenCounter.recordEvent();
+        }
+        lastTopBeamBroken = isTopBeamBroken();
+
+        int topCount = topBeamBrokenCounter.getEventCount();
+        int bottomCount = bottomBeamBrokenCounter.getEventCount();
+
+        Logger.recordOutput("Feeder/TopBPS", topCount);
+        Logger.recordOutput("Feeder/BottomBPS", bottomCount);
+
+        if (bottomCount >= BEAM_BREAK_DISCONNECTED_BROKEN_COUNT && topCount == 0) {
+            topBeambreakDisconnectedAlert.set(true);
+        }
+
+        if (topCount >= BEAM_BREAK_DISCONNECTED_BROKEN_COUNT && bottomCount == 0) {
+            bottomBeambreakDisconnectedAlert.set(true);
         }
     }
 
