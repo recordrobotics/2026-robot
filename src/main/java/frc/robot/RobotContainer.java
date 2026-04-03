@@ -132,7 +132,7 @@ public final class RobotContainer {
         return instance;
     }
 
-    /** The container for the robot. Contains subsystems, OI devices, and commands. */
+    /** The container for the robot. Contains subsystems, IO devices, and commands. */
     private static void initialize() {
 
         RobotController.setBrownoutVoltage(5.75);
