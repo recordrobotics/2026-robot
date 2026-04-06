@@ -3,6 +3,7 @@ package frc.robot.subsystems.io;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
+import edu.wpi.first.units.measure.Current;
 
 public interface IntakeIO {
     void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration);
@@ -37,11 +38,11 @@ public interface IntakeIO {
 
     double getArmFollowerVoltage();
 
-    double getWheelCurrentDrawAmps();
+    Current getWheelCurrentDraw();
 
-    double getArmLeaderCurrentDrawAmps();
+    Current getArmLeaderCurrentDraw();
 
-    double getArmFollowerCurrentDrawAmps();
+    Current getArmFollowerCurrentDraw();
 
     void setWheelPositionMeters(double newValue);
 

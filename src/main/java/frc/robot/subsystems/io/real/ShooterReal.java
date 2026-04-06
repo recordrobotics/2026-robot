@@ -5,6 +5,7 @@ import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ShooterIO;
 
@@ -118,18 +119,18 @@ public class ShooterReal implements ShooterIO {
     }
 
     @Override
-    public double getFlywheelLeaderCurrentDrawAmps() {
-        return flywheelLeader.getSupplyCurrent().getValueAsDouble();
+    public Current getFlywheelLeaderCurrentDraw() {
+        return flywheelLeader.getSupplyCurrent().getValue();
     }
 
     @Override
-    public double getFlywheelFollowerCurrentDrawAmps() {
-        return flywheelFollower.getSupplyCurrent().getValueAsDouble();
+    public Current getFlywheelFollowerCurrentDraw() {
+        return flywheelFollower.getSupplyCurrent().getValue();
     }
 
     @Override
-    public double getHoodCurrentDrawAmps() {
-        return hood.getSupplyCurrent().getValueAsDouble();
+    public Current getHoodCurrentDraw() {
+        return hood.getSupplyCurrent().getValue();
     }
 
     @Override

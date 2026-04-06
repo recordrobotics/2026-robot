@@ -1,9 +1,12 @@
 package frc.robot.subsystems.io.stub;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.subsystems.io.IntakeIO;
 
 public class IntakeStub implements IntakeIO {
@@ -88,18 +91,18 @@ public class IntakeStub implements IntakeIO {
     }
 
     @Override
-    public double getWheelCurrentDrawAmps() {
-        return 0.0;
+    public Current getWheelCurrentDraw() {
+        return Amps.zero();
     }
 
     @Override
-    public double getArmLeaderCurrentDrawAmps() {
-        return 0.0;
+    public Current getArmLeaderCurrentDraw() {
+        return Amps.zero();
     }
 
     @Override
-    public double getArmFollowerCurrentDrawAmps() {
-        return 0.0;
+    public Current getArmFollowerCurrentDraw() {
+        return Amps.zero();
     }
 
     @Override

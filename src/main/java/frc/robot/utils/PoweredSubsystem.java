@@ -1,6 +1,8 @@
 package frc.robot.utils;
 
+import edu.wpi.first.units.measure.Current;
+
 public interface PoweredSubsystem {
 
-    double getCurrentDrawAmps();
+    Current getCurrentDraw();
 }

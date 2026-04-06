@@ -31,7 +31,6 @@ import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.ModuleConstants;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
-import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
@@ -46,7 +45,7 @@ import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.Logger;
 
 /** Represents a swerve drive style drivetrain. */
-public final class Drivetrain extends ManagedSubsystemBase implements PoweredSubsystem {
+public final class Drivetrain extends ManagedSubsystemBase {
 
     private static final int FL = 0;
     private static final int FR = 1;
@@ -146,10 +145,10 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
             // Register the drivetrain simulation to the default simulation world
             SimulatedArena.getInstance().addDriveTrainSimulation(swerveDriveSimulation);
 
-            frontLeftIO = new SwerveModuleSim(swerveDriveSimulation.getModules()[FL], frontLeftConstants);
-            frontRightIO = new SwerveModuleSim(swerveDriveSimulation.getModules()[FR], frontRightConstants);
-            backLeftIO = new SwerveModuleSim(swerveDriveSimulation.getModules()[BL], backLeftConstants);
-            backRightIO = new SwerveModuleSim(swerveDriveSimulation.getModules()[BR], backRightConstants);
+            frontLeftIO = new SwerveModuleSim(swerveDriveSimulation.getModules()[FL], frontLeftConstants, 0, 1);
+            frontRightIO = new SwerveModuleSim(swerveDriveSimulation.getModules()[FR], frontRightConstants, 2, 3);
+            backLeftIO = new SwerveModuleSim(swerveDriveSimulation.getModules()[BL], backLeftConstants, 6, 7);
+            backRightIO = new SwerveModuleSim(swerveDriveSimulation.getModules()[BR], backRightConstants, 4, 5);
         }
 
         frontLeft = new SwerveModule(frontLeftConstants, frontLeftIO);
@@ -509,14 +508,6 @@ public final class Drivetrain extends ManagedSubsystemBase implements PoweredSub
         backRight.close();
         frontLeft.close();
         frontRight.close();
-    }
-
-    @Override
-    public double getCurrentDrawAmps() {
-        return frontLeft.getCurrentDrawAmps()
-                + frontRight.getCurrentDrawAmps()
-                + backLeft.getCurrentDrawAmps()
-                + backRight.getCurrentDrawAmps();
     }
 
     public static class SysIdTurn implements SysIdProvider {

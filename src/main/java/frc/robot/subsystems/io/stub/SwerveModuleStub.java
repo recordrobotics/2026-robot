@@ -106,16 +106,6 @@ public class SwerveModuleStub implements SwerveModuleIO {
     public void close() throws Exception {}
 
     @Override
-    public double getDriveMotorCurrentDrawAmps() {
-        return 0;
-    }
-
-    @Override
-    public double getTurnMotorCurrentDrawAmps() {
-        return 0;
-    }
-
-    @Override
     public void simulationPeriodic() {}
 
     @Override

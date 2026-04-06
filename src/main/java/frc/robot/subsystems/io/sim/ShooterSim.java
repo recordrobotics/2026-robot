@@ -11,14 +11,18 @@ import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ShooterIO;
 
 public class ShooterSim implements ShooterIO {
+
+    private static final double FLYWHEEL_SHOOT_VOLTAGE_MULTIPLIER = 0.88;
 
     private final double periodicDt;
 
@@ -49,7 +53,7 @@ public class ShooterSim implements ShooterIO {
             0.0);
 
     private final DCMotorSim flywheelSimModel = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(flywheelMotor, 0.0028087817, Constants.Shooter.FLYWHEEL_GEAR_RATIO),
+            LinearSystemId.createDCMotorSystem(flywheelMotor, 0.0006979201, Constants.Shooter.FLYWHEEL_GEAR_RATIO),
             flywheelMotor,
             0.0,
             0.0);
@@ -71,6 +75,10 @@ public class ShooterSim implements ShooterIO {
         flywheelSimLeader.setMotorType(MotorType.KrakenX60);
         flywheelSimFollower.setMotorType(MotorType.KrakenX60);
         hoodSim.setMotorType(MotorType.KrakenX44);
+
+        RobotContainer.pdp.registerSimDevice(15, this::getFlywheelLeaderCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(16, this::getFlywheelFollowerCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(17, this::getHoodCurrentDraw);
     }
 
     @Override
@@ -201,18 +209,18 @@ public class ShooterSim implements ShooterIO {
     }
 
     @Override
-    public double getFlywheelLeaderCurrentDrawAmps() {
-        return flywheelLeader.getSupplyCurrent().getValueAsDouble();
+    public Current getFlywheelLeaderCurrentDraw() {
+        return flywheelSimLeader.getSupplyCurrentMeasure();
     }
 
     @Override
-    public double getFlywheelFollowerCurrentDrawAmps() {
-        return flywheelFollower.getSupplyCurrent().getValueAsDouble();
+    public Current getFlywheelFollowerCurrentDraw() {
+        return flywheelSimFollower.getSupplyCurrentMeasure();
     }
 
     @Override
-    public double getHoodCurrentDrawAmps() {
-        return hoodSimModel.getCurrentDrawAmps();
+    public Current getHoodCurrentDraw() {
+        return hoodSim.getSupplyCurrentMeasure();
     }
 
     @Override
@@ -239,7 +247,9 @@ public class ShooterSim implements ShooterIO {
         hoodSimModel.setInputVoltage(hoodVoltage);
         hoodSimModel.update(periodicDt);
 
-        flywheelSimModel.setInputVoltage((flywheelLeaderVoltage + flywheelFollowerVoltage) / 2.0);
+        flywheelSimModel.setInputVoltage(
+                (RobotContainer.model.fuelManager.isShootingFuel() ? FLYWHEEL_SHOOT_VOLTAGE_MULTIPLIER : 1.0)
+                        * ((flywheelLeaderVoltage + flywheelFollowerVoltage) / 2.0));
         flywheelSimModel.update(periodicDt);
 
         hoodSim.setRawRotorPosition(Constants.Shooter.HOOD_GEAR_RATIO

@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -222,8 +223,8 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
     }
 
     @Override
-    public double getCurrentDrawAmps() {
-        return io.getCurrentDrawAmps();
+    public Current getCurrentDraw() {
+        return io.getCurrentDraw();
     }
 
     @Override

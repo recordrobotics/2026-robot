@@ -1,7 +1,10 @@
 package frc.robot.subsystems.io.stub;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.subsystems.io.FeederIO;
 
 public class FeederStub implements FeederIO {
@@ -40,9 +43,9 @@ public class FeederStub implements FeederIO {
     }
 
     @Override
-    public double getCurrentDrawAmps() {
+    public Current getCurrentDraw() {
         // stub
-        return 0.0;
+        return Amps.zero();
     }
 
     @Override

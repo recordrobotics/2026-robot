@@ -2,6 +2,7 @@ package frc.robot.subsystems.io;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
+import edu.wpi.first.units.measure.Current;
 
 public interface TurretIO {
 
@@ -19,7 +20,7 @@ public interface TurretIO {
 
     double getVoltage();
 
-    double getCurrentDrawAmps();
+    Current getCurrentDraw();
 
     void setPositionRotations(double newValue);
 

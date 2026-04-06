@@ -10,11 +10,13 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.DIOSim;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.io.TurretIO;
@@ -69,6 +71,8 @@ public class TurretSim implements TurretIO {
         frontLeftLimitSwitchSim.setIsInput(true);
         backLeftLimitSwitchSim.setIsInput(true);
         backRightLimitSwitchSim.setIsInput(true);
+
+        RobotContainer.pdp.registerSimDevice(14, this::getCurrentDraw);
     }
 
     @Override
@@ -107,8 +111,8 @@ public class TurretSim implements TurretIO {
     }
 
     @Override
-    public double getCurrentDrawAmps() {
-        return turretSimModel.getCurrentDrawAmps();
+    public Current getCurrentDraw() {
+        return turretSimState.getSupplyCurrentMeasure();
     }
 
     @Override

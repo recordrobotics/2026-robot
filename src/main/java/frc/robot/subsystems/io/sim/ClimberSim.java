@@ -9,9 +9,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ClimberIO;
 import frc.robot.utils.SimpleMath;
@@ -62,6 +64,8 @@ public class ClimberSim implements ClimberIO {
         motorClimberSim = motorClimber.getSimState();
 
         motorClimberSim.Orientation = ChassisReference.Clockwise_Positive; // correct
+
+        RobotContainer.pdp.registerSimDevice(12, this::getCurrentDraw);
     }
 
     @Override
@@ -106,8 +110,8 @@ public class ClimberSim implements ClimberIO {
     }
 
     @Override
-    public double getCurrentDraw() {
-        return motorClimber.getSupplyCurrent().getValueAsDouble();
+    public Current getCurrentDraw() {
+        return motorClimberSim.getSupplyCurrentMeasure();
     }
 
     @Override

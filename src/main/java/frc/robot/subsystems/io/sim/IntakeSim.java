@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
@@ -111,6 +112,10 @@ public class IntakeSim implements IntakeIO {
             }
             return passed;
         });
+
+        RobotContainer.pdp.registerSimDevice(9, this::getArmLeaderCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(10, this::getArmFollowerCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(18, this::getWheelCurrentDraw);
     }
 
     public IntakeSimulation getIntakeSimulation() {
@@ -245,18 +250,18 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public double getWheelCurrentDrawAmps() {
-        return wheelSimModel.getCurrentDrawAmps();
+    public Current getWheelCurrentDraw() {
+        return wheelSim.getSupplyCurrentMeasure();
     }
 
     @Override
-    public double getArmLeaderCurrentDrawAmps() {
-        return armLeader.getSupplyCurrent().getValueAsDouble();
+    public Current getArmLeaderCurrentDraw() {
+        return armSimLeader.getSupplyCurrentMeasure();
     }
 
     @Override
-    public double getArmFollowerCurrentDrawAmps() {
-        return armFollower.getSupplyCurrent().getValueAsDouble();
+    public Current getArmFollowerCurrentDraw() {
+        return armSimFollower.getSupplyCurrentMeasure();
     }
 
     @Override

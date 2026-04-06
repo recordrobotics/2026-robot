@@ -3,6 +3,7 @@ package frc.robot.subsystems.io.real;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ClimberIO;
 
@@ -50,8 +51,8 @@ public class ClimberReal implements ClimberIO {
     }
 
     @Override
-    public double getCurrentDraw() {
-        return motor.getSupplyCurrent().getValueAsDouble();
+    public Current getCurrentDraw() {
+        return motor.getSupplyCurrent().getValue();
     }
 
     @Override

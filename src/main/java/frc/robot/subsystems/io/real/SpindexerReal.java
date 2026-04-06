@@ -3,6 +3,7 @@ package frc.robot.subsystems.io.real;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.SpindexerIO;
 
@@ -50,8 +51,8 @@ public class SpindexerReal implements SpindexerIO {
     }
 
     @Override
-    public double getCurrentDrawAmps() {
-        return spindexer.getStatorCurrent().getValueAsDouble();
+    public Current getCurrentDraw() {
+        return spindexer.getSupplyCurrent().getValue();
     }
 
     @Override

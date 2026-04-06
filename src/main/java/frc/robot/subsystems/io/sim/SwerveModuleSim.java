@@ -1,5 +1,6 @@
 package frc.robot.subsystems.io.sim;
 
+import static edu.wpi.first.units.Units.Milliamps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
@@ -16,8 +17,10 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.ModuleConstants;
 import org.ironmaple.simulation.SimulatedArena;
@@ -65,7 +68,8 @@ public class SwerveModuleSim implements SwerveModuleIO {
         }
     }
 
-    public SwerveModuleSim(SwerveModuleSimulation moduleSimulation, ModuleConstants m) {
+    public SwerveModuleSim(
+            SwerveModuleSimulation moduleSimulation, ModuleConstants m, int drivePdpChannel, int turnPdpChannel) {
         driveMotor = new TalonFX(m.driveMotorChannel());
         turningMotor = new TalonFX(m.turningMotorChannel());
         absoluteTurningMotorEncoder = new CANcoder(m.absoluteTurningMotorEncoderChannel());
@@ -86,6 +90,10 @@ public class SwerveModuleSim implements SwerveModuleIO {
 
         moduleSimulation.useDriveMotorController(new TalonFXMotorControllerSim(driveMotor));
         moduleSimulation.useSteerMotorController(new TalonFXMotorControllerSim(turningMotor));
+
+        RobotContainer.pdp.registerSimDevice(drivePdpChannel, this::getDriveCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(turnPdpChannel, this::getTurnCurrentDraw);
+        RobotContainer.pdp.registerSimMiniPdpDevice(() -> Milliamps.of(50));
     }
 
     @Override
@@ -131,6 +139,14 @@ public class SwerveModuleSim implements SwerveModuleIO {
     @Override
     public double getTurnMotorVoltage() {
         return turningMotor.getMotorVoltage().getValueAsDouble();
+    }
+
+    public Current getDriveCurrentDraw() {
+        return driveMotorSim.getSupplyCurrentMeasure();
+    }
+
+    public Current getTurnCurrentDraw() {
+        return turningMotorSim.getSupplyCurrentMeasure();
     }
 
     @Override
@@ -191,20 +207,6 @@ public class SwerveModuleSim implements SwerveModuleIO {
     @Override
     public void setTurnMechanismPosition(double newValue) {
         /* don't reset position in simulation */
-    }
-
-    @Override
-    public double getDriveMotorCurrentDrawAmps() {
-        if (driveMotorSim.Orientation == ChassisReference.Clockwise_Positive)
-            return driveMotor.getSupplyCurrent().getValueAsDouble();
-        else return -driveMotor.getSupplyCurrent().getValueAsDouble();
-    }
-
-    @Override
-    public double getTurnMotorCurrentDrawAmps() {
-        if (turningMotorSim.Orientation == ChassisReference.Clockwise_Positive)
-            return turningMotor.getSupplyCurrent().getValueAsDouble();
-        else return -turningMotor.getSupplyCurrent().getValueAsDouble();
     }
 
     @Override

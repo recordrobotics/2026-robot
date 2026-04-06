@@ -216,6 +216,8 @@ public final class RobotModel extends ManagedSubsystemBase {
 
     public static class FuelManager {
 
+        private static final double FUEL_DIAMETER_METERS = 0.15; // 15 cm
+
         public enum AnimationType {
             CURVED,
             ANGULAR
@@ -382,7 +384,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                         velocity = toTarget.times(animationSpeed);
 
                         // limit velocity to prevent overshooting
-                        double maxVelocity = 1;
+                        double maxVelocity = animationSpeed / 9.0 * 2.0;
                         if (velocity.getTranslation().getNorm() > maxVelocity) {
                             velocity = new Transform3d(
                                     velocity.getTranslation()
@@ -393,7 +395,8 @@ public final class RobotModel extends ManagedSubsystemBase {
 
                         pose = pose.plus(velocity.times(dt));
 
-                        if (pose.getTranslation().getDistance(animationTargetPose.getTranslation()) < 0.001) {
+                        if (pose.getTranslation().getDistance(animationTargetPose.getTranslation())
+                                < 0.01 * animationSpeed / 9.0) {
                             pose = animationTargetPose;
                             velocity = Transform3d.kZero;
                             if (animationCompleteCallback != null) {
@@ -411,8 +414,7 @@ public final class RobotModel extends ManagedSubsystemBase {
             }
 
             public boolean intersects(LineSegment lineSegment) {
-                final double fuelDiameter = 0.15; // 15 cm
-                return lineSegment.isIntersectingWithSphere(pose.getTranslation(), fuelDiameter / 2);
+                return lineSegment.isIntersectingWithSphere(pose.getTranslation(), FUEL_DIAMETER_METERS / 2);
             }
         }
 
@@ -747,12 +749,15 @@ public final class RobotModel extends ManagedSubsystemBase {
         private final List<FuelObject> fuelObjectsToRemove = new ArrayList<>();
         private double lastShootTime = 0;
         private double lastGravityTime = 0;
+        private boolean shootingFuel = false;
 
         public FuelManager() {
             // nothing to do
         }
 
-        // TODO make setToPreLoad() method that fills the fuel nodes according to the pre-load configuration
+        public boolean isShootingFuel() {
+            return shootingFuel;
+        }
 
         public int getFuelCount() {
             return fuelObjects.size();
@@ -782,6 +787,7 @@ public final class RobotModel extends ManagedSubsystemBase {
             fuelObjects.add(new FuelObject(node.node.pose, node));
         }
 
+        // TODO: should be 8 not 5 - add the other 3 not in spindexer based off real robot
         public final void preloadFuel() {
             clearFuel();
             addFuelAtNode(fuelNodes[5]);
@@ -1169,48 +1175,64 @@ public final class RobotModel extends ManagedSubsystemBase {
                                 () -> new Translation3d(0, -1, 0),
                                 0.317031 - 0.230662,
                                 () -> Math.PI / 2,
-                                () -> 20.0,
+                                () -> RobotContainer.feeder.getVelocityRps() * 2 * Math.PI,
                                 () -> {
                                     Translation3d shooterOrigin = new Translation3d(0.210586, 0.239469, 0.455638);
                                     Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
                                     fuel.animateTo(
                                             new Pose3d(shooterBallStart, Rotation3d.kZero),
-                                            88,
-                                            () -> fuel.rotateAround(
-                                                    () -> shooterOrigin.rotateAround(
-                                                            shooterBallStart,
-                                                            new Rotation3d(
-                                                                    Rotation2d.fromRotations(
-                                                                            RobotContainer.turret
-                                                                                    .getPositionRotations()))),
-                                                    () -> new Translation3d(0, 1, 0)
-                                                            .rotateBy(new Rotation3d(Rotation2d.fromRotations(
-                                                                    RobotContainer.turret.getPositionRotations()))),
-                                                    0.113106,
-                                                    () -> Math.PI - RobotContainer.shooter.getHoodAngle() - Math.PI / 4,
-                                                    () -> 10.0,
-                                                    () -> toProjectile(
-                                                            fuel,
-                                                            RobotContainer.drivetrain.getSwerveDriveSimulation(),
-                                                            new Translation3d(
-                                                                            RobotContainer.shootOrchestrator
-                                                                                    .getTarget()
-                                                                                    .shotCalculator()
-                                                                                    .flywheelToFuelVelocity(
-                                                                                            RobotContainer.shooter
-                                                                                                    .getFlywheelVelocityMps()),
-                                                                            0,
-                                                                            0)
-                                                                    .rotateBy(
-                                                                            new Rotation3d(
+                                            RobotContainer.feeder.getVelocityRps()
+                                                    * Math.PI
+                                                    * (Constants.Feeder.WHEEL_DIAMETER.in(Meters)
+                                                            + FUEL_DIAMETER_METERS),
+                                            () -> {
+                                                shootingFuel = true;
+                                                fuel.rotateAround(
+                                                        () -> shooterOrigin.rotateAround(
+                                                                shooterBallStart,
+                                                                new Rotation3d(
+                                                                        Rotation2d.fromRotations(
+                                                                                RobotContainer.turret
+                                                                                        .getPositionRotations()))),
+                                                        () -> new Translation3d(0, 1, 0)
+                                                                .rotateBy(new Rotation3d(Rotation2d.fromRotations(
+                                                                        RobotContainer.turret.getPositionRotations()))),
+                                                        0.113106,
+                                                        () -> Math.PI
+                                                                - RobotContainer.shooter.getHoodAngle()
+                                                                - Math.PI / 4,
+                                                        () -> RobotContainer.shooter.getFlywheelVelocityMps()
+                                                                / Constants.Shooter.FLYWHEEL_WHEEL_DIAMETER.in(Meter)
+                                                                * 2,
+                                                        () -> {
+                                                            shootingFuel = false;
+                                                            toProjectile(
+                                                                    fuel,
+                                                                    RobotContainer.drivetrain
+                                                                            .getSwerveDriveSimulation(),
+                                                                    new Translation3d(
+                                                                                    RobotContainer.shootOrchestrator
+                                                                                            .getTarget()
+                                                                                            .shotCalculator()
+                                                                                            .flywheelToFuelVelocity(
+                                                                                                    RobotContainer
+                                                                                                            .shooter
+                                                                                                            .getFlywheelVelocityMps()),
                                                                                     0,
-                                                                                    -RobotContainer.shooter
-                                                                                                    .getHoodAngle()
-                                                                                            - Constants.Shooter
-                                                                                                    .HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS,
-                                                                                    Units.rotationsToRadians(
-                                                                                            RobotContainer.turret
-                                                                                                    .getPositionRotations()))))));
+                                                                                    0)
+                                                                            .rotateBy(
+                                                                                    new Rotation3d(
+                                                                                            0,
+                                                                                            -RobotContainer.shooter
+                                                                                                            .getHoodAngle()
+                                                                                                    - Constants.Shooter
+                                                                                                            .HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS,
+                                                                                            Units.rotationsToRadians(
+                                                                                                    RobotContainer
+                                                                                                            .turret
+                                                                                                            .getPositionRotations()))));
+                                                        });
+                                            });
                                 }));
             }
 

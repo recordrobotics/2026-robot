@@ -5,6 +5,7 @@ import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.IntakeIO;
 
@@ -118,18 +119,18 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public double getArmLeaderCurrentDrawAmps() {
-        return armLeader.getSupplyCurrent().getValueAsDouble();
+    public Current getArmLeaderCurrentDraw() {
+        return armLeader.getSupplyCurrent().getValue();
     }
 
     @Override
-    public double getArmFollowerCurrentDrawAmps() {
-        return armFollower.getSupplyCurrent().getValueAsDouble();
+    public Current getArmFollowerCurrentDraw() {
+        return armFollower.getSupplyCurrent().getValue();
     }
 
     @Override
-    public double getWheelCurrentDrawAmps() {
-        return wheel.getSupplyCurrent().getValueAsDouble();
+    public Current getWheelCurrentDraw() {
+        return wheel.getSupplyCurrent().getValue();
     }
 
     @Override

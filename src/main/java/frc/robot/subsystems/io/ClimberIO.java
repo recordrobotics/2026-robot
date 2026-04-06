@@ -2,6 +2,7 @@ package frc.robot.subsystems.io;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
+import edu.wpi.first.units.measure.Current;
 
 public interface ClimberIO extends AutoCloseable {
 
@@ -17,7 +18,7 @@ public interface ClimberIO extends AutoCloseable {
 
     double getVelocity();
 
-    double getCurrentDraw();
+    Current getCurrentDraw();
 
     void simulationPeriodic();
 }

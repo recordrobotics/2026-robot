@@ -8,9 +8,11 @@ import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.SpindexerIO;
 
@@ -36,6 +38,8 @@ public class SpindexerSim implements SpindexerIO {
 
         spindexerSimState.Orientation = ChassisReference.CounterClockwise_Positive;
         spindexerSimState.setMotorType(TalonFXSimState.MotorType.KrakenX60);
+
+        RobotContainer.pdp.registerSimDevice(11, this::getCurrentDraw);
     }
 
     @Override
@@ -69,8 +73,8 @@ public class SpindexerSim implements SpindexerIO {
     }
 
     @Override
-    public double getCurrentDrawAmps() {
-        return spindexer.getStatorCurrent().getValueAsDouble();
+    public Current getCurrentDraw() {
+        return spindexerSimState.getSupplyCurrentMeasure();
     }
 
     public boolean isOuttaking() {

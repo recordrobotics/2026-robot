@@ -1,6 +1,9 @@
 package frc.robot.utils.camera;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.measure.Current;
 
 /**
  * Enum representing different physical camera models with their specifications.
@@ -43,7 +46,8 @@ public enum PhysicalCamera {
             .withFps(30)
             .withPxError(0.2, 0.0005)
             .withLatencyMs(35, 5)
-            .withStdDevs(1.5, 1.11574, 1.5)),
+            .withStdDevs(1.5, 1.11574, 1.5)
+            .withCurrentDraw(Amps.of(1))),
 
     /**
      * SVPro Global Shutter Camera Specifications
@@ -99,6 +103,8 @@ public enum PhysicalCamera {
     public final double maxSightRange;
     public final double minTargetAreaPixels;
 
+    public final Current currentDraw;
+
     PhysicalCamera(PhysicalCameraBuilder builder) {
         this.width = builder.width;
         this.height = builder.height;
@@ -114,6 +120,8 @@ public enum PhysicalCamera {
         this.txtyStdDevs = builder.txtyStdDevs;
         this.maxSightRange = builder.maxSightRange;
         this.minTargetAreaPixels = builder.minTargetAreaPixels;
+
+        this.currentDraw = builder.currentDraw;
 
         this.aspectRatio = (double) getDetectorWidth() / getDetectorHeight();
         double diagonalFovRad = Math.toRadians(fov);
@@ -187,6 +195,7 @@ public enum PhysicalCamera {
         private double txtyStdDevs = 0.35;
         private double maxSightRange = 10.0;
         private double minTargetAreaPixels = 24.0;
+        private Current currentDraw = Amps.of(4.0 / 12.0);
 
         public PhysicalCameraBuilder withResolution(int width, int height) {
             this.width = width;
@@ -235,6 +244,11 @@ public enum PhysicalCamera {
 
         public PhysicalCameraBuilder withMinTargetAreaPixels(double minTargetAreaPixels) {
             this.minTargetAreaPixels = minTargetAreaPixels;
+            return this;
+        }
+
+        public PhysicalCameraBuilder withCurrentDraw(Current currentDraw) {
+            this.currentDraw = currentDraw;
             return this;
         }
     }

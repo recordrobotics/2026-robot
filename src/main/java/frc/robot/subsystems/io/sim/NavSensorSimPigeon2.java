@@ -1,5 +1,7 @@
 package frc.robot.subsystems.io.sim;
 
+import static edu.wpi.first.units.Units.Milliamps;
+
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
@@ -7,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.NavSensorIO;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
@@ -22,6 +25,8 @@ public class NavSensorSimPigeon2 implements NavSensorIO {
 
         this.pigeon = new Pigeon2(RobotMap.PIGEON_2_ID);
         this.pigeonSimState = pigeon.getSimState();
+
+        RobotContainer.pdp.registerSimMiniPdpDevice(() -> Milliamps.of(40));
     }
 
     @Override

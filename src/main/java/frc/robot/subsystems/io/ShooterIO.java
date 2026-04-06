@@ -3,6 +3,7 @@ package frc.robot.subsystems.io;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
+import edu.wpi.first.units.measure.Current;
 
 public interface ShooterIO {
 
@@ -38,11 +39,11 @@ public interface ShooterIO {
 
     double getHoodVoltage();
 
-    double getFlywheelLeaderCurrentDrawAmps();
+    Current getFlywheelLeaderCurrentDraw();
 
-    double getFlywheelFollowerCurrentDrawAmps();
+    Current getFlywheelFollowerCurrentDraw();
 
-    double getHoodCurrentDrawAmps();
+    Current getHoodCurrentDraw();
 
     void setHoodPositionRotations(double newValue);
 

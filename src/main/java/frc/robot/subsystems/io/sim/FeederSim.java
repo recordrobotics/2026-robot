@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -55,6 +56,8 @@ public class FeederSim implements FeederIO {
         topBeambreakSim = new DIOSim(topBeambreak);
         bottomBeambreakSim.setIsInput(true);
         topBeambreakSim.setIsInput(true);
+
+        RobotContainer.pdp.registerSimDevice(13, this::getCurrentDraw);
     }
 
     @Override
@@ -88,8 +91,8 @@ public class FeederSim implements FeederIO {
     }
 
     @Override
-    public double getCurrentDrawAmps() {
-        return feeder.getStatorCurrent().getValueAsDouble();
+    public Current getCurrentDraw() {
+        return feederSimState.getSupplyCurrentMeasure();
     }
 
     @Override

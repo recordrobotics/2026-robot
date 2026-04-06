@@ -13,6 +13,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -274,10 +275,10 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     }
 
     @Override
-    public double getCurrentDrawAmps() {
-        return io.getFlywheelLeaderCurrentDrawAmps()
-                + io.getFlywheelFollowerCurrentDrawAmps()
-                + io.getHoodCurrentDrawAmps();
+    public Current getCurrentDraw() {
+        return io.getFlywheelLeaderCurrentDraw()
+                .plus(io.getFlywheelFollowerCurrentDraw())
+                .plus(io.getHoodCurrentDraw());
     }
 
     public Command sysIdQuasistaticFlywheel(SysIdRoutine.Direction direction) {

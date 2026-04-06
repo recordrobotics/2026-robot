@@ -3,6 +3,7 @@ package frc.robot.subsystems.io.real;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.TurretIO;
@@ -59,8 +60,8 @@ public class TurretReal implements TurretIO {
     }
 
     @Override
-    public double getCurrentDrawAmps() {
-        return turret.getSupplyCurrent().getValueAsDouble();
+    public Current getCurrentDraw() {
+        return turret.getSupplyCurrent().getValue();
     }
 
     @Override

@@ -13,6 +13,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -214,7 +215,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     }
 
     @Override
-    public double getCurrentDrawAmps() {
+    public Current getCurrentDraw() {
         return io.getCurrentDraw();
     }
 

@@ -666,6 +666,8 @@ public final class Constants {
 
         public static final double INTAKE_VELOCITY_RPS = 50.0;
 
+        public static final Distance WHEEL_DIAMETER = Inches.of(2.0);
+
         private Feeder() {}
     }
 

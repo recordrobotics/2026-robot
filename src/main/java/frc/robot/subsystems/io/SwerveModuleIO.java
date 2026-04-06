@@ -50,10 +50,6 @@ public interface SwerveModuleIO extends AutoCloseable {
 
     void setTurnMechanismPosition(double newValue);
 
-    double getDriveMotorCurrentDrawAmps();
-
-    double getTurnMotorCurrentDrawAmps();
-
     void simulationPeriodic();
 
     boolean isAbsEncoderConnected();

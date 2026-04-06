@@ -1,7 +1,10 @@
 package frc.robot.subsystems.io.stub;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.subsystems.io.ClimberIO;
 
 public class ClimberStub implements ClimberIO {
@@ -33,8 +36,8 @@ public class ClimberStub implements ClimberIO {
     }
 
     @Override
-    public double getCurrentDraw() {
-        return 0;
+    public Current getCurrentDraw() {
+        return Amps.zero();
     }
 
     @Override

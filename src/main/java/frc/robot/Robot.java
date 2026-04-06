@@ -10,6 +10,8 @@ import edu.wpi.first.net.WebServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController.RadioLEDState;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.dashboard.DashboardUI;
@@ -137,6 +139,12 @@ public final class Robot extends LoggedRobot {
             // we can go over the bump, so disable ramp colliders
             SimulatedArena.overrideInstance(new Arena2026Rebuilt(false));
             ((Arena2026Rebuilt) SimulatedArena.getInstance()).setEfficiencyMode(false); // all the fuel
+
+            // setup roborio
+            RoboRioSim.setRadioLEDState(RadioLEDState.kGreen);
+            RoboRioSim.setTeamNumber(6731);
+            RoboRioSim.setSerialNumber(BuildConstants.BUILD_DATE);
+            RoboRioSim.setVInCurrent(0.436);
         }
     }
 

@@ -1,5 +1,7 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.google.common.primitives.ImmutableIntArray;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -49,6 +51,7 @@ import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
 import java.util.EnumSet;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.photonvision.simulation.VisionSystemSim;
@@ -114,6 +117,10 @@ public final class RobotContainer {
 
     private static RobotContainer instance;
 
+    private static final double MAPLE_SIM_SIMULATED_BATTERY_NOMINAL_VOLTAGE = 13.5;
+    private static final double MAPLE_SIM_SIMULATED_BATTERY_RESISTANCE = 0.02;
+    private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.45;
+
     private RobotContainer() {
         initialize();
     }
@@ -134,6 +141,8 @@ public final class RobotContainer {
 
         EnumSet.allOf(ShootMode.class).forEach(v -> shootModeChooser.addOption(v.name(), v));
         shootModeChooser.addDefaultOption(ShootMode.AUTO.name(), ShootMode.AUTO);
+
+        pdp = new PowerDistributionPanel();
 
         try {
             drivetrain = new Drivetrain();
@@ -190,7 +199,6 @@ public final class RobotContainer {
 
         poseSensorFusion = new PoseSensorFusion(
                 DashboardUI.Autonomous.getStartingLocation().getPose());
-        pdp = new PowerDistributionPanel();
         fieldStateTracker = new FieldStateTracker();
         shootOrchestrator = new ShootOrchestrator();
 
@@ -215,6 +223,17 @@ public final class RobotContainer {
         if (Constants.RobotState.getMode() != Mode.REAL) {
             // No point in manually resetting encoders in simulation since starting config is always in the right spot
             resetEncoders();
+            // Register all powered subsystems with the simulation battery
+            registerPoweredSubsystems(
+                    intake,
+                    turret,
+                    shooter,
+                    spindexer,
+                    feeder,
+                    climber,
+                    // simulate measured resting voltage
+                    () -> Amps.of((MAPLE_SIM_SIMULATED_BATTERY_NOMINAL_VOLTAGE - ACTUAL_RESTING_BATTERY_VOLTAGE)
+                            / MAPLE_SIM_SIMULATED_BATTERY_RESISTANCE));
         }
 
         SmartDashboard.putBoolean("ShootTuning", false);
@@ -376,16 +395,14 @@ public final class RobotContainer {
     }
 
     public static void simulationPeriodic() {
-        updateSimulationBattery(drivetrain, intake, turret, shooter, spindexer, feeder, climber);
         if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
             visionSim.update(model.getRobot());
         }
     }
 
-    public static void updateSimulationBattery(PoweredSubsystem... subsystems) {
-        double[] currents = new double[subsystems.length];
-        for (int i = 0; i < subsystems.length; i++) {
-            currents[i] = subsystems[i].getCurrentDrawAmps();
+    public static void registerPoweredSubsystems(PoweredSubsystem... subsystems) {
+        for (PoweredSubsystem subsystem : subsystems) {
+            SimulatedBattery.addElectricalAppliances(subsystem::getCurrentDraw);
         }
     }
 
@@ -407,6 +424,5 @@ public final class RobotContainer {
         turret.close();
         spindexer.close();
         feeder.close();
-        pdp.close();
     }
 }

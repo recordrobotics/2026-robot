@@ -2,6 +2,7 @@ package frc.robot.subsystems.io;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import edu.wpi.first.units.measure.Current;
 
 public interface FeederIO {
 
@@ -17,7 +18,7 @@ public interface FeederIO {
 
     double getVoltage();
 
-    double getCurrentDrawAmps();
+    Current getCurrentDraw();
 
     boolean isBottomBeamBroken();
 

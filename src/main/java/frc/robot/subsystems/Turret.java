@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -342,8 +343,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     }
 
     @Override
-    public double getCurrentDrawAmps() {
-        return io.getCurrentDrawAmps();
+    public Current getCurrentDraw() {
+        return io.getCurrentDraw();
     }
 
     public RobotToMechanismUpdate getRobotToMechanism() {
