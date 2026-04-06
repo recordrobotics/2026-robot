@@ -22,6 +22,8 @@ import frc.robot.subsystems.io.FeederIO;
 
 public class FeederSim implements FeederIO {
 
+    private static final double SHOOT_VOLTAGE_MULTIPLIER = 0.6;
+
     private static final LineSegment topBeambreakLine = new LineSegment(
             new Translation3d(0.186525, 0.254875, 0.324841), new Translation3d(0.186525, -0.000875, 0.324841));
     private static final LineSegment bottomBeambreakLine = new LineSegment(
@@ -111,7 +113,8 @@ public class FeederSim implements FeederIO {
 
         double feederVoltage = feederSimState.getMotorVoltage();
 
-        feederSimModel.setInputVoltage(feederVoltage);
+        feederSimModel.setInputVoltage(
+                (RobotContainer.model.fuelManager.isFuelInFeeder() ? SHOOT_VOLTAGE_MULTIPLIER : 1.0) * feederVoltage);
         feederSimModel.update(periodicDt);
 
         feederSimState.setRawRotorPosition(Constants.Feeder.GEAR_RATIO * feederSimModel.getAngularPositionRotations());
