@@ -27,6 +27,7 @@ import frc.robot.RobotMap;
 import frc.robot.subsystems.RobotModel.FuelManager;
 import frc.robot.subsystems.io.IntakeIO;
 import frc.robot.utils.IntakeSimulationUtils;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.dyn4j.geometry.Rectangle;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
@@ -76,6 +77,8 @@ public class IntakeSim implements IntakeIO {
     private final IntakeSimulation intakeSimulation;
 
     private double lastEjectTime = 0.0;
+
+    private AtomicInteger rollerFuelCount = new AtomicInteger(0);
 
     public IntakeSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
@@ -325,6 +328,7 @@ public class IntakeSim implements IntakeIO {
                 double timeSinceLastEject = Timer.getTimestamp() - lastEjectTime;
                 if (timeSinceLastEject > 1.0 / EJECT_BPS) {
                     RobotContainer.model.fuelManager.ejectFuel().ifPresent(fuel -> {
+                        rollerFuelCount.incrementAndGet();
                         fuel.rotateAround(
                                 () -> ROLLER_ORIGIN,
                                 () -> new Translation3d(0, 1, 0),
@@ -334,8 +338,11 @@ public class IntakeSim implements IntakeIO {
                                         .getDistance(new Translation2d(ROLLER_ORIGIN.getX(), ROLLER_ORIGIN.getZ())),
                                 () -> Math.PI / 2,
                                 () -> -wheelSimModel.getAngularVelocityRadPerSec(),
-                                () -> RobotContainer.model.fuelManager.toProjectile(
-                                        fuel, RobotContainer.drivetrain.getSwerveDriveSimulation(), null));
+                                () -> {
+                                    rollerFuelCount.decrementAndGet();
+                                    RobotContainer.model.fuelManager.toProjectile(
+                                            fuel, RobotContainer.drivetrain.getSwerveDriveSimulation(), null);
+                                });
                     });
                     lastEjectTime = Timer.getTimestamp();
                 }
