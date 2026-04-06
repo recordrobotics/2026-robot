@@ -64,6 +64,12 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     }
 
     private Optional<ShooterState> shooterOverride = Optional.empty();
+    public double hoodAngleOverride = Constants.Shooter.HOOD_MAX_POSITION_RADIANS;
+    public Optional<Double> turretAngleOverride = Optional.empty();
+    public double shootVelocityOverride = 0;
+    public boolean overrideShootAngleVelocity = false;
+
+    Translation3d[] trajectory = new Translation3d[48];
 
     private FeedMode feedMode = FeedMode.AUTO;
 
@@ -272,6 +278,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
                 if (useFixedShooting) {
                     hoodAngle = FIXED_HOOD_ANGLE_RADIANS;
+                } else if (turretAngleOverride.isPresent()) {
+                    RobotContainer.turret.setTarget(new TurretState(turretAngleOverride.get(), 0, 0));
                 }
 
                 return new ShooterState(
