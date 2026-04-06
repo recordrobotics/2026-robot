@@ -148,13 +148,20 @@ public class TurretSim implements TurretIO {
         backRightLimitSwitch.close();
     }
 
+    private double getSpringVoltage() {
+        double pos = getPositionRotations();
+        return pos > Constants.Turret.TURRET_SPRING_START_POS
+                ? Constants.Turret.TURRET_SPRING_VOLTS
+                : pos < Constants.Turret.TURRET_SPRING_START_NEG ? -Constants.Turret.TURRET_SPRING_VOLTS : 0;
+    }
+
     @Override
     public void simulationPeriodic() {
         turretSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         double turretVoltage = turretSimState.getMotorVoltage();
 
-        turretSimModel.setInputVoltage(turretVoltage);
+        turretSimModel.setInputVoltage(turretVoltage - getSpringVoltage());
         turretSimModel.update(periodicDt);
 
         turretSimState.setRawRotorPosition(Constants.Turret.GEAR_RATIO * turretSimModel.getAngularPositionRotations());
