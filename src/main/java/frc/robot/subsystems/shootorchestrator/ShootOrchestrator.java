@@ -28,6 +28,7 @@ import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.PositionedSubsystem.PositionStatus;
 import frc.robot.utils.ProjectileSimulationUtils;
 import frc.robot.utils.SimpleMath;
+import java.util.Optional;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
@@ -93,6 +94,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     }
 
     public double hoodAngleOverride = Constants.Shooter.HOOD_MAX_POSITION_RADIANS;
+    public Optional<Double> turretAngleOverride = Optional.empty();
     public double shootVelocityOverride = 0;
     public boolean overrideShootAngleVelocity = false;
 
@@ -353,6 +355,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             if (!RobotContainer.intake.isNearStartPosition()) {
                 if (useFixedShooting) {
                     RobotContainer.turret.setTarget(FIXED_TURRET_ANGLE_RADIANS, 0, 0);
+                } else if (turretAngleOverride.isPresent()) {
+                    RobotContainer.turret.setTarget(turretAngleOverride.get(), 0, 0);
                 } else {
                     RobotContainer.turret.setTarget(
                             shotYaw - robotPose.getRotation().getRadians(),
