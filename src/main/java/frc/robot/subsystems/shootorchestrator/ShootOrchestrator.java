@@ -98,6 +98,14 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     public double shootVelocityOverride = 0;
     public boolean overrideShootAngleVelocity = false;
 
+    public boolean sweepEnabled = false;
+    private double sweepPosition = 0.0;
+    private int sweepDirection = 1;
+    private boolean wasShootingEnabled = false;
+
+    private static final double SWEEP_HALF_RANGE = Units.degreesToRadians(45);
+    private static final double SWEEP_STEP = SWEEP_HALF_RANGE * 2 / (2.0 / 0.02); // full sweep in 2 seconds
+
     Translation3d[] trajectory = new Translation3d[48];
 
     private FeedMode feedMode = FeedMode.AUTO;
@@ -352,11 +360,28 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             lastShotYaw = shotYaw;
             hasLastShotYaw = true;
 
-            if (!RobotContainer.intake.isNearStartPosition()) {
+            if (sweepEnabled) {
+                if (!shootingEnabled) {
+                    sweepPosition += sweepDirection * SWEEP_STEP;
+                    if (sweepPosition >= SWEEP_HALF_RANGE) {
+                        sweepPosition = SWEEP_HALF_RANGE;
+                        sweepDirection = -1;
+                    } else if (sweepPosition <= -SWEEP_HALF_RANGE) {
+                        sweepPosition = -SWEEP_HALF_RANGE;
+                        sweepDirection = 1;
+                    }
+                    turretAngleOverride = Optional.of(sweepPosition);
+                } else if (!wasShootingEnabled) {
+                    turretAngleOverride = Optional.of(
+                            Units.rotationsToRadians(RobotContainer.turret.getPositionRotations()));
+                }
+            }
+
+            if (turretAngleOverride.isPresent()) {
+                RobotContainer.turret.setTarget(turretAngleOverride.get(), 0, 0);
+            } else if (!RobotContainer.intake.isNearStartPosition()) {
                 if (useFixedShooting) {
                     RobotContainer.turret.setTarget(FIXED_TURRET_ANGLE_RADIANS, 0, 0);
-                } else if (turretAngleOverride.isPresent()) {
-                    RobotContainer.turret.setTarget(turretAngleOverride.get(), 0, 0);
                 } else {
                     RobotContainer.turret.setTarget(
                             shotYaw - robotPose.getRotation().getRadians(),
@@ -453,5 +478,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 target == null ? Pose3d.kZero : new Pose3d(target.position, Rotation3d.kZero));
         Logger.recordOutput("ShootOrchestrator/Trajectory", trajectory);
         Logger.recordOutput("ShootOrchestrator/ShootingEnabled", shootingEnabled);
+        Logger.recordOutput("ShootOrchestrator/SweepEnabled", sweepEnabled);
+        Logger.recordOutput("ShootOrchestrator/SweepPosition", sweepPosition);
+
+        wasShootingEnabled = shootingEnabled;
     }
 }
