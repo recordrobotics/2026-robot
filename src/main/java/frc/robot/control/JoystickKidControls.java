@@ -196,6 +196,6 @@ public class JoystickKidControls implements AbstractControl {
 
     @Override
     public String toDisplayName() {
-        return "Joystick";
+        return "JoystickKid";
     }
 }
