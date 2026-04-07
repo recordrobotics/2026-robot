@@ -290,4 +290,20 @@ public class TestControlBridge implements AbstractControl {
     public boolean isSlowSpeedPressed() {
         return false; // TODO
     }
+
+    @Override
+    public Transform2d getKidRawDriverInput() {
+        // Returns the raw driver input as a Transform2d
+        return Transform2d.kZero;
+    }
+
+    @Override
+    public boolean getKidShoot() {
+        return false;
+    }
+
+    @Override
+    public double getKidsSpeedLevel() {
+        return 0;
+    }
 }
