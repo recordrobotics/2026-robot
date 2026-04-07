@@ -108,6 +108,22 @@ public class XboxControls implements AbstractControl {
         return new Transform2d(xy.getFirst(), xy.getSecond(), new Rotation2d(spinOutput));
     }
 
+    @Override
+    public Transform2d getKidRawDriverInput() {
+        // Returns the raw driver input as a Transform2d
+        return Transform2d.kZero;
+    }
+
+    @Override
+    public boolean getKidShoot() {
+        return false;
+    }
+
+    @Override
+    public double getKidsSpeedLevel() {
+        return 0;
+    }
+
     public Pair<Double, Double> getXYRaw() {
         Pair<Double, Double> xy = getXYStickOutput();
         double unsquaredX = SimpleMath.applyThresholdAndSensitivity(
