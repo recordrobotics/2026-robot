@@ -91,7 +91,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     Translation3d[] trajectory = new Translation3d[48];
 
-    private FeedMode feedMode = FeedMode.ALWAYS;
+    private FeedMode feedMode = FeedMode.AUTO;
 
     private ShotTarget target;
     private boolean shootingEnabled = false;
@@ -130,6 +130,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         if (!fixed) {
             useFixedShooting = false;
         }
+    }
+
+    public void setFeedMode(FeedMode mode) {
+        this.feedMode = mode;
     }
 
     public final void setTarget(ShotTarget target) {
@@ -354,8 +358,18 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                     && !RobotContainer.intake.isNearStartPosition()
                     && RobotContainer.turret.getPositionStatus() == PositionStatus.KNOWN
                     && RobotContainer.shooter.getPositionStatus() == PositionStatus.KNOWN;
-            SpindexerState spindexerState = (onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF;
-            FeederState feederState = (onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF;
+            SpindexerState spindexerState =
+                    switch (feedMode) {
+                        case AUTO -> (onTarget && shootingEnabled) ? SpindexerState.ON : SpindexerState.OFF;
+                        case ALWAYS -> shootingEnabled ? SpindexerState.ON : SpindexerState.OFF;
+                        case DISABLED -> SpindexerState.OFF;
+                    };
+            FeederState feederState =
+                    switch (feedMode) {
+                        case AUTO -> (onTarget && shootingEnabled) ? FeederState.ON : FeederState.OFF;
+                        case ALWAYS -> shootingEnabled ? FeederState.ON : FeederState.OFF;
+                        case DISABLED -> FeederState.OFF;
+                    };
 
             RobotContainer.spindexer.setState(
                     DashboardUI.Overview.getControl().isUnstuckSpindexerPressed()
