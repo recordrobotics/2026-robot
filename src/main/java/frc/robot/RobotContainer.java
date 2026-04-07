@@ -345,16 +345,14 @@ public final class RobotContainer {
                 .onTrue(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
-                            intake.setState(Intake.IntakeState.RETRACTED);
-                            climber.setState(Constants.ClimberHeight.DOWN);
+                            intake.setState(Intake.IntakeState.INTAKE);
                         },
                         intake,
                         climber))
                 .onFalse(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
-                            intake.setState(Intake.IntakeState.INTAKE);
-                            climber.setState(Constants.ClimberHeight.DOWN);
+                            intake.setState(Intake.IntakeState.DOWN);
                         },
                         intake,
                         climber));
