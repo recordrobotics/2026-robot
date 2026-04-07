@@ -270,6 +270,8 @@ public final class RobotModel extends ManagedSubsystemBase {
             private Runnable animationCompleteCallback;
             private double rotationRadius;
 
+            private Function<FuelObject, Boolean> marker;
+
             public FuelObject(Pose3d initialPose, ManagedFuelNode initialNode) {
                 this.pose = initialPose;
                 this.currentNode = initialNode;
@@ -278,6 +280,10 @@ public final class RobotModel extends ManagedSubsystemBase {
 
             public Pose3d getPose() {
                 return pose;
+            }
+
+            public void setMarker(Function<FuelObject, Boolean> marker) {
+                this.marker = marker;
             }
 
             public void animateTo(Pose3d newPose, double speed, Runnable onComplete) {
@@ -410,6 +416,10 @@ public final class RobotModel extends ManagedSubsystemBase {
 
                         velocity = Transform3d.kZero;
                     }
+                }
+
+                if (marker != null && marker.apply(this)) {
+                    marker = null; // clear marker after it's triggered
                 }
             }
 
@@ -813,7 +823,7 @@ public final class RobotModel extends ManagedSubsystemBase {
             return new Pose3d(transform.getTranslation(), transform.getRotation());
         }
 
-        public void intakeFuel(Pose3d fieldPose) {
+        public void intakeFuel(Pose3d fieldPose, Function<FuelObject, Boolean> marker) {
             Pose3d pose = fieldToRobotRelativePose(fieldPose);
             ManagedFuelNode closestIntakeNode = getClosestIntakeNode(pose);
 
@@ -824,7 +834,8 @@ public final class RobotModel extends ManagedSubsystemBase {
             intakeFuel(
                     pose,
                     findNextNode(closestIntakeNode, ManagedFuelNode::allForwardNodes)
-                            .orElse(closestIntakeNode));
+                            .orElse(closestIntakeNode),
+                    marker);
         }
 
         public ManagedFuelNode getClosestIntakeNode(Pose3d pose) {
@@ -854,7 +865,7 @@ public final class RobotModel extends ManagedSubsystemBase {
             return closestNode;
         }
 
-        public void intakeFuel(Pose3d initialPose, ManagedFuelNode node) {
+        public void intakeFuel(Pose3d initialPose, ManagedFuelNode node, Function<FuelObject, Boolean> marker) {
             for (int i = 0; i < 500; i++) { // multiple iterations to ensure fuel leaves the intake
                 forwardPropagateFrom(getIndex(node), ManagedFuelNode::allForwardNodes, new ArrayList<>(), true);
                 backPropagateFrom(
@@ -870,6 +881,7 @@ public final class RobotModel extends ManagedSubsystemBase {
 
             FuelObject fuel = new FuelObject(initialPose, node);
             fuel.animateTo(node.node.pose, 9, null);
+            fuel.setMarker(marker);
             fuelObjects.add(fuel);
 
             for (int i = 0; i < 500; i++) { // multiple iterations to ensure fuel leaves the intake

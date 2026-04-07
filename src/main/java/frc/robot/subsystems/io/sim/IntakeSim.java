@@ -31,8 +31,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.dyn4j.geometry.Rectangle;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+import org.littletonrobotics.junction.Logger;
 
 public class IntakeSim implements IntakeIO {
+
+    private static final double FUEL_VOLTAGE_MULTIPLIER_A = 16.73759;
+    private static final double FUEL_VOLTAGE_MULTIPLIER_B = 4.1844;
+    private static final double FUEL_VOLTAGE_MULTIPLIER_DIV = 4.0;
 
     private static final Distance WIDTH = Inches.of(21.25);
     private static final Distance LENGTH_EXTENDED = Inches.of(8.419554);
@@ -108,7 +113,20 @@ public class IntakeSim implements IntakeIO {
             boolean passed = getWheelVelocityMps() > Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS - 2.0;
             if (passed) {
                 try {
-                    RobotContainer.model.fuelManager.intakeFuel(gm.getPose3d());
+                    RobotContainer.model.fuelManager.intakeFuel(gm.getPose3d(), fuel -> {
+                        if (new Translation2d(
+                                                fuel.getPose().getX(),
+                                                fuel.getPose().getZ())
+                                        .getDistance(new Translation2d(ROLLER_ORIGIN.getX(), ROLLER_ORIGIN.getZ()))
+                                > Constants.Intake.ROLLER_DIAMETER.in(Meters) / 2.0
+                                        + Constants.Game.FUEL_DIAMETER_METERS / 2.0
+                                        + 0.05) {
+                            rollerFuelCount.decrementAndGet();
+                            return true;
+                        }
+                        return false;
+                    });
+                    rollerFuelCount.incrementAndGet();
                 } catch (IllegalStateException e) {
                     return false; // no available intake nodes, so fail the intake condition instead of crashing
                 }
@@ -277,6 +295,8 @@ public class IntakeSim implements IntakeIO {
     public void simulationPeriodic() {
         updateMotorSimulations();
         handleIntakeSimulation();
+
+        Logger.recordOutput("Intake/SimCount", rollerFuelCount.get());
     }
 
     private void updateMotorSimulations() {
@@ -288,7 +308,7 @@ public class IntakeSim implements IntakeIO {
         double armLeaderVoltage = armSimLeader.getMotorVoltage();
         double armFollowerVoltage = armSimFollower.getMotorVoltage();
 
-        wheelSimModel.setInputVoltage(wheelVoltage);
+        wheelSimModel.setInputVoltage(wheelVoltage * calculateVoltageMultiplier(rollerFuelCount.get()));
         wheelSimModel.update(periodicDt);
 
         armSimModel.setInputVoltage((armLeaderVoltage + armFollowerVoltage) / 2.0);
@@ -352,5 +372,9 @@ public class IntakeSim implements IntakeIO {
         }
 
         intakeSimulation.setGamePiecesCount(RobotContainer.model.fuelManager.getFuelCount());
+    }
+
+    private static double calculateVoltageMultiplier(int fuelCount) {
+        return FUEL_VOLTAGE_MULTIPLIER_A / (fuelCount + FUEL_VOLTAGE_MULTIPLIER_B) / FUEL_VOLTAGE_MULTIPLIER_DIV;
     }
 }
