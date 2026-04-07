@@ -321,8 +321,8 @@ public final class RobotContainer {
     private static void configureTriggers() {
         new Trigger(() -> getControl().isIntakeInvertPressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
-                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED), intake))
-                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake));
+                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake))
+                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
 
         new Trigger(() -> getControl().isIntakePressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
