@@ -69,6 +69,14 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     public double shootVelocityOverride = 0;
     public boolean overrideShootAngleVelocity = false;
 
+    public boolean sweepEnabled = false;
+    private double sweepPosition = 0.0;
+    private int sweepDirection = 1;
+    private boolean wasShootingEnabled = false;
+
+    private static final double SWEEP_HALF_RANGE = Units.degreesToRadians(45);
+    private static final double SWEEP_STEP = SWEEP_HALF_RANGE * 2 / (2.0 / 0.02); // full sweep in 2 seconds
+
     Translation3d[] trajectory = new Translation3d[48];
 
     private FeedMode feedMode = FeedMode.AUTO;
@@ -394,6 +402,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 "ShootOrchestrator/Target",
                 target.isPresent() ? new Pose3d(target.get().position, Rotation3d.kZero) : Pose3d.kZero);
         Logger.recordOutput("ShootOrchestrator/ShootingEnabled", shootingEnabled);
+        Logger.recordOutput("ShootOrchestrator/SweepEnabled", sweepEnabled);
+        Logger.recordOutput("ShootOrchestrator/SweepPosition", sweepPosition);
+
+        wasShootingEnabled = shootingEnabled;
     }
 
     private record ShotCalculationResult(Vector<N3> shotVector, ShotCalculation shotCalculation) {}
