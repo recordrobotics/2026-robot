@@ -11,9 +11,10 @@ import frc.robot.utils.SimpleMath;
 import frc.robot.utils.modifiers.DrivetrainControl;
 
 @SuppressWarnings({"java:S109"})
-public class JoystickControls implements AbstractControl {
+public class JoystickKidControls implements AbstractControl {
 
     private Joystick joystick;
+    private Joystick kidJoystick;
 
     private Transform2d lastVelocity = new Transform2d();
     private Transform2d lastAcceleration = new Transform2d();
@@ -21,8 +22,9 @@ public class JoystickControls implements AbstractControl {
     private Transform2d acceleration = new Transform2d();
     private Transform2d jerk = new Transform2d();
 
-    public JoystickControls(int joystickPort) {
+    public JoystickKidControls(int joystickPort, int kidJoystickPort) {
         joystick = new Joystick(joystickPort);
+        kidJoystick = new Joystick(kidJoystickPort);
     }
 
     @Override
@@ -70,17 +72,12 @@ public class JoystickControls implements AbstractControl {
     @Override
     public Transform2d getKidRawDriverInput() {
         // Returns the raw driver input as a Transform2d
-        return Transform2d.kZero;
+        return new Transform2d(kidJoystick.getX(), kidJoystick.getY(), Rotation2d.fromRadians(kidJoystick.getTwist()));
     }
 
     @Override
     public boolean getKidShoot() {
-        return false;
-    }
-
-    @Override
-    public double getKidsSpeedLevel() {
-        return 0;
+        return kidJoystick.getRawButton(1);
     }
 
     @Override
@@ -121,7 +118,7 @@ public class JoystickControls implements AbstractControl {
         return Math.copySign(Math.pow(unsquaredSpin, Constants.Control.JOYSTICK_SPIN_EXPONENT), unsquaredSpin);
     }
 
-    public Double getDirectionalSpeedLevel() {
+    public double getDirectionalSpeedLevel() {
         // Remaps speed meter from -1 -> 1 to 0.5 -> 4, then returns
         double speed = SimpleMath.remap(
                 joystick.getRawAxis(3),
@@ -129,6 +126,13 @@ public class JoystickControls implements AbstractControl {
                 -1,
                 Constants.Control.DIRECTIONAL_SPEED_METER_LOW,
                 Constants.Swerve.MAX_MODULE_SPEED);
+
+        return speed;
+    }
+
+    @Override
+    public double getKidsSpeedLevel() {
+        double speed = SimpleMath.remap(kidJoystick.getRawAxis(3), 1, -1, 0, 1);
 
         return speed;
     }
