@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.FieldStartingLocation;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.commands.ShootTuning;
+import frc.robot.commands.ShootTuningInteractive;
 // Local imports
 import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
