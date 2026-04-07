@@ -18,6 +18,10 @@ import frc.robot.subsystems.io.SpindexerIO;
 
 public class SpindexerSim implements SpindexerIO {
 
+    private static final double FUEL_VOLTAGE_MULTIPLIER_A = 2677.5;
+    private static final double FUEL_VOLTAGE_MULTIPLIER_B = 127.5;
+    private static final double FUEL_VOLTAGE_MULTIPLIER_DIV = 21.0;
+
     private final double periodicDt;
 
     private final TalonFX spindexer;
@@ -87,7 +91,8 @@ public class SpindexerSim implements SpindexerIO {
 
         double spindexerVoltage = spindexerSimState.getMotorVoltage();
 
-        spindexerSimModel.setInputVoltage(spindexerVoltage);
+        spindexerSimModel.setInputVoltage(
+                spindexerVoltage * calculateVoltageMultiplier(RobotContainer.model.fuelManager.getFuelCount()));
         spindexerSimModel.update(periodicDt);
 
         spindexerSimState.setRawRotorPosition(
@@ -101,5 +106,9 @@ public class SpindexerSim implements SpindexerIO {
     @Override
     public void close() {
         spindexer.close();
+    }
+
+    private static double calculateVoltageMultiplier(int fuelCount) {
+        return FUEL_VOLTAGE_MULTIPLIER_A / (fuelCount + FUEL_VOLTAGE_MULTIPLIER_B) / FUEL_VOLTAGE_MULTIPLIER_DIV;
     }
 }
