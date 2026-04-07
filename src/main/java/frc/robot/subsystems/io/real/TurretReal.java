@@ -40,6 +40,7 @@ public class TurretReal implements TurretIO {
         return turret.getFault_ReverseSoftLimit().getValue().booleanValue();
     }
 
+    @Override
     public void setControl(ControlRequest request) {
         turret.setControl(request);
     }

@@ -32,12 +32,6 @@ public class OpponentRobot extends ManagedSubsystemBase {
 
     public record OpponentRobotState(Pose2d pose, int allianceStation) {}
 
-    public static void create(int count) {
-        for (int i = 0; i < count; i++) {
-            allOpponentRobots.add(new OpponentRobot());
-        }
-    }
-
     public static void logPoses() {
         List<OpponentRobotState> states = new ArrayList<>(allOpponentRobots.size());
         for (OpponentRobot robot : allOpponentRobots) {
@@ -47,6 +41,7 @@ public class OpponentRobot extends ManagedSubsystemBase {
         Logger.recordOutput("OpponentRobot/States", states.toArray(new OpponentRobotState[0]));
     }
 
+    @SuppressWarnings("EnumOrdinal") /* raw JNI api enum */
     public static void randomizeRobots() {
         int realStation = DriverStation.getRawAllianceStation().ordinal();
         List<Integer> possibleStations = new ArrayList<>();
@@ -79,7 +74,7 @@ public class OpponentRobot extends ManagedSubsystemBase {
     };
 
     private static Pose2d nextStartingPose = new Pose2d(-10, -10, Rotation2d.kZero);
-    private final Lock nextStartingPoseLock = new ReentrantLock(true);
+    private static final Lock nextStartingPoseLock = new ReentrantLock(true);
 
     // Create and configure a drivetrain simulation configuration
     private final DriveTrainSimulationConfig driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
@@ -114,15 +109,32 @@ public class OpponentRobot extends ManagedSubsystemBase {
     private int allianceStation = 1;
     private Behavior behavior = Behavior.DEFENSE;
 
-    public OpponentRobot() {
+    public static OpponentRobot create() {
         if (Constants.RobotState.getMode() != Mode.SIM) {
             throw new IllegalStateException("OpponentRobot should only be instantiated in simulation mode!");
         }
 
+        Pose2d startingPose = Pose2d.kZero;
+
         nextStartingPoseLock.lock();
-        startingPose = nextStartingPose;
-        nextStartingPose = nextStartingPose.plus(new Transform2d(-2, 0, Rotation2d.kZero));
-        nextStartingPoseLock.unlock();
+        try {
+            startingPose = nextStartingPose;
+            nextStartingPose = nextStartingPose.plus(new Transform2d(-2, 0, Rotation2d.kZero));
+        } finally {
+            nextStartingPoseLock.unlock();
+        }
+
+        OpponentRobot robot = new OpponentRobot(startingPose);
+        allOpponentRobots.add(robot);
+        return robot;
+    }
+
+    private OpponentRobot(Pose2d startingPose) {
+        if (Constants.RobotState.getMode() != Mode.SIM) {
+            throw new IllegalStateException("OpponentRobot should only be instantiated in simulation mode!");
+        }
+
+        this.startingPose = startingPose;
 
         driveSimulation = new SelfControlledSwerveDriveSimulation(
                 new SwerveDriveSimulation(driveTrainSimulationConfig, startingPose));

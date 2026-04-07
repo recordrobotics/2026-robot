@@ -190,20 +190,20 @@ public class TurretSim implements TurretIO {
         backRightLimitSwitchSim.setValue(!backRightLimitSwitchSimModel.isTriggered());
     }
 
-    private static class MagneticLimitSwitch {
+    private static final class MagneticLimitSwitch {
         private final double positionRad;
         private final double triggerAngleRad;
         private final double detriggerAngleRad;
 
         private boolean triggered = false;
 
-        public MagneticLimitSwitch(double positionRad, double triggerAngleRad, double detriggerAngleRad) {
+        private MagneticLimitSwitch(double positionRad, double triggerAngleRad, double detriggerAngleRad) {
             this.positionRad = positionRad;
             this.triggerAngleRad = triggerAngleRad;
             this.detriggerAngleRad = detriggerAngleRad;
         }
 
-        public boolean update(double turretPositionRad) {
+        private boolean update(double turretPositionRad) {
             double angleDifference = Math.abs(turretPositionRad - positionRad);
 
             if (!triggered && angleDifference <= triggerAngleRad) {
@@ -215,7 +215,7 @@ public class TurretSim implements TurretIO {
             return triggered;
         }
 
-        public boolean isTriggered() {
+        private boolean isTriggered() {
             return triggered;
         }
     }

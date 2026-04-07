@@ -40,7 +40,6 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     public static final double MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS = Units.degreesToRotations(90);
 
     private static final double POSITION_TOLERANCE = Units.degreesToRotations(12);
-    private static final double VELOCITY_TOLERANCE = Units.degreesToRotations(500);
 
     private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.7).per(Second);
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
