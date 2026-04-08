@@ -16,9 +16,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.FieldStartingLocation;
 import frc.robot.Constants.RobotState.Mode;
-import frc.robot.commands.ShootTuning;
-import frc.robot.commands.KidsTurretSweep;
+import frc.robot.commands.JoystickTurret;
 // Local imports
+// Local imports
+import frc.robot.commands.ShootTuning;
 import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
 import frc.robot.subsystems.*;
@@ -139,6 +140,8 @@ public final class RobotContainer {
     private static AbstractControl testControl;
 
     private static double lastDrivetrainNoReconnectStickyFaultTime = 0;
+
+    private static final LoggedNetworkBoolean joystickTurretButton = new LoggedNetworkBoolean("JoystickTurret", false);
 
     private RobotContainer() {
         initialize();
@@ -504,6 +507,8 @@ public final class RobotContainer {
 
         new Trigger(shootTuningButton)
                 .onTrue(Commands.runOnce(() -> shootTuningButton.set(false)).andThen(new ShootTuning()));
+                
+        new Trigger(joystickTurretButton).whileTrue(new JoystickTurret().ignoringDisable(true));
     }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
