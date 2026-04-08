@@ -1,7 +1,5 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Amps;
-
 import com.google.common.primitives.ImmutableIntArray;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -117,9 +115,7 @@ public final class RobotContainer {
 
     private static RobotContainer instance;
 
-    private static final double MAPLE_SIM_SIMULATED_BATTERY_NOMINAL_VOLTAGE = 13.5;
-    private static final double MAPLE_SIM_SIMULATED_BATTERY_RESISTANCE = 0.02;
-    private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.45;
+    private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.68;
 
     private RobotContainer() {
         initialize();
@@ -224,16 +220,8 @@ public final class RobotContainer {
             // No point in manually resetting encoders in simulation since starting config is always in the right spot
             resetEncoders();
             // Register all powered subsystems with the simulation battery
-            registerPoweredSubsystems(
-                    intake,
-                    turret,
-                    shooter,
-                    spindexer,
-                    feeder,
-                    climber,
-                    // simulate measured resting voltage
-                    () -> Amps.of((MAPLE_SIM_SIMULATED_BATTERY_NOMINAL_VOLTAGE - ACTUAL_RESTING_BATTERY_VOLTAGE)
-                            / MAPLE_SIM_SIMULATED_BATTERY_RESISTANCE));
+            registerPoweredSubsystems(intake, turret, shooter, spindexer, feeder, climber);
+            SimulatedBattery.setVoltage(ACTUAL_RESTING_BATTERY_VOLTAGE);
         }
 
         SmartDashboard.putBoolean("ShootTuning", false);
