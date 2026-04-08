@@ -72,7 +72,7 @@ public class JoystickKidControls implements AbstractControl {
     @Override
     public Transform2d getKidRawDriverInput() {
         // Returns the raw driver input as a Transform2d
-        return new Transform2d(kidJoystick.getX(), kidJoystick.getY(), Rotation2d.fromRadians(kidJoystick.getTwist()));
+        return new Transform2d(getKidX(), getKidY(), Rotation2d.fromRadians(getKidSpin()));
     }
 
     @Override
@@ -103,6 +103,20 @@ public class JoystickKidControls implements AbstractControl {
         return new Pair<>(x, y);
     }
 
+    public Double getKidX() {
+        double unsquaredX = SimpleMath.applyThresholdAndSensitivity(
+                kidJoystick.getX(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
+        double x = Math.copySign(Math.pow(unsquaredX, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredX);
+        return x;
+    }
+
+    public Double getKidY() {
+        double unsquaredY = SimpleMath.applyThresholdAndSensitivity(
+                kidJoystick.getY(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
+        double y = Math.copySign(Math.pow(unsquaredY, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredY);
+        return y;
+    }
+
     public Pair<Double, Double> getXYOriented() {
         Pair<Double, Double> xy = getXYRaw();
         return AbstractControl.orientXY(new Pair<>(xy.getFirst(), xy.getSecond()));
@@ -112,6 +126,16 @@ public class JoystickKidControls implements AbstractControl {
         // Gets raw twist value
         double unsquaredSpin = SimpleMath.applyThresholdAndSensitivity(
                 -SimpleMath.remap(joystick.getTwist(), -1.0, 1.0, -1.0, 1.0),
+                Constants.Control.JOYSTICK_SPIN_THRESHOLD,
+                Constants.Control.JOYSTICK_SPIN_SENSITIVITY);
+        // Squares the input while preserving the sign to allow for finer control at low speeds
+        return Math.copySign(Math.pow(unsquaredSpin, Constants.Control.JOYSTICK_SPIN_EXPONENT), unsquaredSpin);
+    }
+
+    public Double getKidSpin() {
+        // Gets raw twist value
+        double unsquaredSpin = SimpleMath.applyThresholdAndSensitivity(
+                -SimpleMath.remap(kidJoystick.getTwist(), -1.0, 1.0, -1.0, 1.0),
                 Constants.Control.JOYSTICK_SPIN_THRESHOLD,
                 Constants.Control.JOYSTICK_SPIN_SENSITIVITY);
         // Squares the input while preserving the sign to allow for finer control at low speeds
