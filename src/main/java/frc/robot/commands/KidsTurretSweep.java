@@ -4,8 +4,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-
-
 import java.util.Optional;
 
 public class KidsTurretSweep extends Command {
@@ -26,31 +24,29 @@ public class KidsTurretSweep extends Command {
      * .finallyDo() runs exactly once when the whole chain is interrupted externally.
      */
     public static Command createCommand() {
-        return new KidsTurretSweep()
-                .repeatedly()
-                .finallyDo(() -> {
-                    SmartDashboard.putBoolean("TurretSweep", false);
-                })
-                ;
+        return new KidsTurretSweep().repeatedly().finallyDo(() -> {
+            SmartDashboard.putBoolean("TurretSweep", false);
+        });
     }
 
     @Override
     public void initialize() {
-        sweepPosition = Units.rotationsToRadians(RobotContainer.turret.getPositionRotations()); // Start from current angle to avoid jumps
+        sweepPosition = Units.rotationsToRadians(
+                RobotContainer.turret.getPositionRotations()); // Start from current angle to avoid jumps
         sweepDirection = 1;
     }
 
     @Override
     public void execute() {
 
-            sweepPosition += sweepDirection * SWEEP_STEP;
-            if (sweepPosition >= SWEEP_HALF_RANGE) {
-                sweepPosition = SWEEP_HALF_RANGE;
-                sweepDirection = -1;
-            } else if (sweepPosition <= -SWEEP_HALF_RANGE) {
-                sweepPosition = -SWEEP_HALF_RANGE;
-                sweepDirection = 1;
-            }
+        sweepPosition += sweepDirection * SWEEP_STEP;
+        if (sweepPosition >= SWEEP_HALF_RANGE) {
+            sweepPosition = SWEEP_HALF_RANGE;
+            sweepDirection = -1;
+        } else if (sweepPosition <= -SWEEP_HALF_RANGE) {
+            sweepPosition = -SWEEP_HALF_RANGE;
+            sweepDirection = 1;
+        }
 
         RobotContainer.shootOrchestrator.turretAngleOverride = Optional.of(sweepPosition);
         SmartDashboard.putNumber("KidsTurretSweep/TurretAngle", sweepPosition);
