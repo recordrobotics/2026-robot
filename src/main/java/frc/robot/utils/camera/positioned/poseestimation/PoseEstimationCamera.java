@@ -25,7 +25,7 @@ import org.littletonrobotics.junction.Logger;
  * <p>Supports both constrained and unconstrained pose estimates as well as a way to force using unconstrained estimates.
  * <p>Allows rotation measurements to be optionally trusted or ignored.
  */
-public abstract class PoseEstimationCamera extends PositionedCamera {
+public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimationCamera> {
 
     public static final double DEFAULT_MAX_DISTANCE_TO_CURRENT_ESTIMATE = 10.0;
     public static final double DEFAULT_UNCONSTRAINED_MAX_DISTANCE = Units.feetToMeters(7);
@@ -189,8 +189,9 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
         return ignored;
     }
 
-    public void setIgnore(boolean ignore) {
+    public PoseEstimationCamera setIgnore(boolean ignore) {
         ignored = ignore;
+        return this;
     }
 
     /**
@@ -213,38 +214,44 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * Sets whether to trust rotation measurements.
      * @param useRotation True to trust rotation measurements, false to ignore them.
      */
-    public void setUseRotation(boolean useRotation) {
+    public PoseEstimationCamera setUseRotation(boolean useRotation) {
         this.useRotation = useRotation;
         SmartDashboard.putBoolean(getPrefix() + USE_ROTATION_ENTRY, useRotation);
+        return this;
     }
 
     /**
      * Sets whether to force using unconstrained measurements.
      * @param forceUnconstrained True to force using unconstrained measurements, false to use normal logic.
      */
-    public void setForceUnconstrained(boolean forceUnconstrained) {
+    public PoseEstimationCamera setForceUnconstrained(boolean forceUnconstrained) {
         this.forceUnconstrained = forceUnconstrained;
         SmartDashboard.putBoolean(getPrefix() + FORCE_UNCONSTRAINED_ENTRY, forceUnconstrained);
+        return this;
     }
 
-    public void setForceUnthrottled(boolean forceUnthrottled) {
+    public PoseEstimationCamera setForceUnthrottled(boolean forceUnthrottled) {
         this.forceUnthrottled = forceUnthrottled;
         SmartDashboard.putBoolean(getPrefix() + FORCE_UNTHROTTLED_ENTRY, forceUnthrottled);
+        return this;
     }
 
-    public void setForceUnconstrainedWhenDisabled(boolean forceUnconstrainedWhenDisabled) {
+    public PoseEstimationCamera setForceUnconstrainedWhenDisabled(boolean forceUnconstrainedWhenDisabled) {
         this.forceUnconstrainedWhenDisabled = forceUnconstrainedWhenDisabled;
         SmartDashboard.putBoolean(
                 getPrefix() + FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY, forceUnconstrainedWhenDisabled);
+        return this;
     }
 
-    public void setComputeRobotToCamera(boolean computeRobotToCamera, Pose3d knownRobotPose) {
+    public PoseEstimationCamera setComputeRobotToCamera(boolean computeRobotToCamera, Pose3d knownRobotPose) {
         this.computeRobotToCamera = computeRobotToCamera;
         this.knownRobotPose = knownRobotPose;
+        return this;
     }
 
-    public void setComputeRobotToCamera(boolean computeRobotToCamera) {
+    public PoseEstimationCamera setComputeRobotToCamera(boolean computeRobotToCamera) {
         this.computeRobotToCamera = computeRobotToCamera;
+        return this;
     }
 
     public boolean isComputingRobotToCamera() {
@@ -321,8 +328,9 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * <p>Prevents large jumps in pose due to bad vision measurements.
      * @param maxDistanceToCurrentEstimate The maximum distance to accept vision measurements.
      */
-    public void setMaxDistanceToCurrentEstimate(double maxDistanceToCurrentEstimate) {
+    public PoseEstimationCamera setMaxDistanceToCurrentEstimate(double maxDistanceToCurrentEstimate) {
         this.maxDistanceToCurrentEstimate = maxDistanceToCurrentEstimate;
+        return this;
     }
 
     /**
@@ -330,8 +338,9 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * <p>Beyond this distance, constrained measurements will be used if available.
      * @param unconstrainedMaxDistance The maximum distance to tag for unconstrained measurements.
      */
-    public void setUnconstrainedMaxDistance(double unconstrainedMaxDistance) {
+    public PoseEstimationCamera setUnconstrainedMaxDistance(double unconstrainedMaxDistance) {
         this.unconstrainedMaxDistance = unconstrainedMaxDistance;
+        return this;
     }
 
     /**
@@ -339,8 +348,9 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * <p>Beyond this distance, TXTY measurements will be ignored.
      * @param txtyMaxDistance The maximum distance to TXTY tag for TXTY measurements.
      */
-    public void setTxtyMaxDistance(double txtyMaxDistance) {
+    public PoseEstimationCamera setTxtyMaxDistance(double txtyMaxDistance) {
         this.txtyMaxDistance = txtyMaxDistance;
+        return this;
     }
 
     /**
@@ -348,8 +358,9 @@ public abstract class PoseEstimationCamera extends PositionedCamera {
      * <p>Higher values mean less trust in rotation measurements.
      * @param rotationStdDevMultiplier The rotation standard deviation multiplier.
      */
-    public void setRotationStdDevMultiplier(double rotationStdDevMultiplier) {
+    public PoseEstimationCamera setRotationStdDevMultiplier(double rotationStdDevMultiplier) {
         this.rotationStdDevMultiplier = rotationStdDevMultiplier;
+        return this;
     }
 
     /**

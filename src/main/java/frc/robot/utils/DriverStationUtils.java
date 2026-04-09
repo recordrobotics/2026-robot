@@ -52,31 +52,52 @@ public final class DriverStationUtils {
         return inPracticeMode;
     }
 
-    public record MatchTimeData(boolean hubActive, double timeLeftInShift) {}
+    public enum MatchShift {
+        AUTO("Auto"),
+        TRANSITION("Transition"),
+        SHIFT_1("Shift 1"),
+        SHIFT_2("Shift 2"),
+        SHIFT_3("Shift 3"),
+        SHIFT_4("Shift 4"),
+        ENDGAME("Endgame"),
+        UNKNOWN("Unknown");
+
+        private final String name;
+
+        MatchShift(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    public record MatchTimeData(boolean hubActive, double timeLeftInShift, MatchShift shift, boolean wonAuto) {}
 
     public static MatchTimeData isHubActive() {
         Optional<Alliance> alliance = DriverStation.getAlliance();
         // If we have no alliance, we cannot be enabled, therefore no hub.
         if (alliance.isEmpty()) {
-            return new MatchTimeData(false, 0);
+            return new MatchTimeData(false, 0, MatchShift.UNKNOWN, false);
         }
 
         double matchTime = DriverStation.getMatchTime();
 
         // Hub is always enabled in autonomous.
         if (DriverStation.isAutonomousEnabled()) {
-            return new MatchTimeData(true, matchTime);
+            return new MatchTimeData(true, matchTime, MatchShift.AUTO, false);
         }
         // At this point, if we're not teleop enabled, there is no hub.
         if (!DriverStation.isTeleopEnabled()) {
-            return new MatchTimeData(false, 25);
+            return new MatchTimeData(false, 25, MatchShift.UNKNOWN, false);
         }
 
         // We're teleop enabled, compute.
         String gameData = DriverStation.getGameSpecificMessage();
         // If we have no game data, we cannot compute, assume hub is active, as its likely early in teleop.
         if (gameData.isEmpty()) {
-            return new MatchTimeData(true, 0);
+            return new MatchTimeData(true, 0, MatchShift.UNKNOWN, false);
         }
         boolean redInactiveFirst = false;
         switch (gameData.charAt(0)) {
@@ -84,7 +105,7 @@ public final class DriverStationUtils {
             case 'B' -> redInactiveFirst = false;
             default -> {
                 // If we have invalid game data, assume hub is active.
-                return new MatchTimeData(true, 0);
+                return new MatchTimeData(true, 0, MatchShift.UNKNOWN, false);
             }
         }
 
@@ -97,22 +118,22 @@ public final class DriverStationUtils {
 
         if (matchTime > 130) {
             // Transition shift, hub is active.
-            return new MatchTimeData(true, matchTime - 130);
+            return new MatchTimeData(true, matchTime - 130, MatchShift.TRANSITION, !shift1Active);
         } else if (matchTime > 105) {
             // Shift 1
-            return new MatchTimeData(shift1Active, matchTime - 105);
+            return new MatchTimeData(shift1Active, matchTime - 105, MatchShift.SHIFT_1, !shift1Active);
         } else if (matchTime > 80) {
             // Shift 2
-            return new MatchTimeData(!shift1Active, matchTime - 80);
+            return new MatchTimeData(!shift1Active, matchTime - 80, MatchShift.SHIFT_2, !shift1Active);
         } else if (matchTime > 55) {
             // Shift 3
-            return new MatchTimeData(shift1Active, matchTime - 55);
+            return new MatchTimeData(shift1Active, matchTime - 55, MatchShift.SHIFT_3, !shift1Active);
         } else if (matchTime > 30) {
             // Shift 4
-            return new MatchTimeData(!shift1Active, matchTime - 30);
+            return new MatchTimeData(!shift1Active, matchTime - 30, MatchShift.SHIFT_4, !shift1Active);
         } else {
             // End game, hub always active.
-            return new MatchTimeData(true, matchTime);
+            return new MatchTimeData(true, matchTime, MatchShift.ENDGAME, !shift1Active);
         }
     }
 

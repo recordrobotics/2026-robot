@@ -11,7 +11,7 @@ import java.util.Optional;
 /**
  * Abstract camera class for cameras that have a known position on the robot, such as a camera mounted on a mount an arm or elevator.
  */
-public abstract class PositionedCamera extends GenericCamera {
+public abstract class PositionedCamera<T extends PositionedCamera<T>> extends GenericCamera {
 
     private static final double BUFFER_DURATION = 1.5;
 
@@ -116,8 +116,10 @@ public abstract class PositionedCamera extends GenericCamera {
      * Sets the dynamic position mode of the camera, which determines how the camera calculates the robot's pose.
      * @param mode The dynamic position mode to set.
      */
-    public void setDynamicPositionMode(DynamicPositionMode mode) {
+    @SuppressWarnings("unchecked")
+    public T setDynamicPositionMode(DynamicPositionMode mode) {
         this.dynamicPositionMode = mode;
+        return (T) this;
     }
 
     /**

@@ -5,8 +5,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.camera.Cameras;
@@ -89,6 +95,9 @@ public class FieldStateTracker extends ManagedSubsystemBase {
     private final EnumMap<ObjectDetectionClass, List<DeferredObjectDetection>> detectionsByClassBuffer =
             createDetectionsByClassBuffer();
 
+    private final Field2d field = new Field2d();
+    private final SendableBuilder fieldSendableBuilder;
+
     public static class FieldObject {
         private Pose2d pose;
         private Translation2d velocity = new Translation2d();
@@ -156,6 +165,16 @@ public class FieldStateTracker extends ManagedSubsystemBase {
                     pose.getTranslation().plus(velocity.times(Math.min(0.02, 0.002 / timeSinceLastSeen))),
                     pose.getRotation());
         }
+    }
+
+    public FieldStateTracker() {
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("/SmartDashboard/Autonomous");
+        SendableBuilderImpl builder = new SendableBuilderImpl();
+        builder.setTable(table.getSubTable("Field"));
+        field.initSendable(builder);
+        builder.startListeners();
+        builder.update();
+        fieldSendableBuilder = builder;
     }
 
     public void addObjectDetectionUpdate(
@@ -528,6 +547,9 @@ public class FieldStateTracker extends ManagedSubsystemBase {
      * Logs values to the logger
      */
     private void logValues() {
+        field.setRobotPose(RobotContainer.poseSensorFusion.getEstimatedPosition());
+        fieldSendableBuilder.update();
+
         Logger.recordOutput(
                 "FieldStateTracker/FieldObjects",
                 fieldObjects.stream()
@@ -536,6 +558,10 @@ public class FieldStateTracker extends ManagedSubsystemBase {
                         .toArray(Pose3d[]::new));
 
         cameras.stream().forEach(GenericCamera::logValues);
+    }
+
+    public Field2d getField() {
+        return field;
     }
 
     public Set<FieldObject> getFieldObjects() {

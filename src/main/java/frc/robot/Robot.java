@@ -14,13 +14,15 @@ import edu.wpi.first.wpilibj.RobotController.RadioLEDState;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.dashboard.DashboardUI;
+import frc.robot.subsystems.PowerDistributionPanel;
 import frc.robot.utils.AutoLogLevelManager;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.LocalADStarAK;
 import frc.robot.utils.SysIdManager;
+import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.maplesim.ImprovedMapleMatch;
 import frc.robot.utils.maplesim.OpponentRobot;
+import java.lang.reflect.Constructor;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -75,6 +77,7 @@ public final class Robot extends LoggedRobot {
     }
 
     private void configureLogging() {
+        PowerDistributionPanel.setupLogging();
         if (Constants.RobotState.getMode().isRealtime()) {
             configureRealtimeLogging();
         } else {
@@ -166,7 +169,7 @@ public final class Robot extends LoggedRobot {
         Pathfinding.setPathfinder(new LocalADStarAK());
 
         // RobotContainer initialization
-        AutoLogLevelManager.addObject(RobotContainer.createAndInitialize());
+        initContainer(RobotContainer.class);
 
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.TEST) {
             // Elastic layout webserver
@@ -182,11 +185,23 @@ public final class Robot extends LoggedRobot {
         }
 
         // MAKE SURE FIRST CALL TO ELASTIC IS NOT IN TELEOP OR AUTO INIT!!
-        DashboardUI.Autonomous.switchTo();
+        Elastic.selectTab("Autonomous");
 
         AutoLogLevelManager.addObject(this);
 
         initialized = true;
+    }
+
+    @SuppressWarnings("java:S3011") /* we want RobotContainer to be private */
+    public static <T> void initContainer(Class<T> containerClass) {
+        try {
+            Constructor<T> constructor = containerClass.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            T container = constructor.newInstance();
+            AutoLogLevelManager.addObject(container);
+        } catch (Exception e) {
+            throw new UnsupportedOperationException("Failed to instantiate container: " + containerClass.getName(), e);
+        }
     }
 
     /**
@@ -206,7 +221,7 @@ public final class Robot extends LoggedRobot {
         // robot's periodic
         // block in order for anything in the Command-based framework to work.
 
-        DashboardUI.Overview.getControl().update();
+        RobotContainer.getControl().update();
 
         // End and start reversed to make sure we get latest data before command scheduler
         RobotContainer.poseSensorFusion.endCalculation();
@@ -225,12 +240,6 @@ public final class Robot extends LoggedRobot {
             CommandScheduler.getInstance().run();
         } catch (Exception e) {
             ConsoleLogger.logError("CommandScheduler exception", e);
-        }
-
-        try {
-            DashboardUI.update();
-        } catch (Exception e) {
-            ConsoleLogger.logError("DashboardUI exception", e);
         }
 
         try {
@@ -284,7 +293,7 @@ public final class Robot extends LoggedRobot {
             CommandScheduler.getInstance().schedule(autonomousCommand);
         }
 
-        DashboardUI.Autonomous.switchTo();
+        Elastic.selectTab("Autonomous");
 
         RobotContainer.autonomousInit();
 
@@ -314,7 +323,7 @@ public final class Robot extends LoggedRobot {
         RobotContainer.teleopInit();
         hasRun = true;
 
-        DashboardUI.Overview.switchTo();
+        Elastic.selectTab("Overview");
     }
 
     /** This function is called periodically during operator control. */

@@ -14,13 +14,14 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.FieldStartingLocation;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.commands.ShootTuning;
 // Local imports
 import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
-import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.subsystems.io.real.ClimberReal;
 import frc.robot.subsystems.io.real.FeederReal;
 import frc.robot.subsystems.io.real.IntakeReal;
@@ -35,10 +36,10 @@ import frc.robot.subsystems.io.sim.SpindexerSim;
 import frc.robot.subsystems.io.sim.TurretSim;
 import frc.robot.subsystems.shootorchestrator.ShootOrchestrator;
 import frc.robot.utils.AutoPath;
+import frc.robot.utils.CommandUtils;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.DriverStationUtils.MatchTimeData;
-import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
 import frc.robot.utils.PositionedSubsystem;
 import frc.robot.utils.PoweredSubsystem;
@@ -49,6 +50,7 @@ import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
 import java.util.EnumSet;
+import java.util.Objects;
 import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -67,21 +69,9 @@ public final class RobotContainer {
     public static final int CONTROL_JOYSTICK_PORT = 2;
     public static final int CONTROL_XBOX_PORT = 0;
 
-    public static final double INVALID_COMMAND_VIBRATE_TIME = 0.1;
-
-    public static final double AUTO_ALIGN_FIRST_WAYPOINT_TIMEOUT = 2.0;
-    public static final double AUTO_ALIGN_SECOND_WAYPOINT_TIMEOUT = 1.0;
-
     // Min time remaining in which we can auto reset encoders if not already reset during autonomous
-    // (15 - 13 = 2 seconds at the start of auto)
-    public static final double FMS_AUTO_RESET_ENCODERS_MIN_TIME = 13;
-
-    /**
-     * The time remaining in the match after which the climber will automatically raise if near the tower
-     */
-    public static final double CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING = 15.0;
-
-    public static final double CLIMBER_AUTORAISE_DISTANCE_METERS = 1.0;
+    // (20 - 18 = 2 seconds at the start of auto)
+    public static final double FMS_AUTO_RESET_ENCODERS_MIN_TIME = 18;
 
     public static final ImmutableIntArray NON_HUB_TAG_IDS =
             ImmutableIntArray.of(1, 12, 13, 14, 15, 16, 7, 6, 17, 28, 29, 30, 31, 32, 23, 22);
@@ -113,19 +103,17 @@ public final class RobotContainer {
 
     private static Alert noEncoderResetAlert;
 
-    private static RobotContainer instance;
+    private static LoggedDashboardChooser<AbstractControl> driveMode = new LoggedDashboardChooser<>("Drive Mode");
+    private static AbstractControl defaultControl;
+    private static AbstractControl testControl;
+
+    private static LoggedDashboardChooser<FieldStartingLocation> fieldStartingLocationChooser =
+            new LoggedDashboardChooser<>("Starting Location");
 
     private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.68;
 
     private RobotContainer() {
         initialize();
-    }
-
-    public static RobotContainer createAndInitialize() {
-        if (instance == null) {
-            instance = new RobotContainer();
-        }
-        return instance;
     }
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
@@ -135,8 +123,16 @@ public final class RobotContainer {
 
         noEncoderResetAlert = new Alert("Encoders not reset!", AlertType.kError);
 
+        SmartDashboard.putBoolean("Autonomous/ResetLocationButton", false);
+        SmartDashboard.putBoolean("Autonomous/EncoderReset", false);
+
         EnumSet.allOf(ShootMode.class).forEach(v -> shootModeChooser.addOption(v.name(), v));
         shootModeChooser.addDefaultOption(ShootMode.AUTO.name(), ShootMode.AUTO);
+
+        EnumSet.allOf(FieldStartingLocation.class)
+                .forEach(v -> fieldStartingLocationChooser.addOption(v.toString(), v));
+        fieldStartingLocationChooser.addDefaultOption(
+                FieldStartingLocation.TrenchDepot.toString(), FieldStartingLocation.TrenchDepot);
 
         pdp = new PowerDistributionPanel();
 
@@ -193,8 +189,7 @@ public final class RobotContainer {
             climber = new Climber(new ClimberSim(ROBOT_PERIODIC, drivetrain.getSwerveDriveSimulation()));
         }
 
-        poseSensorFusion = new PoseSensorFusion(
-                DashboardUI.Autonomous.getStartingLocation().getPose());
+        poseSensorFusion = new PoseSensorFusion(getStartingLocation().getPose());
         fieldStateTracker = new FieldStateTracker();
         shootOrchestrator = new ShootOrchestrator();
 
@@ -205,12 +200,11 @@ public final class RobotContainer {
         // Warmup Ruckig
         CommandScheduler.getInstance().schedule(RuckigWarmup.warmupCommand());
 
-        DashboardUI.Autonomous.setupAutoChooser();
-        PlannedAuto.setAutoSupplier(DashboardUI.Autonomous::getAutoChooser);
+        AutoPath.setupAutoChooser();
+        PlannedAuto.setAutoSupplier(AutoPath::getAutoChooser);
 
         // Sets up Control scheme chooser
-        DashboardUI.Overview.addControls(
-                new JoystickControls(CONTROL_JOYSTICK_PORT), new XboxControls(CONTROL_XBOX_PORT));
+        addControls(new XboxControls(CONTROL_XBOX_PORT), new JoystickControls(CONTROL_JOYSTICK_PORT));
 
         configureTriggers();
 
@@ -225,6 +219,7 @@ public final class RobotContainer {
         }
 
         SmartDashboard.putBoolean("ShootTuning", false);
+        SmartDashboard.putBoolean("DefenseMode", false);
     }
 
     public static void teleopInit() {
@@ -257,16 +252,26 @@ public final class RobotContainer {
         }
     }
 
+    public static boolean isInDefenseMode() {
+        return SmartDashboard.getBoolean("DefenseMode", false);
+    }
+
     private static boolean shouldBeShooting() {
 
         MatchTimeData matchData = DriverStationUtils.isHubActive();
         boolean hubActive = matchData.hubActive();
 
         SmartDashboard.putNumber("ShiftTime", Math.ceil(matchData.timeLeftInShift()));
+        SmartDashboard.putString("CurrentShift", matchData.shift().getName());
+        SmartDashboard.putBoolean("WonAuto", matchData.wonAuto());
 
         Logger.recordOutput("HubActive", hubActive);
 
         if (shootModeChooser.get() == null) return false;
+
+        if (isInDefenseMode()) {
+            return false;
+        }
 
         switch (shootModeChooser.get()) {
             case FORCE:
@@ -275,35 +280,39 @@ public final class RobotContainer {
                 return false;
             case AUTO:
                 if (ShootOrchestrator.isInAllianceZone() && hubActive) {
-                    return !DashboardUI.Overview.getControl().isShooterInvertPressed();
+                    return !getControl().isShooterInvertPressed();
                 } else {
-                    return DashboardUI.Overview.getControl().isShooterInvertPressed();
+                    return getControl().isShooterInvertPressed();
                 }
             case FIXED:
-                return DashboardUI.Overview.getControl().isShooterInvertPressed();
+                return getControl().isShooterInvertPressed();
             default:
                 return false;
         }
     }
 
     private static void configureTriggers() {
-        new Trigger(() -> DashboardUI.Overview.getControl().isIntakeInvertPressed())
+        new Trigger(() -> getControl().isIntakeInvertPressed()
+                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED), intake))
                 .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake));
 
-        new Trigger(() -> DashboardUI.Overview.getControl().isIntakePressed())
+        new Trigger(() -> getControl().isIntakePressed()
+                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake))
                 .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
 
-        new Trigger(() -> DashboardUI.Overview.getControl().isIntakeUpPressed())
+        new Trigger(() -> getControl().isIntakeUpPressed()
+                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED), intake))
                 .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
 
-        new Trigger(() -> DashboardUI.Overview.getControl().isReverseIntakePressed())
+        new Trigger(() -> getControl().isReverseIntakePressed()
+                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.EJECT), intake))
                 .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake));
 
-        new Trigger(() -> DashboardUI.Overview.getControl().isClimbPressed()).onTrue(new InstantCommand(() -> {
+        new Trigger(() -> getControl().isClimbPressed()).onTrue(new InstantCommand(() -> {
             if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {
                 climber.setState(Constants.ClimberHeight.UP);
             } else {
@@ -311,24 +320,15 @@ public final class RobotContainer {
             }
         }));
 
-        // new Trigger(() -> ClimberSim.isWithinDistanceOfClimbing(
-        //                         CLIMBER_AUTORAISE_DISTANCE_METERS,
-        //                         poseSensorFusion.getEstimatedPosition(),
-        //                         climber.getCurrentHeight())
-        //                 && DriverStationUtils.getTeleopMatchTime().orElse(Double.MAX_VALUE)
-        //                         < CLIMBER_AUTORAISE_TIME_SECONDS_REMAINING)
-        //         .onTrue(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.UP)))
-        //         .onFalse(new InstantCommand(() -> climber.setState(Constants.ClimberHeight.DOWN)));
-
         new Trigger(RobotContainer::shouldBeShooting)
-                .whileTrue(new InstantCommand(
+                .onTrue(new InstantCommand(
                                 () -> {
                                     shootOrchestrator.setEnableShooting(true);
                                     shootOrchestrator.setFixedMode(shootModeChooser.get() == ShootMode.FIXED);
                                 },
                                 shooter)
                         .ignoringDisable(true))
-                .whileFalse(new InstantCommand(
+                .onFalse(new InstantCommand(
                                 () -> {
                                     shootOrchestrator.setEnableShooting(false);
                                     shootOrchestrator.setFixedMode(shootModeChooser.get() == ShootMode.FIXED);
@@ -341,27 +341,21 @@ public final class RobotContainer {
          * All subsystems automatically re-enable after 2 periodic cycles unless holding kill trigger to prevent accidental disables
          * When button is released all commands are canceled
          */
-        new Trigger(() -> DashboardUI.Overview.getControl().isKillTriggered())
-                .whileTrue(Commands.run(
-                        () -> KillableSubsystem.setForceDisabledForAll(
-                                true, 2, intake, shooter, climber, feeder, spindexer, turret),
-                        intake,
-                        shooter,
-                        climber,
-                        feeder,
-                        spindexer,
-                        turret))
+        new Trigger(() -> getControl().isKillTriggered())
+                .whileTrue(CommandUtils.setForceDisabledForAllCommand(
+                                true, 2, intake, shooter, climber, feeder, spindexer, turret)
+                        .repeatedly())
                 .onFalse(Commands.runOnce(() -> CommandScheduler.getInstance().cancelAll()));
 
         // Reset pose trigger
-        new Trigger(() -> DashboardUI.Overview.getControl().isPoseResetTriggered())
-                .onTrue(new InstantCommand(poseSensorFusion::alignRotationWithDriverStation));
-        new Trigger(DashboardUI.Autonomous::isResetLocationPressed)
-                .onTrue(new InstantCommand(() -> poseSensorFusion.setToPose(
-                                DashboardUI.Autonomous.getStartingLocation().getPose()))
+        new Trigger(() -> getControl().isPoseResetTriggered())
+                .onTrue(Commands.runOnce(poseSensorFusion::alignRotationWithDriverStation));
+        new Trigger(() -> SmartDashboard.getBoolean("Autonomous/ResetLocationButton", false))
+                .onTrue(Commands.runOnce(() ->
+                                poseSensorFusion.setToPose(getStartingLocation().getPose()))
                         .ignoringDisable(true));
-        new Trigger(DashboardUI.Autonomous::isEncoderResetPressed)
-                .onTrue(new InstantCommand(RobotContainer::resetEncoders).ignoringDisable(true));
+        new Trigger(() -> SmartDashboard.getBoolean("Autonomous/EncoderReset", false))
+                .onTrue(Commands.runOnce(RobotContainer::resetEncoders).ignoringDisable(true));
 
         new Trigger(() -> SmartDashboard.getBoolean("ShootTuning", false)).onTrue(new ShootTuning());
     }
@@ -400,6 +394,43 @@ public final class RobotContainer {
         noEncoderResetAlert.set(false);
         Elastic.sendNotification(
                 new Notification(NotificationLevel.INFO, "Encoders reset!", "Successfully reset encoders."));
+    }
+
+    /**
+     * Initializes the control object
+     *
+     * @param defaultControl the first term will always be the default control object
+     * @param controls any other control objects you want to initialize
+     */
+    public static void addControls(AbstractControl defaultControl, AbstractControl... controls) {
+        RobotContainer.defaultControl = defaultControl;
+
+        // Sets up drive mode options
+        driveMode.addDefaultOption(defaultControl.toDisplayName(), defaultControl);
+        for (AbstractControl abstractControl : controls) {
+            driveMode.addOption(abstractControl.toDisplayName(), abstractControl);
+        }
+    }
+
+    public static void setTestControl(AbstractControl testControl) {
+        if (Constants.RobotState.getMode() != Constants.RobotState.Mode.TEST) return;
+        RobotContainer.testControl = testControl;
+    }
+
+    public static AbstractControl getControl() {
+        if (Constants.RobotState.getMode() == Constants.RobotState.Mode.TEST) {
+            if (testControl == null) {
+                throw new IllegalStateException("Test control is not set!");
+            }
+            return testControl;
+        }
+
+        if (driveMode.get() == null) return defaultControl;
+        return driveMode.get();
+    }
+
+    public static FieldStartingLocation getStartingLocation() {
+        return Objects.requireNonNullElse(fieldStartingLocationChooser.get(), FieldStartingLocation.TrenchDepot);
     }
 
     /** frees up all hardware allocations */

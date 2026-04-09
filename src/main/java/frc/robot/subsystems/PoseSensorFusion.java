@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
-import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.Turret.RobotToMechanismUpdate;
 import frc.robot.subsystems.io.real.NavSensorPigeon2;
 import frc.robot.subsystems.io.sim.NavSensorSimPigeon2;
@@ -106,28 +105,37 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
     private IndependentSwervePoseEstimator independentPoseEstimator;
 
     private final PoseEstimationCamera turretCamera = Cameras.createLimelightPoseEstimationCamera(
-            Constants.Vision.TURRET_NAME, PhysicalCamera.LIMELIGHT_4, Constants.Vision.MECHANISM_TO_CAMERA_TURRET);
+                    Constants.Vision.TURRET_NAME,
+                    PhysicalCamera.LIMELIGHT_4,
+                    Constants.Vision.MECHANISM_TO_CAMERA_TURRET)
+            .setUnconstrainedMaxDistance(0)
+            .setDynamicPositionMode(DynamicPositionMode.MECHANISM_TO_CAMERA)
+            .setForceUnconstrainedWhenDisabled(true);
 
     /**
      * The cameras used for vision measurements
      */
     private final Set<PoseEstimationCamera> cameras = Set.of(
             Cameras.createLimelightPoseEstimationCamera(
-                    Constants.Vision.RIGHT_FRONT_NAME,
-                    PhysicalCamera.LIMELIGHT_3G,
-                    Constants.Vision.ROBOT_TO_CAMERA_RIGHT_FRONT),
+                            Constants.Vision.RIGHT_FRONT_NAME,
+                            PhysicalCamera.LIMELIGHT_3G,
+                            Constants.Vision.ROBOT_TO_CAMERA_RIGHT_FRONT)
+                    .setForceUnconstrained(true),
             Cameras.createLimelightPoseEstimationCamera(
-                    Constants.Vision.HOPPER_BACK_NAME,
-                    PhysicalCamera.LIMELIGHT_2,
-                    Constants.Vision.ROBOT_TO_CAMERA_HOPPER_BACK),
+                            Constants.Vision.HOPPER_BACK_NAME,
+                            PhysicalCamera.LIMELIGHT_2,
+                            Constants.Vision.ROBOT_TO_CAMERA_HOPPER_BACK)
+                    .setForceUnconstrained(true),
             Cameras.createPhotonVisionPoseEstimationCamera(
-                    Constants.Vision.LEFT_BACK_NAME,
-                    PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
-                    Constants.Vision.ROBOT_TO_CAMERA_LEFT_BACK),
+                            Constants.Vision.LEFT_BACK_NAME,
+                            PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
+                            Constants.Vision.ROBOT_TO_CAMERA_LEFT_BACK)
+                    .setForceUnconstrained(true),
             Cameras.createPhotonVisionPoseEstimationCamera(
-                    Constants.Vision.RIGHT_BACK_NAME,
-                    PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
-                    Constants.Vision.ROBOT_TO_CAMERA_RIGHT_BACK),
+                            Constants.Vision.RIGHT_BACK_NAME,
+                            PhysicalCamera.SVPRO_GLOBAL_SHUTTER,
+                            Constants.Vision.ROBOT_TO_CAMERA_RIGHT_BACK)
+                    .setForceUnconstrained(true),
             turretCamera);
 
     /**
@@ -202,15 +210,11 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                     Constants.Swerve.BACK_RIGHT_WHEEL_LOCATION
                 });
 
-        turretCamera.setUnconstrainedMaxDistance(0);
-        turretCamera.setDynamicPositionMode(DynamicPositionMode.MECHANISM_TO_CAMERA);
-        turretCamera.setForceUnconstrainedWhenDisabled(true);
-
         EnumSet.allOf(RTCMode.class).forEach(v -> rtcModeChooser.addOption(v.name(), v));
         rtcModeChooser.addDefaultOption(RTCMode.OFF.name(), RTCMode.OFF);
 
         SmartDashboard.putBoolean("Camera/FilterTags", false);
-        SmartDashboard.putBoolean("Camera/PrioritizeTurret", false);
+        SmartDashboard.putBoolean("Camera/PrioritizeTurret", true);
     }
 
     public record DeferredPoseEstimation(
@@ -266,8 +270,6 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      * Logs values to the logger
      */
     private void logValues() {
-        DashboardUI.Autonomous.setRobotPose(poseFilter.getEstimatedPosition());
-
         cameras.stream().forEach(GenericCamera::logValues);
 
         Logger.recordOutput("SwerveEstimations", independentPoseEstimator.getEstimatedModulePositions());
@@ -419,8 +421,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
             RobotContainer.drivetrain
                     .getSwerveDriveSimulation()
-                    .setSimulationWorldPose(
-                            DashboardUI.Autonomous.getStartingLocation().getPose());
+                    .setSimulationWorldPose(RobotContainer.getStartingLocation().getPose());
         }
     }
 

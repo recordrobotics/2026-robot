@@ -26,7 +26,6 @@ public final class PowerDistributionPanel extends SubsystemBase {
     private final Set<Supplier<Current>> simMiniPdpDeviceCurrentSuppliers;
 
     public PowerDistributionPanel() {
-        LoggedPowerDistribution.getInstance(1, ModuleType.kRev);
         if (RobotBase.isSimulation()) {
             pdpSim = new PDPSim(1);
             simCurrentSuppliers = new HashMap<>();
@@ -62,6 +61,10 @@ public final class PowerDistributionPanel extends SubsystemBase {
             simCurrentSuppliers = null;
             simMiniPdpDeviceCurrentSuppliers = null;
         }
+    }
+
+    public static void setupLogging() {
+        LoggedPowerDistribution.getInstance(1, ModuleType.kRev);
     }
 
     public void registerSimDevice(int channel, Supplier<Current> currentSupplier) {

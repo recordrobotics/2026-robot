@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.control.AbstractControl;
-import frc.robot.dashboard.DashboardUI;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.modifiers.DrivetrainControl;
 import java.util.EnumMap;
@@ -21,7 +20,7 @@ public class TestControlBridge implements AbstractControl {
     private static TestControlBridge instance;
 
     static {
-        DashboardUI.Overview.setTestControl(getInstance());
+        RobotContainer.setTestControl(getInstance());
     }
 
     private Transform2d lastVelocity = new Transform2d();

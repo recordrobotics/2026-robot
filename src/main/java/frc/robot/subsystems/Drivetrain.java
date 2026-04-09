@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
-import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.subsystems.io.real.SwerveModuleReal;
 import frc.robot.subsystems.io.sim.SwerveModuleSim;
@@ -140,7 +139,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
                     // Specify Configuration
                     driveTrainSimulationConfig,
                     // Specify starting pose
-                    DashboardUI.Autonomous.getStartingLocation().getPose());
+                    RobotContainer.getStartingLocation().getPose());
 
             // Register the drivetrain simulation to the default simulation world
             SimulatedArena.getInstance().addDriveTrainSimulation(swerveDriveSimulation);
@@ -216,7 +215,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
 
     private static DrivetrainControl getDrivetrainControl() {
         if (RobotState.isTeleop()) {
-            return DashboardUI.Overview.getControl().getDrivetrainControl();
+            return RobotContainer.getControl().getDrivetrainControl();
         } else {
             return DrivetrainControl.createRobotRelative(Transform2d.kZero, Transform2d.kZero, Transform2d.kZero);
         }
@@ -253,8 +252,6 @@ public final class Drivetrain extends ManagedSubsystemBase {
         ChassisSpeeds nonDiscreteSpeeds = drivetrainControl.toChassisSpeeds(); // Converts the control to ChassisSpeeds
         double[] robotRelativeForcesXNewtons = drivetrainControl.robotRelativeForcesXNewtons();
         double[] robotRelativeForcesYNewtons = drivetrainControl.robotRelativeForcesYNewtons();
-
-        Logger.recordOutput("DSSPE", nonDiscreteSpeeds);
 
         // Note: it is important to not discretize speeds before or after
         // using the setpoint generator, as it will discretize them for you

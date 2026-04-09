@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.Feeder.FeederState;
 import frc.robot.subsystems.Shooter.ShooterState;
 import frc.robot.subsystems.Spindexer.SpindexerState;
@@ -372,11 +371,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                     };
 
             RobotContainer.spindexer.setState(
-                    DashboardUI.Overview.getControl().isUnstuckSpindexerPressed()
-                            ? SpindexerState.UNSTUCK
-                            : spindexerState);
+                    RobotContainer.getControl().isUnstuckSpindexerPressed() ? SpindexerState.UNSTUCK : spindexerState);
             RobotContainer.feeder.setState(
-                    DashboardUI.Overview.getControl().isUnstuckSpindexerPressed() ? FeederState.UNSTUCK : feederState);
+                    RobotContainer.getControl().isUnstuckSpindexerPressed() ? FeederState.UNSTUCK : feederState);
 
             Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
         }

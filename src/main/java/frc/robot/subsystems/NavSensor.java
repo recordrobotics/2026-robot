@@ -9,7 +9,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.RobotContainer;
-import frc.robot.dashboard.DashboardUI;
 import frc.robot.subsystems.io.NavSensorIO;
 import frc.robot.utils.ManagedSubsystemBase;
 
@@ -42,7 +41,6 @@ public final class NavSensor extends ManagedSubsystemBase {
         io.reset();
         io.resetDisplacement(); // Technically not necessary but whatever
 
-        DashboardUI.Overview.setNavSensor(io::isConnected);
         disconnectedAlert.set(!io.isConnected());
     }
 

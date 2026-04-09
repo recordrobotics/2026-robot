@@ -11,22 +11,60 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.commands.auto.CreateAutoRoutineException;
+import frc.robot.commands.auto.IAutoRoutine;
 import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
 import frc.robot.utils.modifiers.AutoControlModifier;
 import java.util.Optional;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public final class AutoPath {
+
+    private static LoggedDashboardChooser<Command> autoChooser;
 
     private static final ProfiledPIDController spinController = new ProfiledPIDController(
             Constants.Control.SPIN_KP, 0, Constants.Control.SPIN_KD, Constants.Control.SPIN_CONSTRAINTS);
 
     private AutoPath() {}
+
+    /**
+     * Sets up the auto chooser with the given routines in addition to pathplanner autos loaded by default.
+     * @param routines the auto routines to add to the chooser
+     */
+    @SafeVarargs
+    public static final void setupAutoChooser(final Supplier<IAutoRoutine>... routines) {
+        autoChooser = new LoggedDashboardChooser<>("Auto Code", AutoBuilder.buildAutoChooser());
+
+        // Add non-pathplanner autos
+        for (Supplier<IAutoRoutine> routineSupplier : routines) {
+
+            IAutoRoutine routine;
+            try {
+                routine = routineSupplier.get();
+            } catch (CreateAutoRoutineException e) {
+                ConsoleLogger.logError("Can't get auto routine", e);
+                continue;
+            }
+
+            if (routine instanceof Command cmd) {
+                autoChooser.addOption(routine.getAutoName(), cmd);
+            } else {
+                throw new IllegalArgumentException("Auto routine does not implement Command: " + routine.getAutoName());
+            }
+        }
+    }
+
+    public static Command getAutoChooser() {
+        return autoChooser.get();
+    }
 
     @SuppressWarnings("java:S109")
     public static void initialize() {
@@ -132,10 +170,20 @@ public final class AutoPath {
                 // Reference to this subsystem to set requirements
                 RobotContainer.drivetrain);
 
-        PathPlannerLogging.setLogActivePathCallback(activePath ->
-                Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()])));
-        PathPlannerLogging.setLogTargetPoseCallback(
-                targetPose -> Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose));
+        PathPlannerLogging.setLogActivePathCallback(activePath -> {
+            RobotContainer.fieldStateTracker.getField().getObject("Trajectory").setPoses(activePath);
+            if (activePath.isEmpty()) {
+                RobotContainer.fieldStateTracker
+                        .getField()
+                        .getObject("Setpoint")
+                        .setPoses();
+            }
+            Logger.recordOutput("Auto/Trajectory", activePath.toArray(Pose2d[]::new));
+        });
+        PathPlannerLogging.setLogTargetPoseCallback(targetPose -> {
+            RobotContainer.fieldStateTracker.getField().getObject("Setpoint").setPose(targetPose);
+            Logger.recordOutput("Auto/TrajectorySetpoint", targetPose);
+        });
         CommandScheduler.getInstance().schedule(PathfindingCommand.warmupCommand());
     }
 }

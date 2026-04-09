@@ -20,7 +20,7 @@ import org.photonvision.PhotonUtils;
 /**
  * Abstract base class for object detection cameras.
  */
-public abstract class ObjectDetectionCamera extends PositionedCamera {
+public abstract class ObjectDetectionCamera extends PositionedCamera<ObjectDetectionCamera> {
 
     /**
      * List of object detection results from last periodic.

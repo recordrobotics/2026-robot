@@ -1,6 +1,7 @@
 package frc.robot.utils;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WrapperCommand;
 
 public final class CommandUtils {
@@ -40,5 +41,12 @@ public final class CommandUtils {
     @SuppressWarnings("java:S2301") // this is a conditional method
     public static Command maybeProxy(boolean doProxy, Command command) {
         return doProxy ? command.asProxy() : command;
+    }
+
+    public static Command setForceDisabledForAllCommand(
+            boolean forceDisabled, int cyclesBeforeEnable, KillableSubsystem... subsystems) {
+        return Commands.runOnce(
+                () -> KillableSubsystem.setForceDisabledForAll(forceDisabled, cyclesBeforeEnable, subsystems),
+                subsystems);
     }
 }
