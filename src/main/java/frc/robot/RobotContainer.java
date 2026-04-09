@@ -109,10 +109,11 @@ public final class RobotContainer {
     private static final LoggedDashboardChooser<FieldStartingLocation> fieldStartingLocationChooser =
             new LoggedDashboardChooser<>("Starting Location");
     private static final LoggedNetworkBoolean resetLocationButton =
-            new LoggedNetworkBoolean("Autonomous/ResetLocationButton");
-    private static final LoggedNetworkBoolean encoderResetButton = new LoggedNetworkBoolean("Autonomous/EncoderReset");
-    private static final LoggedNetworkBoolean shootTuningButton = new LoggedNetworkBoolean("ShootTuning");
-    private static final LoggedNetworkBoolean defenseModeButton = new LoggedNetworkBoolean("DefenseMode");
+            new LoggedNetworkBoolean("Autonomous/ResetLocationButton", false);
+    private static final LoggedNetworkBoolean encoderResetButton =
+            new LoggedNetworkBoolean("Autonomous/EncoderReset", false);
+    private static final LoggedNetworkBoolean shootTuningButton = new LoggedNetworkBoolean("ShootTuning", false);
+    private static final LoggedNetworkBoolean defenseModeButton = new LoggedNetworkBoolean("DefenseMode", false);
     private static AbstractControl defaultControl;
     private static AbstractControl testControl;
 

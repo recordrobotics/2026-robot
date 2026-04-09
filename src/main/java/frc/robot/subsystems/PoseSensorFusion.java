@@ -90,7 +90,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
         }
     }
 
-    private static final LoggedNetworkBoolean filterTagsToggle = new LoggedNetworkBoolean("Camera/FilterTags");
+    private static final LoggedNetworkBoolean filterTagsToggle = new LoggedNetworkBoolean("Camera/FilterTags", false);
     private static final LoggedNetworkBoolean prioritizeTurretToggle =
             new LoggedNetworkBoolean("Camera/PrioritizeTurret", true);
 

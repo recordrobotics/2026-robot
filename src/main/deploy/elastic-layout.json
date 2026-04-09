@@ -61,7 +61,7 @@
             "height": 128.0,
             "type": "Toggle Button",
             "properties": {
-              "topic": "/SmartDashboard/Autonomous/ResetLocationButton",
+              "topic": "Autonomous/ResetLocationButton",
               "period": 0.06,
               "data_type": "boolean"
             }
@@ -74,7 +74,7 @@
             "height": 128.0,
             "type": "Toggle Button",
             "properties": {
-              "topic": "/SmartDashboard/Autonomous/EncoderReset",
+              "topic": "Autonomous/EncoderReset",
               "period": 0.06,
               "data_type": "boolean"
             }
@@ -133,7 +133,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-bk/Enabled",
+                  "topic": "Camera/limelight-bk/Enabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -146,7 +146,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-bk/ForceUnconstrained",
+                  "topic": "Camera/limelight-bk/ForceUnconstrained",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -159,7 +159,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-bk/UseRotation",
+                  "topic": "Camera/limelight-bk/UseRotation",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -172,7 +172,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-bk/ForceUnconstrainedWhenDisabled",
+                  "topic": "Camera/limelight-bk/ForceUnconstrainedWhenDisabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -198,7 +198,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/left-back/Enabled",
+                  "topic": "Camera/left-back/Enabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -211,7 +211,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/left-back/ForceUnconstrained",
+                  "topic": "Camera/left-back/ForceUnconstrained",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -224,7 +224,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/left-back/UseRotation",
+                  "topic": "Camera/left-back/UseRotation",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -237,7 +237,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/left-back/ForceUnconstrainedWhenDisabled",
+                  "topic": "Camera/left-back/ForceUnconstrainedWhenDisabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -263,7 +263,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/right-back/Enabled",
+                  "topic": "Camera/right-back/Enabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -276,7 +276,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/right-back/ForceUnconstrained",
+                  "topic": "Camera/right-back/ForceUnconstrained",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -289,7 +289,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/right-back/UseRotation",
+                  "topic": "Camera/right-back/UseRotation",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -302,7 +302,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/right-back/ForceUnconstrainedWhenDisabled",
+                  "topic": "Camera/right-back/ForceUnconstrainedWhenDisabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -328,7 +328,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-fr/Enabled",
+                  "topic": "Camera/limelight-fr/Enabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -341,7 +341,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-fr/ForceUnconstrained",
+                  "topic": "Camera/limelight-fr/ForceUnconstrained",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -354,7 +354,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-fr/UseRotation",
+                  "topic": "Camera/limelight-fr/UseRotation",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -367,7 +367,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-fr/ForceUnconstrainedWhenDisabled",
+                  "topic": "Camera/limelight-fr/ForceUnconstrainedWhenDisabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -393,7 +393,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-trt/Enabled",
+                  "topic": "Camera/limelight-trt/Enabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -406,7 +406,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-trt/ForceUnconstrained",
+                  "topic": "Camera/limelight-trt/ForceUnconstrained",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -419,7 +419,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-trt/UseRotation",
+                  "topic": "Camera/limelight-trt/UseRotation",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -432,7 +432,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Camera/limelight-trt/ForceUnconstrainedWhenDisabled",
+                  "topic": "Camera/limelight-trt/ForceUnconstrainedWhenDisabled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -482,7 +482,7 @@
             "height": 128.0,
             "type": "Number Slider",
             "properties": {
-              "topic": "/SmartDashboard/FLYWHEEL_RATIO",
+              "topic": "FLYWHEEL_RATIO",
               "period": 0.06,
               "data_type": "double",
               "min_value": 0.3,
@@ -544,7 +544,7 @@
             "height": 128.0,
             "type": "Toggle Switch",
             "properties": {
-              "topic": "/SmartDashboard/Camera/FilterTags",
+              "topic": "Camera/FilterTags",
               "period": 0.06,
               "data_type": "boolean"
             }
@@ -557,7 +557,7 @@
             "height": 128.0,
             "type": "Toggle Switch",
             "properties": {
-              "topic": "/SmartDashboard/Camera/PrioritizeTurret",
+              "topic": "Camera/PrioritizeTurret",
               "period": 0.06,
               "data_type": "boolean"
             }
@@ -600,7 +600,7 @@
             "height": 128.0,
             "type": "Toggle Switch",
             "properties": {
-              "topic": "/SmartDashboard/DefenseMode",
+              "topic": "DefenseMode",
               "period": 0.06,
               "data_type": "boolean"
             }
@@ -631,7 +631,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Positioned/Turret/OverrideKnown",
+                  "topic": "Positioned/Turret/OverrideKnown",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -644,7 +644,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Positioned/Intake/OverrideKnown",
+                  "topic": "Positioned/Intake/OverrideKnown",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -657,7 +657,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Positioned/Shooter/OverrideKnown",
+                  "topic": "Positioned/Shooter/OverrideKnown",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -670,7 +670,7 @@
                 "height": 128.0,
                 "type": "Toggle Switch",
                 "properties": {
-                  "topic": "/SmartDashboard/Positioned/Climber/OverrideKnown",
+                  "topic": "Positioned/Climber/OverrideKnown",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -687,7 +687,7 @@
             "height": 128.0,
             "type": "Toggle Switch",
             "properties": {
-              "topic": "/SmartDashboard/SHOOT_OVERRIDE",
+              "topic": "SHOOT_OVERRIDE",
               "period": 0.06,
               "data_type": "boolean"
             }
@@ -700,7 +700,7 @@
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/SHOOT_VELOCITY",
+              "topic": "SHOOT_VELOCITY",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
@@ -714,7 +714,7 @@
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/HOOD_ANGLE",
+              "topic": "HOOD_ANGLE",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
@@ -741,7 +741,7 @@
             "height": 128.0,
             "type": "Number Slider",
             "properties": {
-              "topic": "/SmartDashboard/SHOOT_ANGLE_OFFSET",
+              "topic": "SHOOT_ANGLE_OFFSET",
               "period": 0.06,
               "data_type": "double",
               "min_value": -0.3,
@@ -758,7 +758,7 @@
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/SHOTTFED",
+              "topic": "SHOTFEED",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
@@ -772,7 +772,7 @@
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/TURRET_FFMUL",
+              "topic": "TURRET_FFMUL",
               "period": 0.06,
               "data_type": "double",
               "show_submit_button": false
@@ -786,7 +786,7 @@
             "height": 128.0,
             "type": "Toggle Switch",
             "properties": {
-              "topic": "/SmartDashboard/Intake/DisableWheel",
+              "topic": "Intake/DisableWheel",
               "period": 0.06,
               "data_type": "boolean"
             }

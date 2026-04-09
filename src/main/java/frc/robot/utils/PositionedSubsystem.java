@@ -75,7 +75,7 @@ public interface PositionedSubsystem {
                             new Alert("", AlertType.kWarning),
                             new Alert("", AlertType.kError),
                             name,
-                            new LoggedNetworkBoolean("Positioned/" + name + "/OverrideKnown")));
+                            new LoggedNetworkBoolean("Positioned/" + name + "/OverrideKnown", false)));
         }
 
         private static void updateEntry(PositionedSubsystem subsystem, Entry entry) {

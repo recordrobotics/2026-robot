@@ -58,7 +58,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     private static final double RESET_VELOCITY_THRESHOLD = 0.06;
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
-    private static final LoggedNetworkBoolean disableWheelToggle = new LoggedNetworkBoolean("Intake/DisableWheel");
+    private static final LoggedNetworkBoolean disableWheelToggle =
+            new LoggedNetworkBoolean("Intake/DisableWheel", false);
 
     private final IntakeIO io;
     private final SysIdRoutine sysIdRoutineArm;
