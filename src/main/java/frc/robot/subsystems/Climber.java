@@ -17,6 +17,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -25,6 +27,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.ClimberHeight;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.ClimberIO;
+import frc.robot.subsystems.io.ClimberIOInputsAutoLogged;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.KillableSubsystem;
@@ -47,6 +50,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
     private final ClimberIO io;
+    private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 
     private final MotionMagicExpoVoltage climberRequest;
     private final VoltageOut voltageRequest;
@@ -58,6 +62,8 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     private PositionStatus positionStatus = PositionStatus.UNKNOWN;
     private double lastMovementTime = 0;
     private boolean overrideKnown = false;
+
+    private final Alert disconnectedAlert = new Alert("Climber disconnected!", AlertType.kError);
 
     public Climber(ClimberIO io) {
         this.io = io;
@@ -107,7 +113,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
                         SYSID_STEP_VOLTAGE,
                         SYSID_TIMEOUT,
                         state -> Logger.recordOutput("Climber/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v.in(Volts))), null, this));
+                new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v)), null, this));
 
         PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
@@ -117,26 +123,14 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         this.overrideKnown = overrideKnown;
     }
 
-    /** Height of the climber in meters */
-    @AutoLogLevel(level = Level.SYSID)
-    public double getCurrentHeight() {
-        return io.getPosition();
-    }
-
-    @AutoLogLevel(level = Level.SYSID)
-    public double getCurrentVelocity() {
-        return io.getVelocity();
-    }
-
-    @AutoLogLevel(level = Level.SYSID)
-    public double getCurrentVoltage() {
-        return io.getVoltage();
-    }
-
     @Override
     public void periodicManaged() {
-        // Update mechanism
-        RobotContainer.model.climberModel.update(getCurrentHeight());
+        io.updateInputs(inputs);
+        Logger.processInputs("Climber", inputs);
+
+        disconnectedAlert.set(!inputs.connected);
+
+        RobotContainer.model.climberModel.update(inputs.positionMeters);
 
         if (overrideKnown) {
             positionStatus = PositionStatus.KNOWN;
@@ -144,8 +138,8 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
 
         if (!isForceDisabled()
                 && positionStatus == PositionStatus.UNKNOWN
-                && SimpleMath.isAFartherFromZeroThanB(getCurrentVoltage(), RESET_VOLTAGE / 2)) {
-            if (Math.abs(getCurrentVelocity()) > RESET_VELOCITY_THRESHOLD) {
+                && SimpleMath.isAFartherFromZeroThanB(inputs.voltage, RESET_VOLTAGE / 2)) {
+            if (Math.abs(inputs.velocityMps) > RESET_VELOCITY_THRESHOLD) {
                 lastMovementTime = Timer.getTimestamp();
             } else if (Timer.getTimestamp() - lastMovementTime > RESET_VELOCITY_THRESHOLD_TIME) {
                 positionStatus = PositionStatus.KNOWN;
@@ -189,7 +183,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
 
     @AutoLogLevel(level = Level.REAL)
     public ClimberHeight getNearestHeight() {
-        double currentHeight = getCurrentHeight();
+        double currentHeight = inputs.positionMeters;
 
         ClimberHeight[] heights = ClimberHeight.values();
         Arrays.sort(heights, (a, b) -> Double.compare(a.getDifference(currentHeight), b.getDifference(currentHeight)));
@@ -197,8 +191,8 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     }
 
     public boolean atGoal() {
-        return Math.abs(setpoint - getCurrentHeight()) < Constants.Climber.AT_GOAL_POSITION_TOLERANCE
-                && Math.abs(getCurrentVelocity()) < Constants.Climber.AT_GOAL_VELOCITY_TOLERANCE;
+        return Math.abs(setpoint - inputs.positionMeters) < Constants.Climber.AT_GOAL_POSITION_TOLERANCE
+                && Math.abs(inputs.velocityMps) < Constants.Climber.AT_GOAL_VELOCITY_TOLERANCE;
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -210,13 +204,13 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         io.close();
     }
 
     @Override
     public Current getCurrentDraw() {
-        return io.getCurrentDraw();
+        return inputs.currentDraw;
     }
 
     @Override

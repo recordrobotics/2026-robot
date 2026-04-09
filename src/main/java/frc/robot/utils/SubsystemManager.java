@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -77,10 +78,11 @@ public class SubsystemManager extends SubsystemBase {
         for (Future<?> future : futures) {
             try {
                 future.get();
-            } catch (CancellationException | ExecutionException e) {
-                ConsoleLogger.logError("SubsystemManager periodic error", e);
+            } catch (ExecutionException | CancellationException e) {
+                ConsoleLogger.logError("SubsystemManager periodic error", Objects.requireNonNullElse(e.getCause(), e));
             } catch (InterruptedException e) {
-                ConsoleLogger.logError("SubsystemManager periodic interrupted", e);
+                ConsoleLogger.logError(
+                        "SubsystemManager periodic interrupted", Objects.requireNonNullElse(e.getCause(), e));
                 Thread.currentThread().interrupt();
             }
         }

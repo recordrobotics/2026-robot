@@ -58,7 +58,7 @@ public abstract class ManagedSubsystemBase extends SubsystemBase implements Auto
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         // Default implementation does nothing
     }
 }

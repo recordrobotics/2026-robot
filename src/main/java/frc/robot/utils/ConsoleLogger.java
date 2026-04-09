@@ -30,35 +30,35 @@ public final class ConsoleLogger {
         logImpl(ERROR, message, TRACE_START_INDEX);
     }
 
-    public static void log(String type, Exception e) {
+    public static void log(String type, Throwable e) {
         logImpl(type, e, 2);
     }
 
-    public static void log(String type, String message, Exception e) {
+    public static void log(String type, String message, Throwable e) {
         logImpl(type, message, e, 2);
     }
 
-    public static void logInfo(Exception e) {
+    public static void logInfo(Throwable e) {
         logImpl(INFO, e, TRACE_START_INDEX);
     }
 
-    public static void logInfo(String message, Exception e) {
+    public static void logInfo(String message, Throwable e) {
         logImpl(INFO, message, e, TRACE_START_INDEX);
     }
 
-    public static void logWarning(Exception e) {
+    public static void logWarning(Throwable e) {
         logImpl(WARNING, e, TRACE_START_INDEX);
     }
 
-    public static void logWarning(String message, Exception e) {
+    public static void logWarning(String message, Throwable e) {
         logImpl(WARNING, message, e, TRACE_START_INDEX);
     }
 
-    public static void logError(Exception e) {
+    public static void logError(Throwable e) {
         logImpl(ERROR, e, TRACE_START_INDEX);
     }
 
-    public static void logError(String message, Exception e) {
+    public static void logError(String message, Throwable e) {
         logImpl(ERROR, message, e, TRACE_START_INDEX);
     }
 
@@ -94,11 +94,11 @@ public final class ConsoleLogger {
         System.out.println(text);
     }
 
-    private static void logImpl(String type, Exception e, int traceStartIndex) {
+    private static void logImpl(String type, Throwable e, int traceStartIndex) {
         logImpl(type, "Exception: " + e.getMessage() + TRACE_SEPARATOR + trace(e.getStackTrace(), 0), traceStartIndex);
     }
 
-    private static void logImpl(String type, String message, Exception e, int traceStartIndex) {
+    private static void logImpl(String type, String message, Throwable e, int traceStartIndex) {
         logImpl(
                 type,
                 message + "\n    Exception: " + e.getMessage() + TRACE_SEPARATOR + trace(e.getStackTrace(), 0),

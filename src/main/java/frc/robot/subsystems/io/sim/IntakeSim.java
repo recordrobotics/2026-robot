@@ -4,9 +4,8 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
@@ -27,6 +26,9 @@ import frc.robot.RobotMap;
 import frc.robot.subsystems.RobotModel.FuelManager;
 import frc.robot.subsystems.io.IntakeIO;
 import frc.robot.utils.IntakeSimulationUtils;
+import frc.robot.utils.SimpleMath;
+import frc.robot.utils.TalonFXMotorGroup;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.dyn4j.geometry.Rectangle;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -47,13 +49,8 @@ public class IntakeSim implements IntakeIO {
 
     private final double periodicDt;
 
-    private final TalonFX armLeader;
-    private final TalonFX armFollower;
+    private final TalonFXMotorGroup armGroup;
     private final TalonFX wheel;
-
-    private final TalonFXSimState armSimLeader;
-    private final TalonFXSimState armSimFollower;
-    private final TalonFXSimState wheelSim;
 
     private final DCMotor armMotor = DCMotor.getKrakenX44(2);
     private final DCMotor wheelMotor = DCMotor.getKrakenX44(1);
@@ -88,29 +85,31 @@ public class IntakeSim implements IntakeIO {
     public IntakeSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
 
-        armLeader = new TalonFX(RobotMap.Intake.ARM_LEADER_ID);
-        armFollower = new TalonFX(RobotMap.Intake.ARM_FOLLOWER_ID);
+        armGroup = new TalonFXMotorGroup(
+                "Intake Arm",
+                new TalonFXMotorGroup.MotorConfig(
+                        RobotMap.Intake.ARM_LEFT_ID, "Left", InvertedValue.CounterClockwise_Positive),
+                new TalonFXMotorGroup.MotorConfig(
+                        RobotMap.Intake.ARM_RIGHT_ID, "Right", InvertedValue.Clockwise_Positive));
         wheel = new TalonFX(RobotMap.Intake.WHEEL_ID);
-        armSimLeader = armLeader.getSimState();
-        armSimFollower = armFollower.getSimState();
-        wheelSim = wheel.getSimState();
 
-        armSimLeader.Orientation =
+        armGroup.getSimState(0).Orientation =
                 ChassisReference.CounterClockwise_Positive; // Left of intake, right of robot // Arm up is positive
-        armSimFollower.Orientation =
+        armGroup.getSimState(1).Orientation =
                 ChassisReference.Clockwise_Positive; // Right of intake, left of robot // Arm up is positive
-        wheelSim.Orientation = ChassisReference.Clockwise_Positive; // Positive is intake, negative is eject
 
-        armSimLeader.setMotorType(MotorType.KrakenX44);
-        armSimFollower.setMotorType(MotorType.KrakenX44);
-        wheelSim.setMotorType(MotorType.KrakenX44);
+        armGroup.getSimState(0).setMotorType(MotorType.KrakenX44);
+        armGroup.getSimState(1).setMotorType(MotorType.KrakenX44);
+
+        wheel.getSimState().Orientation = ChassisReference.Clockwise_Positive; // Positive is intake, negative is eject
+        wheel.getSimState().setMotorType(MotorType.KrakenX44);
 
         Rectangle intakeRect = IntakeSimulationUtils.getIntakeRectangle(
                 drivetrainSim, WIDTH.in(Meters), LENGTH_EXTENDED.in(Meters), IntakeSimulation.IntakeSide.BACK);
 
         intakeSimulation = new IntakeSimulation("Fuel", drivetrainSim, intakeRect, FuelManager.getNodeCount());
         intakeSimulation.setCustomIntakeCondition(gm -> {
-            boolean passed = getWheelVelocityMps() > Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS - 2.0;
+            boolean passed = wheel.getVelocity().getValueAsDouble() > Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS - 2.0;
             if (passed) {
                 try {
                     RobotContainer.model.fuelManager.intakeFuel(gm.getPose3d(), fuel -> {
@@ -134,9 +133,9 @@ public class IntakeSim implements IntakeIO {
             return passed;
         });
 
-        RobotContainer.pdp.registerSimDevice(9, this::getArmLeaderCurrentDraw);
-        RobotContainer.pdp.registerSimDevice(10, this::getArmFollowerCurrentDraw);
-        RobotContainer.pdp.registerSimDevice(18, this::getWheelCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(9, () -> armGroup.getSimState(0).getSupplyCurrentMeasure());
+        RobotContainer.pdp.registerSimDevice(10, () -> armGroup.getSimState(1).getSupplyCurrentMeasure());
+        RobotContainer.pdp.registerSimDevice(18, () -> wheel.getSupplyCurrent().getValue());
     }
 
     public IntakeSimulation getIntakeSimulation() {
@@ -144,19 +143,8 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public Follower createArmFollower() {
-        return new Follower(
-                RobotMap.Intake.ARM_LEADER_ID, MotorAlignmentValue.Opposed); // motors face in opposite directions
-    }
-
-    @Override
-    public void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration) {
-        armLeader.getConfigurator().apply(configuration);
-    }
-
-    @Override
-    public void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration) {
-        armFollower.getConfigurator().apply(configuration);
+    public void applyArmTalonFXConfig(TalonFXConfiguration configuration) {
+        armGroup.applyConfig(configuration);
     }
 
     @Override
@@ -165,59 +153,8 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public void setWheelPositionMeters(double newValue) {
-        // Reset internal sim state
-        wheelSimModel.setState(Units.rotationsToRadians(newValue), 0);
-
-        // Update raw rotor position to match internal sim state (has to be called before setPosition to
-        // have correct offset)
-        wheelSim.setRawRotorPosition(Constants.Intake.WHEEL_GEAR_RATIO * wheelSimModel.getAngularPositionRotations());
-        wheelSim.setRotorVelocity(Constants.Intake.WHEEL_GEAR_RATIO
-                * Units.radiansToRotations(wheelSimModel.getAngularVelocityRadPerSec()));
-        wheelSim.setRotorAcceleration(Constants.Intake.WHEEL_GEAR_RATIO
-                * Units.radiansToRotations(wheelSimModel.getAngularAccelerationRadPerSecSq()));
-
-        // Update internal raw position offset
-        wheel.setPosition(newValue);
-    }
-
-    @Override
-    public void setArmPositionRotations(double newValueRotations) {
-        // Reset internal sim state
-        armSimModel.setState(
-                Units.rotationsToRadians(newValueRotations)
-                        + Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS),
-                0);
-
-        // Update raw rotor position to match internal sim state (has to be called before setPosition to
-        // have correct offset)
-        armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads()
-                        - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
-                        - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
-        armSimLeader.setRotorVelocity(
-                Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
-
-        armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads()
-                        - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
-                        - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
-        armSimFollower.setRotorVelocity(
-                Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
-
-        // Update internal raw position offset
-        armLeader.setPosition(newValueRotations);
-        armFollower.setPosition(newValueRotations);
-    }
-
-    @Override
-    public void setArmLeaderControl(ControlRequest request) {
-        armLeader.setControl(request);
-    }
-
-    @Override
-    public void setArmFollowerControl(ControlRequest request) {
-        armFollower.setControl(request);
+    public void setArmControl(ControlRequest request) {
+        armGroup.setControl(request);
     }
 
     @Override
@@ -226,69 +163,49 @@ public class IntakeSim implements IntakeIO {
     }
 
     @Override
-    public double getWheelPositionMeters() {
-        return wheel.getPosition().getValueAsDouble();
+    public void setArmPositionRotations(double newValue) {
+        // Reset internal sim state
+        armSimModel.setState(
+                Units.rotationsToRadians(newValue)
+                        + Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS),
+                0);
+
+        // Update raw rotor position to match internal sim state (has to be called before setPosition to
+        // have correct offset)
+        updateArmRotor();
+
+        // Update internal raw position offset
+        armGroup.setPosition(newValue);
     }
 
     @Override
-    public double getWheelVelocityMps() {
-        return wheel.getVelocity().getValueAsDouble();
+    public void setWheelPositionMeters(double newValue) {
+        wheel.setPosition(newValue);
     }
 
     @Override
-    public double getWheelVoltage() {
-        return wheel.getMotorVoltage().getValueAsDouble();
-    }
+    public void updateInputs(IntakeIOInputs inputs) {
+        armGroup.periodic();
 
-    @Override
-    public double getArmLeaderVoltage() {
-        return armLeader.getMotorVoltage().getValueAsDouble();
-    }
+        inputs.armHasPosition = !armGroup.hasLostPosition();
+        inputs.armPositionRotations = armGroup.getAveragePosition();
+        inputs.armVelocityRotationsPerSecond = SimpleMath.average(armGroup.getVelocities());
+        inputs.armVoltage = SimpleMath.average(armGroup.getVoltages());
+        inputs.armCurrentDraw = Arrays.stream(armGroup.getSimStates())
+                .map(TalonFXSimState::getSupplyCurrentMeasure)
+                .reduce(Amps.zero(), Current::plus);
 
-    @Override
-    public double getArmFollowerVoltage() {
-        return armFollower.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getArmLeaderPositionRotations() {
-        return armLeader.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getArmFollowerPositionRotations() {
-        return armFollower.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getArmLeaderVelocityRotationsPerSecond() {
-        return armLeader.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getArmFollowerVelocityRotationsPerSecond() {
-        return armFollower.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public Current getWheelCurrentDraw() {
-        return wheelSim.getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public Current getArmLeaderCurrentDraw() {
-        return armSimLeader.getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public Current getArmFollowerCurrentDraw() {
-        return armSimFollower.getSupplyCurrentMeasure();
+        inputs.wheelConnected = wheel.isConnected();
+        inputs.wheelPositionMeters = wheel.getPosition().getValueAsDouble();
+        inputs.wheelVelocityMps = wheel.getVelocity().getValueAsDouble();
+        inputs.wheelVoltage = wheel.getMotorVoltage().getValueAsDouble();
+        inputs.wheelCurrentDraw = wheel.getSimState().getSupplyCurrentMeasure();
     }
 
     @Override
     public void close() {
         wheel.close();
-        armLeader.close();
+        armGroup.close();
     }
 
     @Override
@@ -299,52 +216,57 @@ public class IntakeSim implements IntakeIO {
         Logger.recordOutput("Intake/SimCount", rollerFuelCount.get());
     }
 
-    private void updateMotorSimulations() {
-        armSimLeader.setSupplyVoltage(RobotController.getBatteryVoltage());
-        armSimFollower.setSupplyVoltage(RobotController.getBatteryVoltage());
-        wheelSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+    private void updateArmRotor() {
+        for (TalonFXSimState simState : armGroup.getSimStates()) {
+            simState.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
+                    * Units.radiansToRotations(armSimModel.getAngleRads()
+                            - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
+                            - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
+            simState.setRotorVelocity(
+                    Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
+        }
+    }
 
-        double wheelVoltage = wheelSim.getMotorVoltage();
-        double armLeaderVoltage = armSimLeader.getMotorVoltage();
-        double armFollowerVoltage = armSimFollower.getMotorVoltage();
+    private void updateMotorSimulations() {
+        for (TalonFXSimState simState : armGroup.getSimStates()) {
+            simState.setSupplyVoltage(RobotController.getBatteryVoltage());
+        }
+
+        wheel.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
+
+        double wheelVoltage = wheel.getSimState().getMotorVoltage();
+        double armVoltage = SimpleMath.average(Arrays.stream(armGroup.getSimStates())
+                .mapToDouble(TalonFXSimState::getMotorVoltage)
+                .toArray());
 
         wheelSimModel.setInputVoltage(wheelVoltage * calculateVoltageMultiplier(rollerFuelCount.get()));
         wheelSimModel.update(periodicDt);
 
-        armSimModel.setInputVoltage((armLeaderVoltage + armFollowerVoltage) / 2.0);
+        armSimModel.setInputVoltage(armVoltage);
         armSimModel.update(periodicDt);
 
-        armSimLeader.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads()
-                        - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
-                        - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
-        armSimLeader.setRotorVelocity(
-                Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
+        updateArmRotor();
 
-        armSimFollower.setRawRotorPosition(Constants.Intake.ARM_GEAR_RATIO
-                * Units.radiansToRotations(armSimModel.getAngleRads()
-                        - Units.rotationsToRadians(Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS)
-                        - Constants.Intake.ARM_STARTING_POSITION_RADIANS));
-        armSimFollower.setRotorVelocity(
-                Constants.Intake.ARM_GEAR_RATIO * Units.radiansToRotations(armSimModel.getVelocityRadPerSec()));
-
-        wheelSim.setRawRotorPosition(Constants.Intake.WHEEL_GEAR_RATIO * wheelSimModel.getAngularPositionRotations());
-        wheelSim.setRotorVelocity(Constants.Intake.WHEEL_GEAR_RATIO
-                * Units.radiansToRotations(wheelSimModel.getAngularVelocityRadPerSec()));
-        wheelSim.setRotorAcceleration(Constants.Intake.WHEEL_GEAR_RATIO
-                * Units.radiansToRotations(wheelSimModel.getAngularAccelerationRadPerSecSq()));
+        wheel.getSimState()
+                .setRawRotorPosition(Constants.Intake.WHEEL_GEAR_RATIO * wheelSimModel.getAngularPositionRotations());
+        wheel.getSimState()
+                .setRotorVelocity(Constants.Intake.WHEEL_GEAR_RATIO
+                        * Units.radiansToRotations(wheelSimModel.getAngularVelocityRadPerSec()));
+        wheel.getSimState()
+                .setRotorAcceleration(Constants.Intake.WHEEL_GEAR_RATIO
+                        * Units.radiansToRotations(wheelSimModel.getAngularAccelerationRadPerSecSq()));
     }
 
     public boolean isExtendingHopperSpaceAvailable() {
-        return Units.rotationsToRadians(RobotContainer.intake.getArmPositionRotations())
+        return Units.rotationsToRadians(armGroup.getAveragePosition())
                 < Constants.Intake.ARM_DOWN_POSITION_RADIANS + Units.degreesToRadians(5.0);
     }
 
     private void handleIntakeSimulation() {
-        if (Units.rotationsToRadians(RobotContainer.intake.getArmPositionRotations())
+        if (Units.rotationsToRadians(armGroup.getAveragePosition())
                 < Constants.Intake.ARM_DOWN_POSITION_RADIANS + Units.degreesToRadians(5.0)) {
             intakeSimulation.startIntake();
-            if (getWheelVelocityMps() < Constants.Intake.WHEEL_EJECT_VELOCITY_MPS + 2.0) {
+            if (wheel.getVelocity().getValueAsDouble() < Constants.Intake.WHEEL_EJECT_VELOCITY_MPS + 2.0) {
                 double timeSinceLastEject = Timer.getTimestamp() - lastEjectTime;
                 if (timeSinceLastEject > 1.0 / EJECT_BPS) {
                     RobotContainer.model.fuelManager.ejectFuel().ifPresent(fuel -> {

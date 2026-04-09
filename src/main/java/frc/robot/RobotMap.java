@@ -7,8 +7,8 @@ public final class RobotMap {
     private RobotMap() {}
 
     public static final class Intake {
-        public static final int ARM_LEADER_ID = 16;
-        public static final int ARM_FOLLOWER_ID = 17;
+        public static final int ARM_LEFT_ID = 16;
+        public static final int ARM_RIGHT_ID = 17;
         public static final int WHEEL_ID = 18;
 
         private Intake() {}
@@ -26,8 +26,8 @@ public final class RobotMap {
 
     public static final class Shooter {
         public static final int HOOD_ID = 20;
-        public static final int FLYWHEEL_LEADER_ID = 21;
-        public static final int FLYWHEEL_FOLLOWER_ID = 22;
+        public static final int FLYWHEEL_LEFT_ID = 21;
+        public static final int FLYWHEEL_RIGHT_ID = 22;
 
         private Shooter() {}
     }

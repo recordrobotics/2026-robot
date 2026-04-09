@@ -3,7 +3,8 @@ package frc.robot.utils;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.subsystems.SwerveModule;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import frc.robot.subsystems.drive.SwerveModule;
 
 public class IndependentSwervePoseEstimator {
 
@@ -135,9 +136,8 @@ public class IndependentSwervePoseEstimator {
                 Rotation2d gyroAngle, SwerveModule module, Translation2d moduleRobotPosition, Translation2d position) {
             this.module = module;
             this.moduleRobotPosition = moduleRobotPosition;
-            this.lastDistance = module.getDriveWheelDistance();
-            this.lastAngle = module.getTurnWheelRotation2d().plus(gyroAngle).plus(Rotation2d.kCW_90deg);
-            this.position = new Pose2d(position, lastAngle);
+
+            reset(gyroAngle, position);
         }
 
         public IndependentSwerveModuleState(Pose2d position, double distance, Rotation2d angle) {
@@ -153,8 +153,9 @@ public class IndependentSwervePoseEstimator {
         }
 
         public void reset(Rotation2d gyroAngle, Translation2d position) {
-            double distance = module.getDriveWheelDistance();
-            Rotation2d angle = module.getTurnWheelRotation2d().plus(gyroAngle).plus(Rotation2d.kCW_90deg);
+            SwerveModulePosition modulePosition = module.getModulePosition();
+            double distance = modulePosition.distanceMeters;
+            Rotation2d angle = modulePosition.angle.plus(gyroAngle).plus(Rotation2d.kCW_90deg);
 
             reset(new Pose2d(position, angle), distance, angle);
         }
@@ -165,12 +166,12 @@ public class IndependentSwervePoseEstimator {
         }
 
         public void update(Rotation2d gyroAngle) {
-            double newDistance = module.getDriveWheelDistance();
+            SwerveModulePosition modulePosition = module.getModulePosition();
+            double newDistance = modulePosition.distanceMeters;
             double distanceTraveled = newDistance - lastDistance;
             lastDistance = newDistance;
 
-            Rotation2d newAngle =
-                    module.getTurnWheelRotation2d().plus(gyroAngle).plus(Rotation2d.kCW_90deg);
+            Rotation2d newAngle = modulePosition.angle.plus(gyroAngle).plus(Rotation2d.kCW_90deg);
 
             Translation2d movement;
             if (lastAngle.equals(newAngle)) {

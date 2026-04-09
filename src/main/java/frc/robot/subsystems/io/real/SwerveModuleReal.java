@@ -2,26 +2,19 @@ package frc.robot.subsystems.io.real;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MagnetHealthValue;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.ModuleConstants;
 
 public class SwerveModuleReal implements SwerveModuleIO {
 
-    @SuppressWarnings("unused")
-    private final double periodicDt;
-
     private final TalonFX driveMotor;
     private final TalonFX turningMotor;
     private final CANcoder absoluteTurningMotorEncoder;
 
-    public SwerveModuleReal(double periodicDt, ModuleConstants m) {
-        this.periodicDt = periodicDt;
-
+    public SwerveModuleReal(ModuleConstants m) {
         driveMotor = new TalonFX(m.driveMotorChannel());
         turningMotor = new TalonFX(m.turningMotorChannel());
         absoluteTurningMotorEncoder = new CANcoder(m.absoluteTurningMotorEncoderChannel());
@@ -43,83 +36,13 @@ public class SwerveModuleReal implements SwerveModuleIO {
     }
 
     @Override
-    public void setDriveMotorVoltage(double newValue) {
-        driveMotor.setVoltage(newValue);
-    }
-
-    @Override
-    public void setTurnMotorVoltage(double newValue) {
-        turningMotor.setVoltage(newValue);
-    }
-
-    @Override
-    public void setTurnMotorMotionMagic(MotionMagicExpoVoltage request) {
-        turningMotor.setControl(request);
-    }
-
-    @Override
-    public void setDriveMotorMotionMagic(MotionMagicVelocityVoltage request) {
+    public void setDriveControl(ControlRequest request) {
         driveMotor.setControl(request);
     }
 
     @Override
-    public double getDriveMotorVoltage() {
-        return driveMotor.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getTurnMotorVoltage() {
-        return turningMotor.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public void setDriveMotorPercent(double newValue) {
-        driveMotor.set(newValue);
-    }
-
-    @Override
-    public void setTurnMotorPercent(double newValue) {
-        turningMotor.set(newValue);
-    }
-
-    @Override
-    public double getDriveMotorPercent() {
-        return driveMotor.get();
-    }
-
-    @Override
-    public double getTurnMotorPercent() {
-        return turningMotor.get();
-    }
-
-    @Override
-    public double getAbsoluteEncoder() {
-        return absoluteTurningMotorEncoder.getAbsolutePosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getTurnMechanismPosition() {
-        return turningMotor.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getTurnMechanismVelocity() {
-        return turningMotor.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getDriveMechanismPosition() {
-        return driveMotor.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getDriveMechanismVelocity() {
-        return driveMotor.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getDriveMechanismAcceleration() {
-        return driveMotor.getAcceleration().getValueAsDouble();
+    public void setTurnControl(ControlRequest request) {
+        turningMotor.setControl(request);
     }
 
     @Override
@@ -133,24 +56,31 @@ public class SwerveModuleReal implements SwerveModuleIO {
     }
 
     @Override
-    public void close() throws Exception {
+    public void updateInputs(SwerveModuleIOInputs inputs) {
+        inputs.driveMotorConnected = driveMotor.isConnected();
+        inputs.driveMotorPositionMeters = driveMotor.getPosition().getValueAsDouble();
+        inputs.driveMotorVelocityMps = driveMotor.getVelocity().getValueAsDouble();
+        inputs.driveMotorAccelerationMps2 = driveMotor.getAcceleration().getValueAsDouble();
+        inputs.driveMotorVoltage = driveMotor.getMotorVoltage().getValueAsDouble();
+        inputs.driveMotorCurrentDraw = driveMotor.getSupplyCurrent().getValue();
+
+        inputs.turnMotorConnected = turningMotor.isConnected();
+        inputs.turnMotorPositionRotations = turningMotor.getPosition().getValueAsDouble();
+        inputs.turnMotorVelocityRps = turningMotor.getVelocity().getValueAsDouble();
+        inputs.turnMotorVoltage = turningMotor.getMotorVoltage().getValueAsDouble();
+        inputs.turnMotorCurrentDraw = turningMotor.getSupplyCurrent().getValue();
+
+        inputs.encoderConnected = absoluteTurningMotorEncoder.isConnected();
+        inputs.encoderPositionRotations =
+                absoluteTurningMotorEncoder.getAbsolutePosition().getValueAsDouble();
+        inputs.encoderMagnetHealth =
+                absoluteTurningMotorEncoder.getMagnetHealth().getValue();
+    }
+
+    @Override
+    public void close() {
         driveMotor.close();
         turningMotor.close();
         absoluteTurningMotorEncoder.close();
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        /* real */
-    }
-
-    @Override
-    public boolean isAbsEncoderConnected() {
-        return absoluteTurningMotorEncoder.isConnected();
-    }
-
-    @Override
-    public MagnetHealthValue getAbsEncoderMagnetHealth() {
-        return absoluteTurningMotorEncoder.getMagnetHealth().getValue();
     }
 }

@@ -1,45 +1,36 @@
 package frc.robot.subsystems.io.real;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.units.measure.Current;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ShooterIO;
+import frc.robot.utils.SimpleMath;
+import frc.robot.utils.TalonFXMotorGroup;
+import java.util.Arrays;
 
 public class ShooterReal implements ShooterIO {
 
-    @SuppressWarnings("unused")
-    private final double periodicDt;
-
-    private final TalonFX flywheelLeader;
-    private final TalonFX flywheelFollower;
+    private final TalonFXMotorGroup flywheelGroup;
     private final TalonFX hood;
 
-    public ShooterReal(double periodicDt) {
-        this.periodicDt = periodicDt;
-
-        flywheelLeader = new TalonFX(RobotMap.Shooter.FLYWHEEL_LEADER_ID);
-        flywheelFollower = new TalonFX(RobotMap.Shooter.FLYWHEEL_FOLLOWER_ID);
+    public ShooterReal() {
+        flywheelGroup = new TalonFXMotorGroup(
+                "Shooter",
+                new TalonFXMotorGroup.MotorConfig(
+                        RobotMap.Shooter.FLYWHEEL_LEFT_ID, "Left", InvertedValue.CounterClockwise_Positive),
+                new TalonFXMotorGroup.MotorConfig(
+                        RobotMap.Shooter.FLYWHEEL_RIGHT_ID, "Right", InvertedValue.Clockwise_Positive));
         hood = new TalonFX(RobotMap.Shooter.HOOD_ID);
     }
 
     @Override
-    public Follower createFlywheelFollower() {
-        return new Follower(
-                RobotMap.Shooter.FLYWHEEL_LEADER_ID, MotorAlignmentValue.Opposed); // motors face in opposite directions
-    }
-
-    @Override
-    public void applyFlywheelLeaderTalonFXConfig(TalonFXConfiguration configuration) {
-        flywheelLeader.getConfigurator().apply(configuration);
-    }
-
-    @Override
-    public void applyFlywheelFollowerTalonFXConfig(TalonFXConfiguration configuration) {
-        flywheelFollower.getConfigurator().apply(configuration);
+    public void applyFlywheelTalonFXConfig(TalonFXConfiguration configuration) {
+        flywheelGroup.applyConfig(configuration);
     }
 
     @Override
@@ -49,8 +40,7 @@ public class ShooterReal implements ShooterIO {
 
     @Override
     public void setFlywheelPositionMeters(double newValue) {
-        flywheelLeader.setPosition(newValue);
-        flywheelFollower.setPosition(newValue);
+        flywheelGroup.setPosition(newValue);
     }
 
     @Override
@@ -60,12 +50,7 @@ public class ShooterReal implements ShooterIO {
 
     @Override
     public void setFlywheelControl(ControlRequest request) {
-        flywheelLeader.setControl(request);
-    }
-
-    @Override
-    public void setFlywheelFollowerControl(ControlRequest request) {
-        flywheelFollower.setControl(request);
+        flywheelGroup.setControl(request);
     }
 
     @Override
@@ -74,74 +59,27 @@ public class ShooterReal implements ShooterIO {
     }
 
     @Override
-    public double getFlywheelLeaderPositionMeters() {
-        return flywheelLeader.getPosition().getValueAsDouble();
-    }
+    public void updateInputs(ShooterIOInputs inputs) {
+        flywheelGroup.periodic();
+        if (flywheelGroup.hasLostPosition()) { // position doesn't matter
+            flywheelGroup.setPosition(0);
+        }
 
-    @Override
-    public double getFlywheelFollowerPositionMeters() {
-        return flywheelFollower.getPosition().getValueAsDouble();
-    }
+        inputs.flywheelPositionMeters = flywheelGroup.getAveragePosition();
+        inputs.flywheelVelocityMps = SimpleMath.average(flywheelGroup.getVelocities());
+        inputs.flywheelVoltage = SimpleMath.average(flywheelGroup.getVoltages());
+        inputs.flywheelCurrentDraw = Arrays.stream(flywheelGroup.getCurrents()).reduce(Amps.zero(), Current::plus);
 
-    @Override
-    public double getFlywheelLeaderVelocityMps() {
-        return flywheelLeader.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getFlywheelFollowerVelocityMps() {
-        return flywheelFollower.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getFlywheelLeaderVoltage() {
-        return flywheelLeader.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getFlywheelFollowerVoltage() {
-        return flywheelFollower.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getHoodVoltage() {
-        return hood.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getHoodPositionRotations() {
-        return hood.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getHoodVelocityRotationsPerSecond() {
-        return hood.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public Current getFlywheelLeaderCurrentDraw() {
-        return flywheelLeader.getSupplyCurrent().getValue();
-    }
-
-    @Override
-    public Current getFlywheelFollowerCurrentDraw() {
-        return flywheelFollower.getSupplyCurrent().getValue();
-    }
-
-    @Override
-    public Current getHoodCurrentDraw() {
-        return hood.getSupplyCurrent().getValue();
+        inputs.hoodConnected = hood.isConnected();
+        inputs.hoodPositionRotations = hood.getPosition().getValueAsDouble();
+        inputs.hoodVelocityRotationsPerSecond = hood.getVelocity().getValueAsDouble();
+        inputs.hoodVoltage = hood.getMotorVoltage().getValueAsDouble();
+        inputs.hoodCurrentDraw = hood.getSupplyCurrent().getValue();
     }
 
     @Override
     public void close() {
-        flywheelLeader.close();
-        flywheelFollower.close();
+        flywheelGroup.close();
         hood.close();
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        /* real */
     }
 }

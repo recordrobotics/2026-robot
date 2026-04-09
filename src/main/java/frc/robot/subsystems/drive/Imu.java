@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 
@@ -9,14 +9,17 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.io.NavSensorIO;
+import frc.robot.subsystems.io.ImuIO;
+import frc.robot.subsystems.io.ImuIOInputsAutoLogged;
 import frc.robot.utils.ManagedSubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
-public final class NavSensor extends ManagedSubsystemBase {
+public final class Imu extends ManagedSubsystemBase {
 
     private static final double PERIODIC = RobotContainer.ROBOT_PERIODIC;
 
-    private final NavSensorIO io;
+    private final ImuIO io;
+    private final ImuIOInputsAutoLogged inputs = new ImuIOInputsAutoLogged();
 
     /**
      * The magnitude of a derivative of a vector is not equal to the derivative of a magnitude of a
@@ -31,45 +34,43 @@ public final class NavSensor extends ManagedSubsystemBase {
     private double jerkX;
     private double jerkY;
 
-    private final Alert disconnectedAlert = new Alert("Nav Disconnected!", AlertType.kError);
+    private final Alert disconnectedAlert = new Alert("Imu disconnected!", AlertType.kError);
 
-    public NavSensor(NavSensorIO io) {
+    public Imu(ImuIO io) {
         this.io = io;
 
         io.applyPigeon2Config(new Pigeon2Configuration().withMountPose(new MountPoseConfigs().withMountPoseYaw(0)));
 
         io.reset();
         io.resetDisplacement(); // Technically not necessary but whatever
-
-        disconnectedAlert.set(!io.isConnected());
     }
 
     public boolean isConnected() {
-        return io.isConnected();
+        return inputs.connected;
     }
 
     public Rotation2d getYaw() {
-        return io.getYaw();
+        return inputs.yaw;
     }
 
     public Rotation2d getPitch() {
-        return io.getPitch();
+        return inputs.pitch;
     }
 
     public Rotation2d getRoll() {
-        return io.getRoll();
+        return inputs.roll;
     }
 
     public AngularVelocity getRollRate() {
-        return io.getRollRate();
+        return inputs.rollRate;
     }
 
     public AngularVelocity getPitchRate() {
-        return io.getPitchRate();
+        return inputs.pitchRate;
     }
 
     public AngularVelocity getYawRate() {
-        return io.getYawRate();
+        return inputs.yawRate;
     }
 
     public double getJerkMagnitude() {
@@ -78,14 +79,17 @@ public final class NavSensor extends ManagedSubsystemBase {
 
     @Override
     public void periodicManaged() {
-        double accelX = io.getWorldLinearAccelX().in(MetersPerSecondPerSecond);
-        double accelY = io.getWorldLinearAccelY().in(MetersPerSecondPerSecond);
+        io.updateInputs(inputs);
+        Logger.processInputs("Drive/Imu", inputs);
+
+        double accelX = inputs.worldLinearAccelX.in(MetersPerSecondPerSecond);
+        double accelY = inputs.worldLinearAccelY.in(MetersPerSecondPerSecond);
         jerkX = (accelX - lastAccelX) / PERIODIC;
         jerkY = (accelY - lastAccelY) / PERIODIC;
         lastAccelX = accelX;
         lastAccelY = accelY;
 
-        disconnectedAlert.set(!io.isConnected());
+        disconnectedAlert.set(!inputs.connected);
     }
 
     @Override
@@ -95,7 +99,7 @@ public final class NavSensor extends ManagedSubsystemBase {
 
     /** frees up all hardware allocations */
     @Override
-    public void close() throws Exception {
+    public void close() {
         io.close();
     }
 }

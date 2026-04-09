@@ -5,15 +5,19 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.SpindexerIO;
+import frc.robot.subsystems.io.SpindexerIOInputsAutoLogged;
 import frc.robot.subsystems.io.sim.SpindexerSim;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
@@ -28,8 +32,13 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
     private static final double VELOCITY_TOLERANCE_RPS = 15.0; // TODO
 
     private final SpindexerIO io;
+    private final SpindexerIOInputsAutoLogged inputs = new SpindexerIOInputsAutoLogged();
+
     private final SysIdRoutine sysIdRoutine;
-    private final MotionMagicVelocityVoltage request;
+    private final MotionMagicVelocityVoltage request = new MotionMagicVelocityVoltage(0.0);
+    private final VoltageOut voltageRequest = new VoltageOut(0.0);
+
+    private final Alert disconnectedAlert = new Alert("Spindexer disconnected!", AlertType.kError);
 
     private double targetVelocityRps;
     private SpindexerState targetState = SpindexerState.OFF;
@@ -42,7 +51,6 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
 
     public Spindexer(SpindexerIO io) {
         this.io = io;
-        request = new MotionMagicVelocityVoltage(0.0);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -75,7 +83,7 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
                         null, // default 7 volt step voltage
                         null,
                         state -> Logger.recordOutput("Spindexer/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
+                new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v)), null, this));
     }
 
     public SpindexerSim getSimIO() {
@@ -96,16 +104,16 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
         };
 
         if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
-            io.setMotionMagic(request.withVelocity(targetVelocityRps));
+            io.setControl(request.withVelocity(targetVelocityRps));
         }
     }
 
     @Override
     protected void onForceDisabledChange(boolean isNowForceDisabled) {
         if (isNowForceDisabled) {
-            io.setVoltage(0.0);
+            io.setControl(voltageRequest.withOutput(0.0));
         } else {
-            io.setMotionMagic(request.withVelocity(targetVelocityRps));
+            io.setControl(request.withVelocity(targetVelocityRps));
         }
     }
 
@@ -115,27 +123,13 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
     }
 
     public boolean atGoal() {
-        return SimpleMath.isWithinTolerance(getVelocityRps(), targetVelocityRps, VELOCITY_TOLERANCE_RPS);
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getPositionRotations() {
-        return io.getPositionRotations();
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getVelocityRps() {
-        return io.getVelocityRotationsPerSecond();
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getVoltage() {
-        return io.getVoltage();
+        return SimpleMath.isWithinTolerance(
+                inputs.velocityRotationsPerSecond, targetVelocityRps, VELOCITY_TOLERANCE_RPS);
     }
 
     @Override
     public Current getCurrentDraw() {
-        return io.getCurrentDraw();
+        return inputs.currentDraw;
     }
 
     public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
@@ -144,6 +138,14 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
 
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return sysIdRoutine.dynamic(direction);
+    }
+
+    @Override
+    public void periodicManaged() {
+        io.updateInputs(inputs);
+        Logger.processInputs("Spindexer", inputs);
+
+        disconnectedAlert.set(!inputs.connected);
     }
 
     @Override

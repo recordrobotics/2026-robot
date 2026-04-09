@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.subsystems.PoseSensorFusion;
+import frc.robot.subsystems.drive.PoseSensorFusion;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.camera.PhysicalCamera;
 import frc.robot.utils.camera.positioned.PositionedCamera;

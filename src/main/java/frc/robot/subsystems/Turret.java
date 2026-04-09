@@ -17,6 +17,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -25,6 +26,7 @@ import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.TurretIO;
 import frc.robot.subsystems.io.TurretIO.LimitSwitchStates;
+import frc.robot.subsystems.io.TurretIOInputsAutoLogged;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PositionedSubsystem;
@@ -49,17 +51,19 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     private static final double RESET_VELOCITY_THRESHOLD = 0.001;
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
-    private static final double TWO_PI = 2.0 * Math.PI;
-
     private static final LoggedNetworkNumber ffMul = new LoggedNetworkNumber("TURRET_FFMUL", 1.0);
 
     private final TurretIO io;
+    private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
     private final SysIdRoutine sysIdRoutine;
-    private final MotionMagicExpoVoltage turretRequest;
-    private final VoltageOut voltageRequest;
+    private final MotionMagicExpoVoltage turretRequest = new MotionMagicExpoVoltage(
+            Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS) - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+    private final VoltageOut voltageRequest = new VoltageOut(0.0);
     private double targetPositionRotations;
     private double targetVelocityRotationsPerSecond;
     private double targetAccelerationRotationsPerSecondSquared;
+
+    private Alert disconnectedAlert = new Alert("Turret disconnected!", Alert.AlertType.kError);
 
     private PositionStatus positionStatus = PositionStatus.UNKNOWN;
 
@@ -76,9 +80,6 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     public Turret(TurretIO io) {
         this.io = io;
-        turretRequest = new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Turret.STARTING_POSITION_RADIANS)
-                - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
-        voltageRequest = new VoltageOut(0.0);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -119,7 +120,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                         SYSID_STEP_VOLTAGE,
                         SYSID_TIMEOUT,
                         state -> Logger.recordOutput("Turret/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v.in(Volts))), null, this));
+                new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v)), null, this));
 
         PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
@@ -131,9 +132,14 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     @Override
     public void periodicManaged() {
+        io.updateInputs(inputs);
+        Logger.processInputs("Turret", inputs);
+
+        disconnectedAlert.set(!inputs.connected);
+
         Constants.Turret.FF_MUL = ffMul.get();
 
-        if (getLimitSwitchStates().hasFault()) {
+        if (inputs.limitSwitchStates.hasFault()) {
             positionStatus = PositionStatus.SENSOR_FAULT;
         } else if (positionStatus == PositionStatus.SENSOR_FAULT) {
             positionStatus = PositionStatus.UNKNOWN;
@@ -169,9 +175,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                 case SPIN_CW:
                     checkMagnet();
                     if (isForceDisabled()
-                            || (!SimpleMath.isAFartherFromZeroThanB(getVoltage(), -RESET_VOLTAGE / 3)
-                                    && !io.hasHitReverseSoftLimit())
-                            || Math.abs(getVelocityRotationsPerSecond()) > RESET_VELOCITY_THRESHOLD) {
+                            || (!SimpleMath.isAFartherFromZeroThanB(inputs.voltage, -RESET_VOLTAGE / 3)
+                                    && !inputs.reverseSoftLimitHit)
+                            || Math.abs(inputs.velocityRotationsPerSecond) > RESET_VELOCITY_THRESHOLD) {
                         lastMovementTime = Timer.getTimestamp();
                     } else if (Timer.getTimestamp() - lastMovementTime > RESET_VELOCITY_THRESHOLD_TIME) {
                         resetState = ResetState.SPIN_CCW;
@@ -181,9 +187,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                 case SPIN_CCW:
                     checkMagnet();
                     if (isForceDisabled()
-                            || (!SimpleMath.isAFartherFromZeroThanB(getVoltage(), RESET_VOLTAGE / 3)
-                                    && !io.hasHitForwardSoftLimit())
-                            || Math.abs(getVelocityRotationsPerSecond()) > RESET_VELOCITY_THRESHOLD) {
+                            || (!SimpleMath.isAFartherFromZeroThanB(inputs.voltage, RESET_VOLTAGE / 3)
+                                    && !inputs.forwardSoftLimitHit)
+                            || Math.abs(inputs.velocityRotationsPerSecond) > RESET_VELOCITY_THRESHOLD) {
                         lastMovementTime = Timer.getTimestamp();
                     } else if (Timer.getTimestamp() - lastMovementTime > RESET_VELOCITY_THRESHOLD_TIME) {
                         if (RobotContainer.intake.isNearStartPosition()) {
@@ -214,8 +220,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     }
 
     public void checkMagnet() {
-        LimitSwitchStates limitSwitchStates = getLimitSwitchStates();
-        boolean isCcw = io.getVoltage() < 0.1;
+        LimitSwitchStates limitSwitchStates = inputs.limitSwitchStates;
+        boolean isCcw = inputs.voltage < 0.1;
         if (limitSwitchStates.frontLeft()) {
             io.setPositionRotations(
                     isCcw
@@ -239,28 +245,18 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
     public double getPositionRotations() {
-        return io.getPositionRotations() + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS;
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getVelocityRotationsPerSecond() {
-        return io.getVelocityRotationsPerSecond();
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getVoltage() {
-        return io.getVoltage();
+        return inputs.positionRotations + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS;
     }
 
     private double getSpringFeedforward() {
-        double pos = io.getPositionRotations();
+        double pos = inputs.positionRotations;
         return pos > Constants.Turret.TURRET_SPRING_START_POS
                 ? Constants.Turret.TURRET_SPRING_VOLTS
                 : pos < Constants.Turret.TURRET_SPRING_START_NEG ? -Constants.Turret.TURRET_SPRING_VOLTS : 0;
     }
 
     private double feedforward(double velocityRotationsPerSecond, double accelerationRotationsPerSecondSquared) {
-        double velocityError = velocityRotationsPerSecond - getVelocityRotationsPerSecond();
+        double velocityError = velocityRotationsPerSecond - inputs.velocityRotationsPerSecond;
         return Math.max(
                         -12.0,
                         Math.min(
@@ -281,14 +277,14 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                 Constants.Turret.ROTATION_MAX_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
 
         // bring target close to current revolution
-        double baseTarget = targetHeading + TWO_PI * Math.round((currentPos - targetHeading) / TWO_PI);
+        double baseTarget = targetHeading + SimpleMath.PI2 * Math.round((currentPos - targetHeading) / SimpleMath.PI2);
 
         double bestPos = Double.NaN;
         double bestDist = Double.POSITIVE_INFINITY;
 
         // check equivalent angles (target ± 2π)
         for (int i = -1; i <= 1; i++) {
-            double candidate = baseTarget + i * TWO_PI;
+            double candidate = baseTarget + i * SimpleMath.PI2;
 
             if (candidate >= minRange && candidate <= maxRange) {
                 double dist = Math.abs(candidate - currentPos);
@@ -336,14 +332,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         return SimpleMath.isWithinTolerance(getPositionRotations(), targetPositionRotations, POSITION_TOLERANCE);
     }
 
-    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
-    public LimitSwitchStates getLimitSwitchStates() {
-        return io.getLimitSwitchStates();
-    }
-
     @Override
     public Current getCurrentDraw() {
-        return io.getCurrentDraw();
+        return inputs.currentDraw;
     }
 
     public RobotToMechanismUpdate getRobotToMechanism() {

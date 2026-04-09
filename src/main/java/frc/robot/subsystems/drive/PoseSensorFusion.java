@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.drive;
 
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.Matrix;
@@ -7,7 +7,6 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
@@ -18,8 +17,8 @@ import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Turret.RobotToMechanismUpdate;
-import frc.robot.subsystems.io.real.NavSensorPigeon2;
-import frc.robot.subsystems.io.sim.NavSensorSimPigeon2;
+import frc.robot.subsystems.io.real.ImuPigeon2;
+import frc.robot.subsystems.io.sim.ImuSimPigeon2;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.ConsoleLogger;
@@ -95,9 +94,9 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
             new LoggedNetworkBoolean("Camera/PrioritizeTurret", true);
 
     /**
-     * The NAV sensor used for orientation and acceleration data
+     * The IMU sensor used for orientation and acceleration data
      */
-    public final NavSensor nav;
+    public final Imu imu;
 
     /**
      * The swerve drive pose estimator used for fusing odometry and vision measurements
@@ -184,14 +183,14 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      * @param initialPose the initial pose of the robot on the field
      */
     public PoseSensorFusion(Pose2d initialPose) {
-        nav = new NavSensor(
+        imu = new Imu(
                 Constants.RobotState.getMode() == Mode.REAL
-                        ? new NavSensorPigeon2()
-                        : new NavSensorSimPigeon2(RobotContainer.drivetrain
+                        ? new ImuPigeon2()
+                        : new ImuSimPigeon2(RobotContainer.drivetrain
                                 .getSwerveDriveSimulation()
                                 .getGyroSimulation()));
 
-        lastRawNavAngle = nav.isConnected() ? nav.getYaw() : Rotation2d.kZero;
+        lastRawNavAngle = imu.isConnected() ? imu.getYaw() : Rotation2d.kZero;
 
         poseFilter = new SwerveDrivePoseEstimator(
                 RobotContainer.drivetrain.getKinematics(),
@@ -201,18 +200,8 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         independentPoseEstimator = new IndependentSwervePoseEstimator(
                 getEstimatedPosition(),
-                new SwerveModule[] {
-                    RobotContainer.drivetrain.getFrontLeftModule(),
-                    RobotContainer.drivetrain.getFrontRightModule(),
-                    RobotContainer.drivetrain.getBackLeftModule(),
-                    RobotContainer.drivetrain.getBackRightModule()
-                },
-                new Translation2d[] {
-                    Constants.Swerve.FRONT_LEFT_WHEEL_LOCATION,
-                    Constants.Swerve.FRONT_RIGHT_WHEEL_LOCATION,
-                    Constants.Swerve.BACK_LEFT_WHEEL_LOCATION,
-                    Constants.Swerve.BACK_RIGHT_WHEEL_LOCATION
-                });
+                RobotContainer.drivetrain.getModules(),
+                RobotContainer.drivetrain.getKinematics().getModules());
 
         EnumSet.allOf(RTCMode.class).forEach(v -> rtcModeChooser.addOption(v.name(), v));
         rtcModeChooser.addDefaultOption(RTCMode.OFF.name(), RTCMode.OFF);
@@ -278,9 +267,6 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
         Logger.recordOutput("RobotEstimation", independentPoseEstimator.getEstimatedRobotPose());
 
         Logger.recordOutput("TargetTXTYId", targetTXTYId);
-
-        Logger.recordOutput("NAV/Pitch", nav.getPitch());
-        Logger.recordOutput("NAV/Roll", nav.getRoll());
     }
 
     @Override
@@ -296,8 +282,8 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         SwerveModulePosition[] positions = RobotContainer.drivetrain.getModulePositions();
 
-        if (nav.isConnected()) {
-            updateNav = nav.getYaw();
+        if (imu.isConnected()) {
+            updateNav = imu.getYaw();
         } else if (updatePositions != null) {
             SwerveModulePosition[] deltas = new SwerveModulePosition[4];
             for (int i = 0; i < 4; i++) {
@@ -435,7 +421,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      * Closes the subsystem and releases any resources
      */
     @Override
-    public void close() throws Exception {
-        nav.close();
+    public void close() {
+        imu.close();
     }
 }

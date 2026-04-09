@@ -23,6 +23,7 @@ import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.maplesim.ImprovedMapleMatch;
 import frc.robot.utils.maplesim.OpponentRobot;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.Arena2026Rebuilt;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -192,13 +193,15 @@ public final class Robot extends LoggedRobot {
         initialized = true;
     }
 
-    @SuppressWarnings("java:S3011") /* we want RobotContainer to be private */
+    @SuppressWarnings({"java:S3011", "java:S112"}) /* we want RobotContainer to be private */
     public static <T> void initContainer(Class<T> containerClass) {
         try {
             Constructor<T> constructor = containerClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             T container = constructor.newInstance();
             AutoLogLevelManager.addObject(container);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e.getCause());
         } catch (Exception e) {
             throw new UnsupportedOperationException("Failed to instantiate container: " + containerClass.getName(), e);
         }

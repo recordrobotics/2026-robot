@@ -1,25 +1,19 @@
 package frc.robot.subsystems.io.real;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.FeederIO;
 
 public class FeederReal implements FeederIO {
 
-    @SuppressWarnings("unused")
-    private final double periodicDt;
-
     private final TalonFX feeder;
     private final DigitalInput bottomBeambreak = new DigitalInput(RobotMap.Feeder.BOTTOM_BEAM_BREAK_ID);
     private final DigitalInput topBeambreak = new DigitalInput(RobotMap.Feeder.TOP_BEAM_BREAK_ID);
 
-    public FeederReal(double periodicDt) {
-        this.periodicDt = periodicDt;
-
+    public FeederReal() {
         feeder = new TalonFX(RobotMap.Feeder.MOTOR_ID);
     }
 
@@ -29,48 +23,20 @@ public class FeederReal implements FeederIO {
     }
 
     @Override
-    public void setMotionMagic(MotionMagicVelocityVoltage request) {
+    public void setControl(ControlRequest request) {
         feeder.setControl(request);
     }
 
     @Override
-    public void setVoltage(double newValue) {
-        feeder.setVoltage(newValue);
-    }
+    public void updateInputs(FeederIOInputs inputs) {
+        inputs.connected = feeder.isConnected();
+        inputs.positionRotations = feeder.getPosition().getValueAsDouble();
+        inputs.velocityRotationsPerSecond = feeder.getVelocity().getValueAsDouble();
+        inputs.voltage = feeder.getMotorVoltage().getValueAsDouble();
+        inputs.currentDraw = feeder.getSupplyCurrent().getValue();
 
-    @Override
-    public double getPositionRotations() {
-        return feeder.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getVelocityRotationsPerSecond() {
-        return feeder.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getVoltage() {
-        return feeder.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public Current getCurrentDraw() {
-        return feeder.getStatorCurrent().getValue();
-    }
-
-    @Override
-    public boolean isBottomBeamBroken() {
-        return !bottomBeambreak.get();
-    }
-
-    @Override
-    public boolean isTopBeamBroken() {
-        return !topBeambreak.get();
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        /* real */
+        inputs.bottomBeamBroken = !bottomBeambreak.get();
+        inputs.topBeamBroken = !topBeambreak.get();
     }
 
     @Override

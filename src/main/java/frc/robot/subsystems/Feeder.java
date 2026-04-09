@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.FeederIO;
+import frc.robot.subsystems.io.FeederIOInputsAutoLogged;
 import frc.robot.subsystems.io.sim.FeederSim;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.CircularEventCounter;
@@ -35,8 +37,12 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
     private static final int BEAM_BREAK_BROKEN_MAX_COUNT = 10; // no way we are getting above 10 bps
 
     private final FeederIO io;
+    private final FeederIOInputsAutoLogged inputs = new FeederIOInputsAutoLogged();
+
     private final SysIdRoutine sysIdRoutine;
-    private final MotionMagicVelocityVoltage request;
+
+    private final MotionMagicVelocityVoltage request = new MotionMagicVelocityVoltage(0.0);
+    private final VoltageOut voltageRequest = new VoltageOut(0.0);
 
     private double targetVelocityRps;
     private FeederState targetState = FeederState.OFF;
@@ -47,6 +53,8 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
             new Alert("Feeder bottom beambreak disconnected", Alert.AlertType.kError);
     private final Alert topBeambreakDisconnectedAlert =
             new Alert("Feeder top beambreak disconnected", Alert.AlertType.kError);
+
+    private final Alert disconnectedAlert = new Alert("Feeder disconnected!", Alert.AlertType.kError);
 
     private double lastBottomBeamNotbrokenTime = 0;
     private double lastTopBeamNotbrokenTime = 0;
@@ -66,7 +74,6 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
 
     public Feeder(FeederIO io) {
         this.io = io;
-        request = new MotionMagicVelocityVoltage(0.0);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -99,7 +106,7 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
                         null, // default 7 volt step voltage
                         null,
                         state -> Logger.recordOutput("Feeder/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(v -> io.setVoltage(v.in(Volts)), null, this));
+                new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v)), null, this));
     }
 
     public FeederSim getSimIO() {
@@ -120,17 +127,22 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
         }
 
         if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
-            io.setMotionMagic(request.withVelocity(targetVelocityRps));
+            io.setControl(request.withVelocity(targetVelocityRps));
         }
     }
 
     @Override
     public void periodicManaged() {
-        if (!io.isBottomBeamBroken()) {
+        io.updateInputs(inputs);
+        Logger.processInputs("Feeder", inputs);
+
+        disconnectedAlert.set(!inputs.connected);
+
+        if (!inputs.bottomBeamBroken) {
             lastBottomBeamNotbrokenTime = Timer.getTimestamp();
         }
 
-        if (!io.isTopBeamBroken()) {
+        if (!inputs.topBeamBroken) {
             lastTopBeamNotbrokenTime = Timer.getTimestamp();
         }
 
@@ -182,9 +194,9 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
     @Override
     protected void onForceDisabledChange(boolean isNowForceDisabled) {
         if (isNowForceDisabled) {
-            io.setVoltage(0.0);
+            io.setControl(voltageRequest.withOutput(0.0));
         } else {
-            io.setMotionMagic(request.withVelocity(targetVelocityRps));
+            io.setControl(request.withVelocity(targetVelocityRps));
         }
     }
 
@@ -195,36 +207,21 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public boolean isBottomBeamBroken() {
-        return io.isBottomBeamBroken() && !bottomBeamFaulted;
+        return inputs.bottomBeamBroken && !bottomBeamFaulted;
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public boolean isTopBeamBroken() {
-        return io.isTopBeamBroken() && !topBeamFaulted;
+        return inputs.topBeamBroken && !topBeamFaulted;
+    }
+
+    public double getVelocityRps() {
+        return inputs.velocityRotationsPerSecond;
     }
 
     public boolean atGoal() {
-        return SimpleMath.isWithinTolerance(getVelocityRps(), targetVelocityRps, VELOCITY_TOLERANCE_RPS);
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getPositionRotations() {
-        return io.getPositionRotations();
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getVelocityRps() {
-        return io.getVelocityRotationsPerSecond();
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getVoltage() {
-        return io.getVoltage();
-    }
-
-    @Override
-    public Current getCurrentDraw() {
-        return io.getCurrentDraw();
+        return SimpleMath.isWithinTolerance(
+                inputs.velocityRotationsPerSecond, targetVelocityRps, VELOCITY_TOLERANCE_RPS);
     }
 
     @Override
@@ -244,6 +241,11 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
     @Override
     public void close() {
         io.close();
+    }
+
+    @Override
+    public Current getCurrentDraw() {
+        return inputs.currentDraw;
     }
 
     public static class SysId implements SysIdProvider {

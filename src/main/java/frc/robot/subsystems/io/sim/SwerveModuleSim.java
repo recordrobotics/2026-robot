@@ -6,18 +6,15 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MagnetHealthValue;
-import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.RobotContainer;
@@ -33,10 +30,6 @@ public class SwerveModuleSim implements SwerveModuleIO {
     private final TalonFX driveMotor;
     private final TalonFX turningMotor;
     private final CANcoder absoluteTurningMotorEncoder;
-
-    private final TalonFXSimState driveMotorSim;
-    private final TalonFXSimState turningMotorSim;
-    private final CANcoderSimState absoluteTurningMotorEncoderSim;
 
     public static class TalonFXMotorControllerSim implements SimulatedMotorController {
         public final int id;
@@ -74,25 +67,20 @@ public class SwerveModuleSim implements SwerveModuleIO {
         turningMotor = new TalonFX(m.turningMotorChannel());
         absoluteTurningMotorEncoder = new CANcoder(m.absoluteTurningMotorEncoderChannel());
 
-        driveMotorSim = driveMotor.getSimState();
-        turningMotorSim = turningMotor.getSimState();
-        absoluteTurningMotorEncoderSim = absoluteTurningMotorEncoder.getSimState();
+        driveMotor.getSimState().Orientation = ChassisReference.Clockwise_Positive;
+        turningMotor.getSimState().Orientation = ChassisReference.Clockwise_Positive;
 
-        driveMotorSim.Orientation = ChassisReference.Clockwise_Positive;
-        turningMotorSim.Orientation = ChassisReference.Clockwise_Positive;
+        driveMotor.getSimState().setMotorType(MotorType.KrakenX60);
+        turningMotor.getSimState().setMotorType(MotorType.KrakenX44);
 
-        driveMotorSim.setMotorType(MotorType.KrakenX60);
-        turningMotorSim.setMotorType(MotorType.KrakenX44);
-
-        absoluteTurningMotorEncoderSim.Orientation = ChassisReference.CounterClockwise_Positive;
-        absoluteTurningMotorEncoderSim.setMagnetHealth(MagnetHealthValue.Magnet_Green);
-        absoluteTurningMotorEncoderSim.SensorOffset = m.turningEncoderOffset();
-
+        absoluteTurningMotorEncoder.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
+        absoluteTurningMotorEncoder.getSimState().setMagnetHealth(MagnetHealthValue.Magnet_Green);
+        absoluteTurningMotorEncoder.getSimState().SensorOffset = m.turningEncoderOffset();
         moduleSimulation.useDriveMotorController(new TalonFXMotorControllerSim(driveMotor));
         moduleSimulation.useSteerMotorController(new TalonFXMotorControllerSim(turningMotor));
 
-        RobotContainer.pdp.registerSimDevice(drivePdpChannel, this::getDriveCurrentDraw);
-        RobotContainer.pdp.registerSimDevice(turnPdpChannel, this::getTurnCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(drivePdpChannel, driveMotor.getSimState()::getSupplyCurrentMeasure);
+        RobotContainer.pdp.registerSimDevice(turnPdpChannel, turningMotor.getSimState()::getSupplyCurrentMeasure);
         RobotContainer.pdp.registerSimMiniPdpDevice(() -> Milliamps.of(50));
     }
 
@@ -112,94 +100,6 @@ public class SwerveModuleSim implements SwerveModuleIO {
     }
 
     @Override
-    public void setDriveMotorVoltage(double newValue) {
-        driveMotor.setVoltage(newValue);
-    }
-
-    @Override
-    public void setTurnMotorVoltage(double newValue) {
-        turningMotor.setVoltage(newValue);
-    }
-
-    @Override
-    public void setTurnMotorMotionMagic(MotionMagicExpoVoltage request) {
-        turningMotor.setControl(request);
-    }
-
-    @Override
-    public void setDriveMotorMotionMagic(MotionMagicVelocityVoltage request) {
-        driveMotor.setControl(request);
-    }
-
-    @Override
-    public double getDriveMotorVoltage() {
-        return driveMotor.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getTurnMotorVoltage() {
-        return turningMotor.getMotorVoltage().getValueAsDouble();
-    }
-
-    public Current getDriveCurrentDraw() {
-        return driveMotorSim.getSupplyCurrentMeasure();
-    }
-
-    public Current getTurnCurrentDraw() {
-        return turningMotorSim.getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public void setDriveMotorPercent(double newValue) {
-        driveMotor.set(newValue);
-    }
-
-    @Override
-    public void setTurnMotorPercent(double newValue) {
-        turningMotor.set(newValue);
-    }
-
-    @Override
-    public double getDriveMotorPercent() {
-        return driveMotor.get();
-    }
-
-    @Override
-    public double getTurnMotorPercent() {
-        return turningMotor.get();
-    }
-
-    @Override
-    public double getAbsoluteEncoder() {
-        return absoluteTurningMotorEncoder.getAbsolutePosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getTurnMechanismPosition() {
-        return turningMotor.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getTurnMechanismVelocity() {
-        return turningMotor.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getDriveMechanismPosition() {
-        return driveMotor.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getDriveMechanismVelocity() {
-        return driveMotor.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getDriveMechanismAcceleration() {
-        return driveMotor.getAcceleration().getValueAsDouble();
-    }
-
-    @Override
     public void setDriveMechanismPosition(double newValue) {
         driveMotor.setPosition(newValue);
     }
@@ -210,7 +110,39 @@ public class SwerveModuleSim implements SwerveModuleIO {
     }
 
     @Override
-    public void close() throws Exception {
+    public void setDriveControl(ControlRequest request) {
+        driveMotor.setControl(request);
+    }
+
+    @Override
+    public void setTurnControl(ControlRequest request) {
+        turningMotor.setControl(request);
+    }
+
+    @Override
+    public void updateInputs(SwerveModuleIOInputs inputs) {
+        inputs.driveMotorConnected = driveMotor.isConnected();
+        inputs.driveMotorPositionMeters = driveMotor.getPosition().getValueAsDouble();
+        inputs.driveMotorVelocityMps = driveMotor.getVelocity().getValueAsDouble();
+        inputs.driveMotorAccelerationMps2 = driveMotor.getAcceleration().getValueAsDouble();
+        inputs.driveMotorVoltage = driveMotor.getMotorVoltage().getValueAsDouble();
+        inputs.driveMotorCurrentDraw = driveMotor.getSimState().getSupplyCurrentMeasure();
+
+        inputs.turnMotorConnected = turningMotor.isConnected();
+        inputs.turnMotorPositionRotations = turningMotor.getPosition().getValueAsDouble();
+        inputs.turnMotorVelocityRps = turningMotor.getVelocity().getValueAsDouble();
+        inputs.turnMotorVoltage = turningMotor.getMotorVoltage().getValueAsDouble();
+        inputs.turnMotorCurrentDraw = turningMotor.getSimState().getSupplyCurrentMeasure();
+
+        inputs.encoderConnected = absoluteTurningMotorEncoder.isConnected();
+        inputs.encoderPositionRotations =
+                absoluteTurningMotorEncoder.getAbsolutePosition().getValueAsDouble();
+        inputs.encoderMagnetHealth =
+                absoluteTurningMotorEncoder.getMagnetHealth().getValue();
+    }
+
+    @Override
+    public void close() {
         driveMotor.close();
         turningMotor.close();
         absoluteTurningMotorEncoder.close();
@@ -218,18 +150,12 @@ public class SwerveModuleSim implements SwerveModuleIO {
 
     @Override
     public void simulationPeriodic() {
-        absoluteTurningMotorEncoderSim.setSupplyVoltage(RobotController.getBatteryVoltage());
-        absoluteTurningMotorEncoderSim.setRawPosition(getTurnMechanismPosition());
-        absoluteTurningMotorEncoderSim.setVelocity(getTurnMechanismVelocity());
-    }
-
-    @Override
-    public boolean isAbsEncoderConnected() {
-        return absoluteTurningMotorEncoder.isConnected();
-    }
-
-    @Override
-    public MagnetHealthValue getAbsEncoderMagnetHealth() {
-        return absoluteTurningMotorEncoder.getMagnetHealth().getValue();
+        absoluteTurningMotorEncoder.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
+        absoluteTurningMotorEncoder
+                .getSimState()
+                .setRawPosition(turningMotor.getPosition().getValueAsDouble());
+        absoluteTurningMotorEncoder
+                .getSimState()
+                .setVelocity(turningMotor.getVelocity().getValueAsDouble());
     }
 }

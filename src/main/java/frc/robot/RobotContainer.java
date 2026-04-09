@@ -22,6 +22,7 @@ import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.Intake.IntakeState;
+import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.io.real.ClimberReal;
 import frc.robot.subsystems.io.real.FeederReal;
 import frc.robot.subsystems.io.real.IntakeReal;
@@ -146,12 +147,12 @@ public final class RobotContainer {
         }
 
         if (Constants.RobotState.getMode() == Mode.REAL) {
-            intake = new Intake(new IntakeReal(ROBOT_PERIODIC));
-            turret = new Turret(new TurretReal(ROBOT_PERIODIC));
-            shooter = new Shooter(new ShooterReal(ROBOT_PERIODIC));
-            spindexer = new Spindexer(new SpindexerReal(ROBOT_PERIODIC));
-            feeder = new Feeder(new FeederReal(ROBOT_PERIODIC));
-            climber = new Climber(new ClimberReal(ROBOT_PERIODIC));
+            intake = new Intake(new IntakeReal());
+            turret = new Turret(new TurretReal());
+            shooter = new Shooter(new ShooterReal());
+            spindexer = new Spindexer(new SpindexerReal());
+            feeder = new Feeder(new FeederReal());
+            climber = new Climber(new ClimberReal());
         } else {
             if (Constants.Vision.VISION_SIMULATION_MODE.isPhotonSim()) {
                 visionSim = new VisionSystemSim("main");
@@ -215,9 +216,15 @@ public final class RobotContainer {
         if (Constants.RobotState.getMode() != Mode.REAL) {
             // No point in manually resetting encoders in simulation since starting config is always in the right spot
             resetEncoders();
+            CommandScheduler.getInstance()
+                    .schedule(Commands.waitSeconds(0.04)
+                            .andThen(Commands.runOnce(RobotContainer::resetEncoders))
+                            .ignoringDisable(true));
+
             // Register all powered subsystems with the simulation battery
             registerPoweredSubsystems(intake, turret, shooter, spindexer, feeder, climber);
             SimulatedBattery.setVoltage(ACTUAL_RESTING_BATTERY_VOLTAGE);
+            SimulatedBattery.setDischargeRate(0.02 / 378.45);
         }
     }
 
@@ -350,8 +357,13 @@ public final class RobotContainer {
         new Trigger(() -> getControl().isPoseResetTriggered())
                 .onTrue(Commands.runOnce(poseSensorFusion::alignRotationWithDriverStation));
         new Trigger(resetLocationButton)
-                .onTrue(Commands.runOnce(() ->
-                                poseSensorFusion.setToPose(getStartingLocation().getPose()))
+                .onTrue(Commands.runOnce(() -> {
+                            poseSensorFusion.setToPose(getStartingLocation().getPose());
+                            if (Constants.RobotState.getMode() == Mode.SIM) {
+                                // reset voltage
+                                SimulatedBattery.setVoltage(ACTUAL_RESTING_BATTERY_VOLTAGE);
+                            }
+                        })
                         .ignoringDisable(true));
         new Trigger(encoderResetButton)
                 .onTrue(Commands.runOnce(RobotContainer::resetEncoders).ignoringDisable(true));
@@ -433,7 +445,7 @@ public final class RobotContainer {
     }
 
     /** frees up all hardware allocations */
-    public static void close() throws Exception {
+    public static void close() {
         drivetrain.close();
         poseSensorFusion.close();
         intake.close();

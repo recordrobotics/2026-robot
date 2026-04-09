@@ -1,34 +1,40 @@
 package frc.robot.subsystems.io;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import edu.wpi.first.units.measure.Current;
+import org.littletonrobotics.junction.AutoLog;
 
 public interface TurretIO {
+
+    @AutoLog
+    @SuppressWarnings("java:S1104") /* public fields in input */
+    class TurretIOInputs {
+        public boolean connected = false;
+        public double positionRotations = 0;
+        public double velocityRotationsPerSecond = 0;
+        public double voltage = 0;
+        public Current currentDraw = Amps.zero();
+
+        public boolean forwardSoftLimitHit = false;
+        public boolean reverseSoftLimitHit = false;
+
+        public LimitSwitchStates limitSwitchStates = LimitSwitchStates.NO_HITS;
+    }
+
+    void updateInputs(TurretIOInputs inputs);
 
     void applyTalonFXConfig(TalonFXConfiguration configuration);
 
     void setControl(ControlRequest request);
 
-    boolean hasHitForwardSoftLimit();
-
-    boolean hasHitReverseSoftLimit();
-
-    double getPositionRotations();
-
-    double getVelocityRotationsPerSecond();
-
-    double getVoltage();
-
-    Current getCurrentDraw();
-
     void setPositionRotations(double newValue);
-
-    LimitSwitchStates getLimitSwitchStates();
 
     void close();
 
-    void simulationPeriodic();
+    default void simulationPeriodic() {}
 
     record LimitSwitchStates(boolean frontLeft, boolean backLeft, boolean backRight) {
 

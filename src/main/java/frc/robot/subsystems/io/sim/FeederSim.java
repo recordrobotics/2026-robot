@@ -1,7 +1,7 @@
 package frc.robot.subsystems.io.sim;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -32,7 +31,6 @@ public class FeederSim implements FeederIO {
     private final double periodicDt;
 
     private final TalonFX feeder;
-    private final TalonFXSimState feederSimState;
     private final DCMotor feederMotor = DCMotor.getKrakenX60(1);
 
     private final DCMotorSim feederSimModel = new DCMotorSim(
@@ -50,16 +48,15 @@ public class FeederSim implements FeederIO {
         this.periodicDt = periodicDt;
 
         feeder = new TalonFX(RobotMap.Feeder.MOTOR_ID);
-        feederSimState = feeder.getSimState();
-        feederSimState.Orientation = ChassisReference.Clockwise_Positive;
-        feederSimState.setMotorType(TalonFXSimState.MotorType.KrakenX60);
+        feeder.getSimState().Orientation = ChassisReference.Clockwise_Positive;
+        feeder.getSimState().setMotorType(TalonFXSimState.MotorType.KrakenX60);
 
         bottomBeambreakSim = new DIOSim(bottomBeambreak);
         topBeambreakSim = new DIOSim(topBeambreak);
         bottomBeambreakSim.setIsInput(true);
         topBeambreakSim.setIsInput(true);
 
-        RobotContainer.pdp.registerSimDevice(13, this::getCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(13, feeder.getSimState()::getSupplyCurrentMeasure);
     }
 
     @Override
@@ -68,67 +65,47 @@ public class FeederSim implements FeederIO {
     }
 
     @Override
-    public void setMotionMagic(MotionMagicVelocityVoltage request) {
+    public void setControl(ControlRequest request) {
         feeder.setControl(request);
     }
 
     @Override
-    public void setVoltage(double newValue) {
-        feeder.setVoltage(newValue);
-    }
+    public void updateInputs(FeederIOInputs inputs) {
+        inputs.connected = feeder.isConnected();
+        inputs.positionRotations = feeder.getPosition().getValueAsDouble();
+        inputs.velocityRotationsPerSecond = feeder.getVelocity().getValueAsDouble();
+        inputs.voltage = feeder.getMotorVoltage().getValueAsDouble();
+        inputs.currentDraw = feeder.getSimState().getSupplyCurrentMeasure();
 
-    @Override
-    public double getPositionRotations() {
-        return feeder.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getVelocityRotationsPerSecond() {
-        return feeder.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getVoltage() {
-        return feeder.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public Current getCurrentDraw() {
-        return feederSimState.getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public boolean isBottomBeamBroken() {
-        return !bottomBeambreak.get();
-    }
-
-    @Override
-    public boolean isTopBeamBroken() {
-        return !topBeambreak.get();
+        inputs.bottomBeamBroken = !bottomBeambreak.get();
+        inputs.topBeamBroken = !topBeambreak.get();
     }
 
     @Override
     public void simulationPeriodic() {
-        feederSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+        feeder.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
 
-        double feederVoltage = feederSimState.getMotorVoltage();
+        double feederVoltage = feeder.getSimState().getMotorVoltage();
 
         feederSimModel.setInputVoltage(
                 (RobotContainer.model.fuelManager.isFuelInFeeder() ? SHOOT_VOLTAGE_MULTIPLIER : 1.0) * feederVoltage);
         feederSimModel.update(periodicDt);
 
-        feederSimState.setRawRotorPosition(Constants.Feeder.GEAR_RATIO * feederSimModel.getAngularPositionRotations());
-        feederSimState.setRotorVelocity(
-                Constants.Feeder.GEAR_RATIO * Units.radiansToRotations(feederSimModel.getAngularVelocityRadPerSec()));
-        feederSimState.setRotorAcceleration(Constants.Feeder.GEAR_RATIO
-                * Units.radiansToRotations(feederSimModel.getAngularAccelerationRadPerSecSq()));
+        feeder.getSimState()
+                .setRawRotorPosition(Constants.Feeder.GEAR_RATIO * feederSimModel.getAngularPositionRotations());
+        feeder.getSimState()
+                .setRotorVelocity(Constants.Feeder.GEAR_RATIO
+                        * Units.radiansToRotations(feederSimModel.getAngularVelocityRadPerSec()));
+        feeder.getSimState()
+                .setRotorAcceleration(Constants.Feeder.GEAR_RATIO
+                        * Units.radiansToRotations(feederSimModel.getAngularAccelerationRadPerSecSq()));
 
         bottomBeambreakSim.setValue(!RobotContainer.model.fuelManager.hasFuelIntersecting(bottomBeambreakLine));
         topBeambreakSim.setValue(!RobotContainer.model.fuelManager.hasFuelIntersecting(topBeambreakLine));
     }
 
     public boolean isOuttaking() {
-        return getVelocityRotationsPerSecond() >= Constants.Feeder.INTAKE_VELOCITY_RPS / 2.0;
+        return feeder.getVelocity().getValueAsDouble() >= Constants.Feeder.INTAKE_VELOCITY_RPS / 2.0;
     }
 
     @Override

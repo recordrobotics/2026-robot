@@ -1,28 +1,13 @@
 package frc.robot.subsystems.io.stub;
 
-import static edu.wpi.first.units.Units.Amps;
-
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import edu.wpi.first.units.measure.Current;
 import frc.robot.subsystems.io.IntakeIO;
 
 public class IntakeStub implements IntakeIO {
     @Override
-    public void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration) {
+    public void applyArmTalonFXConfig(TalonFXConfiguration configuration) {
         // stub
-    }
-
-    @Override
-    public void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration) {
-        // stub
-    }
-
-    @Override
-    public Follower createArmFollower() {
-        return new Follower(-1, MotorAlignmentValue.Opposed); // invalid ID for stub
     }
 
     @Override
@@ -31,78 +16,13 @@ public class IntakeStub implements IntakeIO {
     }
 
     @Override
-    public void setArmLeaderControl(ControlRequest request) {
-        // stub
-    }
-
-    @Override
-    public void setArmFollowerControl(ControlRequest request) {
+    public void setArmControl(ControlRequest request) {
         // stub
     }
 
     @Override
     public void setWheelControl(ControlRequest request) {
         // stub
-    }
-
-    @Override
-    public double getArmLeaderPositionRotations() {
-        return 0.0;
-    }
-
-    @Override
-    public double getArmFollowerPositionRotations() {
-        return 0.0;
-    }
-
-    @Override
-    public double getWheelPositionMeters() {
-        return 0.0;
-    }
-
-    @Override
-    public double getArmLeaderVelocityRotationsPerSecond() {
-        return 0.0;
-    }
-
-    @Override
-    public double getArmFollowerVelocityRotationsPerSecond() {
-        return 0.0;
-    }
-
-    @Override
-    public double getWheelVelocityMps() {
-        return 0.0;
-    }
-
-    @Override
-    public double getWheelVoltage() {
-        return 0.0;
-    }
-
-    @Override
-    public double getArmLeaderVoltage() {
-        return 0.0;
-    }
-
-    @Override
-    public double getArmFollowerVoltage() {
-        return 0.0;
-    }
-
-    @Override
-    public Current getWheelCurrentDraw() {
-        return Amps.zero();
-    }
-
-    @Override
-    public Current getArmLeaderCurrentDraw() {
-        return Amps.zero();
-    }
-
-    @Override
-    public Current getArmFollowerCurrentDraw() {
-        return Amps.zero();
     }
 
     @Override
@@ -116,12 +36,12 @@ public class IntakeStub implements IntakeIO {
     }
 
     @Override
-    public void close() {
+    public void updateInputs(IntakeIOInputs inputs) {
         // stub
     }
 
     @Override
-    public void simulationPeriodic() {
+    public void close() {
         // stub
     }
 }

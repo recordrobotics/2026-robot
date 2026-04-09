@@ -4,13 +4,11 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
-import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -26,7 +24,6 @@ public class TurretSim implements TurretIO {
     private final double periodicDt;
 
     private final TalonFX turret;
-    private final TalonFXSimState turretSimState;
     private final DCMotor turretMotor = DCMotor.getKrakenX44(1);
 
     private final DCMotorSim turretSimModel = new DCMotorSim(
@@ -60,10 +57,9 @@ public class TurretSim implements TurretIO {
         this.periodicDt = periodicDt;
 
         turret = new TalonFX(RobotMap.Turret.MOTOR_ID);
-        turretSimState = turret.getSimState();
 
-        turretSimState.Orientation = ChassisReference.CounterClockwise_Positive;
-        turretSimState.setMotorType(MotorType.KrakenX44);
+        turret.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
+        turret.getSimState().setMotorType(MotorType.KrakenX44);
 
         frontLeftLimitSwitchSim = new DIOSim(frontLeftLimitSwitch);
         backLeftLimitSwitchSim = new DIOSim(backLeftLimitSwitch);
@@ -72,7 +68,7 @@ public class TurretSim implements TurretIO {
         backLeftLimitSwitchSim.setIsInput(true);
         backRightLimitSwitchSim.setIsInput(true);
 
-        RobotContainer.pdp.registerSimDevice(14, this::getCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(14, turret.getSimState()::getSupplyCurrentMeasure);
     }
 
     @Override
@@ -86,47 +82,13 @@ public class TurretSim implements TurretIO {
     }
 
     @Override
-    public boolean hasHitForwardSoftLimit() {
-        return turret.getFault_ForwardSoftLimit().getValue().booleanValue();
-    }
-
-    @Override
-    public boolean hasHitReverseSoftLimit() {
-        return turret.getFault_ReverseSoftLimit().getValue().booleanValue();
-    }
-
-    @Override
-    public double getPositionRotations() {
-        return turret.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getVelocityRotationsPerSecond() {
-        return turret.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getVoltage() {
-        return turret.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public Current getCurrentDraw() {
-        return turretSimState.getSupplyCurrentMeasure();
-    }
-
-    @Override
     public void setPositionRotations(double newValue) {
         // reset internal sim state
         turretSimModel.setState(Units.rotationsToRadians(newValue), 0);
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
-        turretSimState.setRawRotorPosition(Constants.Turret.GEAR_RATIO * turretSimModel.getAngularPositionRotations());
-        turretSimState.setRotorVelocity(
-                Constants.Turret.GEAR_RATIO * Units.radiansToRotations(turretSimModel.getAngularVelocityRadPerSec()));
-        turretSimState.setRotorAcceleration(Constants.Turret.GEAR_RATIO
-                * Units.radiansToRotations(turretSimModel.getAngularAccelerationRadPerSecSq()));
+        updateRotor();
 
         // Update internal raw position offset
         turret.setPosition(newValue);
@@ -135,8 +97,19 @@ public class TurretSim implements TurretIO {
     }
 
     @Override
-    public LimitSwitchStates getLimitSwitchStates() {
-        return new LimitSwitchStates(
+    public void updateInputs(TurretIOInputs inputs) {
+        inputs.connected = turret.isConnected();
+        inputs.positionRotations = turret.getPosition().getValueAsDouble();
+        inputs.velocityRotationsPerSecond = turret.getVelocity().getValueAsDouble();
+        inputs.voltage = turret.getMotorVoltage().getValueAsDouble();
+        inputs.currentDraw = turret.getSimState().getSupplyCurrentMeasure();
+
+        inputs.forwardSoftLimitHit =
+                turret.getFault_ForwardSoftLimit().getValue().booleanValue();
+        inputs.reverseSoftLimitHit =
+                turret.getFault_ReverseSoftLimit().getValue().booleanValue();
+
+        inputs.limitSwitchStates = new LimitSwitchStates(
                 !frontLeftLimitSwitch.get(), !backLeftLimitSwitch.get(), !backRightLimitSwitch.get());
     }
 
@@ -149,26 +122,33 @@ public class TurretSim implements TurretIO {
     }
 
     private double getSpringVoltage() {
-        double pos = getPositionRotations();
+        double pos = turret.getPosition().getValueAsDouble();
         return pos > Constants.Turret.TURRET_SPRING_START_POS
                 ? Constants.Turret.TURRET_SPRING_VOLTS
                 : pos < Constants.Turret.TURRET_SPRING_START_NEG ? -Constants.Turret.TURRET_SPRING_VOLTS : 0;
     }
 
+    private void updateRotor() {
+        turret.getSimState()
+                .setRawRotorPosition(Constants.Turret.GEAR_RATIO * turretSimModel.getAngularPositionRotations());
+        turret.getSimState()
+                .setRotorVelocity(Constants.Turret.GEAR_RATIO
+                        * Units.radiansToRotations(turretSimModel.getAngularVelocityRadPerSec()));
+        turret.getSimState()
+                .setRotorAcceleration(Constants.Turret.GEAR_RATIO
+                        * Units.radiansToRotations(turretSimModel.getAngularAccelerationRadPerSecSq()));
+    }
+
     @Override
     public void simulationPeriodic() {
-        turretSimState.setSupplyVoltage(RobotController.getBatteryVoltage());
+        turret.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
 
-        double turretVoltage = turretSimState.getMotorVoltage();
+        double turretVoltage = turret.getSimState().getMotorVoltage();
 
         turretSimModel.setInputVoltage(turretVoltage - getSpringVoltage());
         turretSimModel.update(periodicDt);
 
-        turretSimState.setRawRotorPosition(Constants.Turret.GEAR_RATIO * turretSimModel.getAngularPositionRotations());
-        turretSimState.setRotorVelocity(
-                Constants.Turret.GEAR_RATIO * Units.radiansToRotations(turretSimModel.getAngularVelocityRadPerSec()));
-        turretSimState.setRotorAcceleration(Constants.Turret.GEAR_RATIO
-                * Units.radiansToRotations(turretSimModel.getAngularAccelerationRadPerSecSq()));
+        updateRotor();
 
         updateLimitSwitches();
     }

@@ -6,21 +6,19 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.sim.Pigeon2SimState;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
-import frc.robot.subsystems.io.NavSensorIO;
+import frc.robot.subsystems.io.ImuIO;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 
-public class NavSensorSimPigeon2 implements NavSensorIO {
+public class ImuSimPigeon2 implements ImuIO {
 
     private final GyroSimulation gyroSimulation;
     private final Pigeon2 pigeon;
     private final Pigeon2SimState pigeonSimState;
 
-    public NavSensorSimPigeon2(GyroSimulation gyroSimulation) {
+    public ImuSimPigeon2(GyroSimulation gyroSimulation) {
         this.gyroSimulation = gyroSimulation;
 
         this.pigeon = new Pigeon2(RobotMap.PIGEON_2_ID);
@@ -47,52 +45,20 @@ public class NavSensorSimPigeon2 implements NavSensorIO {
     }
 
     @Override
-    public Rotation2d getYaw() {
-        return new Rotation2d(pigeon.getYaw().getValue());
+    public void updateInputs(ImuIOInputs inputs) {
+        inputs.connected = pigeon.isConnected();
+        inputs.yaw = new Rotation2d(pigeon.getYaw().getValue());
+        inputs.pitch = new Rotation2d(pigeon.getPitch().getValue());
+        inputs.roll = new Rotation2d(pigeon.getRoll().getValue());
+        inputs.yawRate = pigeon.getAngularVelocityZWorld().getValue();
+        inputs.pitchRate = pigeon.getAngularVelocityYWorld().getValue();
+        inputs.rollRate = pigeon.getAngularVelocityXWorld().getValue();
+        inputs.worldLinearAccelX = pigeon.getAccelerationX().getValue();
+        inputs.worldLinearAccelY = pigeon.getAccelerationY().getValue();
     }
 
     @Override
-    public Rotation2d getPitch() {
-        return new Rotation2d(pigeon.getPitch().getValue());
-    }
-
-    @Override
-    public Rotation2d getRoll() {
-        return new Rotation2d(pigeon.getRoll().getValue());
-    }
-
-    @Override
-    public AngularVelocity getYawRate() {
-        return pigeon.getAngularVelocityZWorld().getValue();
-    }
-
-    @Override
-    public AngularVelocity getPitchRate() {
-        return pigeon.getAngularVelocityYWorld().getValue();
-    }
-
-    @Override
-    public AngularVelocity getRollRate() {
-        return pigeon.getAngularVelocityXWorld().getValue();
-    }
-
-    @Override
-    public LinearAcceleration getWorldLinearAccelX() {
-        return pigeon.getAccelerationX().getValue();
-    }
-
-    @Override
-    public LinearAcceleration getWorldLinearAccelY() {
-        return pigeon.getAccelerationY().getValue();
-    }
-
-    @Override
-    public boolean isConnected() {
-        return pigeon.isConnected();
-    }
-
-    @Override
-    public void close() throws Exception {
+    public void close() {
         pigeon.close();
     }
 

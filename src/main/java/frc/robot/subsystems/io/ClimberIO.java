@@ -1,24 +1,33 @@
 package frc.robot.subsystems.io;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import edu.wpi.first.units.measure.Current;
+import org.littletonrobotics.junction.AutoLog;
 
 public interface ClimberIO extends AutoCloseable {
 
-    void applyTalonFXConfig(TalonFXConfiguration configuration);
+    @AutoLog
+    @SuppressWarnings("java:S1104") /* public fields in input */
+    class ClimberIOInputs {
+        public boolean connected = false;
+        public double positionMeters = 0;
+        public double velocityMps = 0;
+        public double voltage = 0;
+        public Current currentDraw = Amps.zero();
+    }
 
-    double getVoltage();
+    void updateInputs(ClimberIOInputs inputs);
+
+    void applyTalonFXConfig(TalonFXConfiguration configuration);
 
     void setPosition(double newValue);
 
     void setControl(ControlRequest request);
 
-    double getPosition();
+    void close();
 
-    double getVelocity();
-
-    Current getCurrentDraw();
-
-    void simulationPeriodic();
+    default void simulationPeriodic() {}
 }

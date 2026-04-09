@@ -216,9 +216,9 @@ public class LimelightCamera extends PoseEstimationCamera {
         Rotation2d estimatedRotation =
                 RobotContainer.poseSensorFusion.getEstimatedPosition().getRotation();
 
-        double rollRate = RobotContainer.poseSensorFusion.nav.getRollRate().in(DegreesPerSecond);
-        double pitchRate = RobotContainer.poseSensorFusion.nav.getPitchRate().in(DegreesPerSecond);
-        double yawRate = RobotContainer.poseSensorFusion.nav.getYawRate().in(DegreesPerSecond);
+        double rollRate = RobotContainer.poseSensorFusion.imu.getRollRate().in(DegreesPerSecond);
+        double pitchRate = RobotContainer.poseSensorFusion.imu.getPitchRate().in(DegreesPerSecond);
+        double yawRate = RobotContainer.poseSensorFusion.imu.getYawRate().in(DegreesPerSecond);
 
         Transform3d robotToCamera = convertRobotToCamera(
                 getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
@@ -235,8 +235,8 @@ public class LimelightCamera extends PoseEstimationCamera {
                 Units.radiansToDegrees(robotToCamera.getRotation().getZ()));
 
         Rotation3d orientation = new Rotation3d(
-                        RobotContainer.poseSensorFusion.nav.getRoll().getRadians(),
-                        RobotContainer.poseSensorFusion.nav.getPitch().getRadians(),
+                        RobotContainer.poseSensorFusion.imu.getRoll().getRadians(),
+                        RobotContainer.poseSensorFusion.imu.getPitch().getRadians(),
                         estimatedRotation.getRadians())
                 .plus(getLastRobotToMechanism().getRotation());
 

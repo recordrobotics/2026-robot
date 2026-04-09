@@ -1,49 +1,38 @@
 package frc.robot.subsystems.io;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
 import edu.wpi.first.units.measure.Current;
+import org.littletonrobotics.junction.AutoLog;
 
 public interface ShooterIO {
 
-    void applyFlywheelLeaderTalonFXConfig(TalonFXConfiguration configuration);
+    @AutoLog
+    @SuppressWarnings("java:S1104") /* public fields in input */
+    class ShooterIOInputs {
+        public double flywheelPositionMeters = 0;
+        public double flywheelVelocityMps = 0;
+        public double flywheelVoltage = 0;
+        public Current flywheelCurrentDraw = Amps.zero();
 
-    void applyFlywheelFollowerTalonFXConfig(TalonFXConfiguration configuration);
+        public boolean hoodConnected = false;
+        public double hoodPositionRotations = 0;
+        public double hoodVelocityRotationsPerSecond = 0;
+        public double hoodVoltage = 0;
+        public Current hoodCurrentDraw = Amps.zero();
+    }
+
+    void updateInputs(ShooterIOInputs inputs);
+
+    void applyFlywheelTalonFXConfig(TalonFXConfiguration configuration);
 
     void applyHoodTalonFXConfig(TalonFXConfiguration configuration);
 
     void setFlywheelControl(ControlRequest request);
 
-    void setFlywheelFollowerControl(ControlRequest request);
-
     void setHoodControl(ControlRequest request);
-
-    Follower createFlywheelFollower();
-
-    double getFlywheelLeaderPositionMeters();
-
-    double getFlywheelFollowerPositionMeters();
-
-    double getHoodPositionRotations();
-
-    double getFlywheelLeaderVelocityMps();
-
-    double getFlywheelFollowerVelocityMps();
-
-    double getHoodVelocityRotationsPerSecond();
-
-    double getFlywheelLeaderVoltage();
-
-    double getFlywheelFollowerVoltage();
-
-    double getHoodVoltage();
-
-    Current getFlywheelLeaderCurrentDraw();
-
-    Current getFlywheelFollowerCurrentDraw();
-
-    Current getHoodCurrentDraw();
 
     void setHoodPositionRotations(double newValue);
 
@@ -51,5 +40,5 @@ public interface ShooterIO {
 
     void close();
 
-    void simulationPeriodic();
+    default void simulationPeriodic() {}
 }

@@ -3,15 +3,11 @@ package frc.robot.subsystems.io.real;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.TurretIO;
 
 public class TurretReal implements TurretIO {
-
-    @SuppressWarnings("unused")
-    private final double periodicDt;
 
     private final TalonFX turret;
 
@@ -19,9 +15,7 @@ public class TurretReal implements TurretIO {
     private final DigitalInput backLeftLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_LEFT_LIMIT_SWITCH_ID);
     private final DigitalInput backRightLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_RIGHT_LIMIT_SWITCH_ID);
 
-    public TurretReal(double periodicDt) {
-        this.periodicDt = periodicDt;
-
+    public TurretReal() {
         turret = new TalonFX(RobotMap.Turret.MOTOR_ID);
     }
 
@@ -31,38 +25,8 @@ public class TurretReal implements TurretIO {
     }
 
     @Override
-    public boolean hasHitForwardSoftLimit() {
-        return turret.getFault_ForwardSoftLimit().getValue().booleanValue();
-    }
-
-    @Override
-    public boolean hasHitReverseSoftLimit() {
-        return turret.getFault_ReverseSoftLimit().getValue().booleanValue();
-    }
-
-    @Override
     public void setControl(ControlRequest request) {
         turret.setControl(request);
-    }
-
-    @Override
-    public double getPositionRotations() {
-        return turret.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getVelocityRotationsPerSecond() {
-        return turret.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getVoltage() {
-        return turret.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public Current getCurrentDraw() {
-        return turret.getSupplyCurrent().getValue();
     }
 
     @Override
@@ -71,18 +35,27 @@ public class TurretReal implements TurretIO {
     }
 
     @Override
-    public LimitSwitchStates getLimitSwitchStates() {
-        return new LimitSwitchStates(
+    public void updateInputs(TurretIOInputs inputs) {
+        inputs.connected = turret.isConnected();
+        inputs.positionRotations = turret.getPosition().getValueAsDouble();
+        inputs.velocityRotationsPerSecond = turret.getVelocity().getValueAsDouble();
+        inputs.voltage = turret.getMotorVoltage().getValueAsDouble();
+        inputs.currentDraw = turret.getSupplyCurrent().getValue();
+
+        inputs.forwardSoftLimitHit =
+                turret.getFault_ForwardSoftLimit().getValue().booleanValue();
+        inputs.reverseSoftLimitHit =
+                turret.getFault_ReverseSoftLimit().getValue().booleanValue();
+
+        inputs.limitSwitchStates = new LimitSwitchStates(
                 !frontLeftLimitSwitch.get(), !backLeftLimitSwitch.get(), !backRightLimitSwitch.get());
     }
 
     @Override
     public void close() {
         turret.close();
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        /* real */
+        frontLeftLimitSwitch.close();
+        backLeftLimitSwitch.close();
+        backRightLimitSwitch.close();
     }
 }

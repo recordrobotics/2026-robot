@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -17,6 +16,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -24,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.ShooterIO;
+import frc.robot.subsystems.io.ShooterIOInputsAutoLogged;
 import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.KillableSubsystem;
 import frc.robot.utils.PositionedSubsystem;
@@ -49,13 +51,18 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
     private final ShooterIO io;
+    private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
+
     private final SysIdRoutine sysIdRoutineFlywheel;
     private final SysIdRoutine sysIdRoutineHood;
-    private final MotionMagicExpoVoltage hoodRequest;
-    private final MotionMagicVelocityVoltage flywheelRequest;
-    private final VoltageOut flywheelVoltageRequest;
-    private final VoltageOut hoodVoltageRequest;
-    private final Follower flywheelFollowerRequest;
+
+    private final MotionMagicExpoVoltage hoodRequest =
+            new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Shooter.HOOD_STARTING_POSITION_RADIANS));
+    private final MotionMagicVelocityVoltage flywheelRequest = new MotionMagicVelocityVoltage(0.0);
+    private final VoltageOut flywheelVoltageRequest = new VoltageOut(0);
+    private final VoltageOut hoodVoltageRequest = new VoltageOut(0);
+
+    private final Alert hoodDisconnectedAlert = new Alert("Hood disconnected!", AlertType.kError);
 
     private double hoodTargetPositionRotations;
     private double flywheelTargetVelocityMps;
@@ -67,12 +74,6 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
     public Shooter(ShooterIO io) {
         this.io = io;
-        hoodRequest =
-                new MotionMagicExpoVoltage(Units.radiansToRotations(Constants.Shooter.HOOD_STARTING_POSITION_RADIANS));
-        flywheelRequest = new MotionMagicVelocityVoltage(0.0);
-        flywheelFollowerRequest = io.createFlywheelFollower();
-        flywheelVoltageRequest = new VoltageOut(0);
-        hoodVoltageRequest = new VoltageOut(0);
 
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
@@ -129,12 +130,8 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
         flywheelConfig.Feedback.SensorToMechanismRatio = 1.0 / Constants.Shooter.FLYWHEEL_METERS_PER_ROTATION;
-        flywheelConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        io.applyFlywheelLeaderTalonFXConfig(flywheelConfig);
-        io.applyFlywheelFollowerTalonFXConfig(flywheelConfig.withMotorOutput(
-                flywheelConfig.MotorOutput.withInverted(InvertedValue.Clockwise_Positive)));
-        io.setFlywheelFollowerControl(flywheelFollowerRequest);
+        io.applyFlywheelTalonFXConfig(flywheelConfig);
 
         setTargetState(new ShooterState(Constants.Shooter.HOOD_STARTING_POSITION_RADIANS, 0.0, 0));
 
@@ -145,7 +142,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
                         null,
                         state -> Logger.recordOutput("Shooter/Flywheel/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(
-                        v -> io.setFlywheelControl(flywheelVoltageRequest.withOutput(v.in(Volts))), null, this));
+                        v -> io.setFlywheelControl(flywheelVoltageRequest.withOutput(v)), null, this));
 
         sysIdRoutineHood = new SysIdRoutine(
                 new SysIdRoutine.Config(
@@ -153,8 +150,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
                         SYSID_STEP_VOLTAGE,
                         SYSID_TIMEOUT,
                         state -> Logger.recordOutput("Shooter/Hood/SysIdTestState", state.toString())),
-                new SysIdRoutine.Mechanism(
-                        v -> io.setHoodControl(hoodVoltageRequest.withOutput(v.in(Volts))), null, this));
+                new SysIdRoutine.Mechanism(v -> io.setHoodControl(hoodVoltageRequest.withOutput(v)), null, this));
 
         PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
@@ -197,9 +193,18 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         }
     }
 
+    public double getFlywheelVelocityMps() {
+        return inputs.flywheelVelocityMps;
+    }
+
     @Override
     public void periodicManaged() {
-        RobotContainer.model.shooterModel.updateHood(Units.rotationsToRadians(getHoodPositionRotations()));
+        io.updateInputs(inputs);
+        Logger.processInputs("Shooter", inputs);
+
+        hoodDisconnectedAlert.set(!inputs.hoodConnected);
+
+        RobotContainer.model.shooterModel.updateHood(getHoodAngle());
 
         if (overrideKnown) {
             positionStatus = PositionStatus.KNOWN;
@@ -207,8 +212,8 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
         if (!isForceDisabled()
                 && positionStatus == PositionStatus.UNKNOWN
-                && SimpleMath.isAFartherFromZeroThanB(getHoodVoltage(), RESET_VOLTAGE / 2)) {
-            if (Math.abs(getHoodVelocityRotationsPerSecond()) > RESET_VELOCITY_THRESHOLD) {
+                && SimpleMath.isAFartherFromZeroThanB(inputs.hoodVoltage, RESET_VOLTAGE / 2)) {
+            if (Math.abs(inputs.hoodVelocityRotationsPerSecond) > RESET_VELOCITY_THRESHOLD) {
                 lastMovementTime = Timer.getTimestamp();
             } else if (Timer.getTimestamp() - lastMovementTime > RESET_VELOCITY_THRESHOLD_TIME) {
                 positionStatus = PositionStatus.KNOWN;
@@ -223,10 +228,10 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     @AutoLogLevel
     public boolean isAtTargetState() {
         return SimpleMath.isWithinTolerance(
-                        getHoodPositionRotations(), hoodTargetPositionRotations, HOOD_POSITION_TOLERANCE)
-                && SimpleMath.isWithinTolerance(getHoodVelocityRotationsPerSecond(), 0, HOOD_VELOCITY_TOLERANCE)
+                        inputs.hoodPositionRotations, hoodTargetPositionRotations, HOOD_POSITION_TOLERANCE)
+                && SimpleMath.isWithinTolerance(inputs.hoodVelocityRotationsPerSecond, 0, HOOD_VELOCITY_TOLERANCE)
                 && SimpleMath.isWithinTolerance(
-                        getFlywheelVelocityMps(), flywheelTargetVelocityMps, FLYWHEEL_VELOCITY_TOLERANCE_MPS);
+                        inputs.flywheelVelocityMps, flywheelTargetVelocityMps, FLYWHEEL_VELOCITY_TOLERANCE_MPS);
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
@@ -241,44 +246,12 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public double getHoodAngle() {
-        return Units.rotationsToRadians(io.getHoodPositionRotations());
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getHoodPositionRotations() {
-        return io.getHoodPositionRotations();
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getHoodVelocityRotationsPerSecond() {
-        return io.getHoodVelocityRotationsPerSecond();
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getHoodVoltage() {
-        return io.getHoodVoltage();
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getFlywheelPositionMeters() {
-        return (io.getFlywheelLeaderPositionMeters() + io.getFlywheelFollowerPositionMeters()) / 2.0;
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
-    public double getFlywheelVelocityMps() {
-        return (io.getFlywheelLeaderVelocityMps() + io.getFlywheelFollowerVelocityMps()) / 2.0;
-    }
-
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
-    public double getFlywheelVoltage() {
-        return (io.getFlywheelLeaderVoltage() + io.getFlywheelFollowerVoltage()) / 2.0;
+        return Units.rotationsToRadians(inputs.hoodPositionRotations);
     }
 
     @Override
     public Current getCurrentDraw() {
-        return io.getFlywheelLeaderCurrentDraw()
-                .plus(io.getFlywheelFollowerCurrentDraw())
-                .plus(io.getHoodCurrentDraw());
+        return inputs.flywheelCurrentDraw.plus(inputs.hoodCurrentDraw);
     }
 
     public Command sysIdQuasistaticFlywheel(SysIdRoutine.Direction direction) {

@@ -1,10 +1,7 @@
 package frc.robot.subsystems.io.stub;
 
-import static edu.wpi.first.units.Units.Amps;
-
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import edu.wpi.first.units.measure.Current;
+import com.ctre.phoenix6.controls.ControlRequest;
 import frc.robot.subsystems.io.FeederIO;
 
 public class FeederStub implements FeederIO {
@@ -15,53 +12,12 @@ public class FeederStub implements FeederIO {
     }
 
     @Override
-    public void setMotionMagic(MotionMagicVelocityVoltage request) {
+    public void setControl(ControlRequest request) {
         // stub
     }
 
     @Override
-    public void setVoltage(double newValue) {
-        // stub
-    }
-
-    @Override
-    public double getPositionRotations() {
-        // stub
-        return 0.0;
-    }
-
-    @Override
-    public double getVelocityRotationsPerSecond() {
-        // stub
-        return 0.0;
-    }
-
-    @Override
-    public double getVoltage() {
-        // stub
-        return 0.0;
-    }
-
-    @Override
-    public Current getCurrentDraw() {
-        // stub
-        return Amps.zero();
-    }
-
-    @Override
-    public boolean isBottomBeamBroken() {
-        // stub
-        return false;
-    }
-
-    @Override
-    public boolean isTopBeamBroken() {
-        // stub
-        return false;
-    }
-
-    @Override
-    public void simulationPeriodic() {
+    public void updateInputs(FeederIOInputs inputs) {
         // stub
     }
 

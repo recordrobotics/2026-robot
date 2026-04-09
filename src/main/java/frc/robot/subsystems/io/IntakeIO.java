@@ -1,48 +1,39 @@
 package frc.robot.subsystems.io;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
 import edu.wpi.first.units.measure.Current;
+import org.littletonrobotics.junction.AutoLog;
 
 public interface IntakeIO {
-    void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration);
 
-    void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration);
+    @AutoLog
+    @SuppressWarnings("java:S1104") /* public fields in input */
+    class IntakeIOInputs {
+        public boolean armHasPosition = false;
+        public double armPositionRotations = 0;
+        public double armVelocityRotationsPerSecond = 0;
+        public double armVoltage = 0;
+        public Current armCurrentDraw = Amps.zero();
 
-    Follower createArmFollower();
+        public boolean wheelConnected = false;
+        public double wheelPositionMeters = 0;
+        public double wheelVelocityMps = 0;
+        public double wheelVoltage = 0;
+        public Current wheelCurrentDraw = Amps.zero();
+    }
+
+    void updateInputs(IntakeIOInputs inputs);
+
+    void applyArmTalonFXConfig(TalonFXConfiguration configuration);
 
     void applyWheelTalonFXConfig(TalonFXConfiguration configuration);
 
-    void setArmLeaderControl(ControlRequest request);
-
-    void setArmFollowerControl(ControlRequest request);
+    void setArmControl(ControlRequest request);
 
     void setWheelControl(ControlRequest request);
-
-    double getArmLeaderPositionRotations();
-
-    double getArmFollowerPositionRotations();
-
-    double getWheelPositionMeters();
-
-    double getArmLeaderVelocityRotationsPerSecond();
-
-    double getArmFollowerVelocityRotationsPerSecond();
-
-    double getWheelVelocityMps();
-
-    double getWheelVoltage();
-
-    double getArmLeaderVoltage();
-
-    double getArmFollowerVoltage();
-
-    Current getWheelCurrentDraw();
-
-    Current getArmLeaderCurrentDraw();
-
-    Current getArmFollowerCurrentDraw();
 
     void setWheelPositionMeters(double newValue);
 
@@ -50,5 +41,5 @@ public interface IntakeIO {
 
     void close();
 
-    void simulationPeriodic();
+    default void simulationPeriodic() {}
 }

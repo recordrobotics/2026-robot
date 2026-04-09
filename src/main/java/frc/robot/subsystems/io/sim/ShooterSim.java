@@ -1,10 +1,11 @@
 package frc.robot.subsystems.io.sim;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
@@ -19,6 +20,9 @@ import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ShooterIO;
+import frc.robot.utils.SimpleMath;
+import frc.robot.utils.TalonFXMotorGroup;
+import java.util.Arrays;
 
 public class ShooterSim implements ShooterIO {
 
@@ -26,13 +30,8 @@ public class ShooterSim implements ShooterIO {
 
     private final double periodicDt;
 
-    private final TalonFX flywheelLeader;
-    private final TalonFX flywheelFollower;
+    private final TalonFXMotorGroup flywheelGroup;
     private final TalonFX hood;
-
-    private final TalonFXSimState flywheelSimLeader;
-    private final TalonFXSimState flywheelSimFollower;
-    private final TalonFXSimState hoodSim;
 
     private final DCMotor flywheelMotor = DCMotor.getKrakenX60(2);
     private final DCMotor hoodMotor = DCMotor.getKrakenX44(1);
@@ -61,40 +60,32 @@ public class ShooterSim implements ShooterIO {
     public ShooterSim(double periodicDt) {
         this.periodicDt = periodicDt;
 
-        flywheelLeader = new TalonFX(RobotMap.Shooter.FLYWHEEL_LEADER_ID);
-        flywheelFollower = new TalonFX(RobotMap.Shooter.FLYWHEEL_FOLLOWER_ID);
+        flywheelGroup = new TalonFXMotorGroup(
+                "Shooter",
+                new TalonFXMotorGroup.MotorConfig(
+                        RobotMap.Shooter.FLYWHEEL_LEFT_ID, "Left", InvertedValue.CounterClockwise_Positive),
+                new TalonFXMotorGroup.MotorConfig(
+                        RobotMap.Shooter.FLYWHEEL_RIGHT_ID, "Right", InvertedValue.Clockwise_Positive));
         hood = new TalonFX(RobotMap.Shooter.HOOD_ID);
-        flywheelSimLeader = flywheelLeader.getSimState();
-        flywheelSimFollower = flywheelFollower.getSimState();
-        hoodSim = hood.getSimState();
 
-        flywheelSimLeader.Orientation = ChassisReference.CounterClockwise_Positive;
-        flywheelSimFollower.Orientation = ChassisReference.Clockwise_Positive;
-        hoodSim.Orientation = ChassisReference.Clockwise_Positive;
+        flywheelGroup.getSimState(0).Orientation = ChassisReference.CounterClockwise_Positive;
+        flywheelGroup.getSimState(1).Orientation = ChassisReference.Clockwise_Positive;
+        hood.getSimState().Orientation = ChassisReference.Clockwise_Positive;
 
-        flywheelSimLeader.setMotorType(MotorType.KrakenX60);
-        flywheelSimFollower.setMotorType(MotorType.KrakenX60);
-        hoodSim.setMotorType(MotorType.KrakenX44);
+        flywheelGroup.getSimState(0).setMotorType(MotorType.KrakenX60);
+        flywheelGroup.getSimState(1).setMotorType(MotorType.KrakenX60);
+        hood.getSimState().setMotorType(MotorType.KrakenX44);
 
-        RobotContainer.pdp.registerSimDevice(15, this::getFlywheelLeaderCurrentDraw);
-        RobotContainer.pdp.registerSimDevice(16, this::getFlywheelFollowerCurrentDraw);
-        RobotContainer.pdp.registerSimDevice(17, this::getHoodCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(
+                15, () -> flywheelGroup.getSimState(0).getSupplyCurrentMeasure());
+        RobotContainer.pdp.registerSimDevice(
+                16, () -> flywheelGroup.getSimState(1).getSupplyCurrentMeasure());
+        RobotContainer.pdp.registerSimDevice(17, () -> hood.getSimState().getSupplyCurrentMeasure());
     }
 
     @Override
-    public Follower createFlywheelFollower() {
-        return new Follower(
-                RobotMap.Shooter.FLYWHEEL_LEADER_ID, MotorAlignmentValue.Opposed); // motors face in opposite directions
-    }
-
-    @Override
-    public void applyFlywheelLeaderTalonFXConfig(TalonFXConfiguration configuration) {
-        flywheelLeader.getConfigurator().apply(configuration);
-    }
-
-    @Override
-    public void applyFlywheelFollowerTalonFXConfig(TalonFXConfiguration configuration) {
-        flywheelFollower.getConfigurator().apply(configuration);
+    public void applyFlywheelTalonFXConfig(TalonFXConfiguration configuration) {
+        flywheelGroup.applyConfig(configuration);
     }
 
     @Override
@@ -109,23 +100,10 @@ public class ShooterSim implements ShooterIO {
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
-        flywheelSimLeader.setRawRotorPosition(
-                Constants.Shooter.FLYWHEEL_GEAR_RATIO * flywheelSimModel.getAngularPositionRotations());
-        flywheelSimLeader.setRotorVelocity(Constants.Shooter.FLYWHEEL_GEAR_RATIO
-                * Units.radiansToRotations(flywheelSimModel.getAngularVelocityRadPerSec()));
-        flywheelSimLeader.setRotorAcceleration(Constants.Shooter.FLYWHEEL_GEAR_RATIO
-                * Units.radiansToRotations(flywheelSimModel.getAngularAccelerationRadPerSecSq()));
-
-        flywheelSimFollower.setRawRotorPosition(
-                Constants.Shooter.FLYWHEEL_GEAR_RATIO * flywheelSimModel.getAngularPositionRotations());
-        flywheelSimFollower.setRotorVelocity(Constants.Shooter.FLYWHEEL_GEAR_RATIO
-                * Units.radiansToRotations(flywheelSimModel.getAngularVelocityRadPerSec()));
-        flywheelSimFollower.setRotorAcceleration(Constants.Shooter.FLYWHEEL_GEAR_RATIO
-                * Units.radiansToRotations(flywheelSimModel.getAngularAccelerationRadPerSecSq()));
+        updateFlywheelRotor();
 
         // Update internal raw position offset
-        flywheelLeader.setPosition(newValue);
-        flywheelFollower.setPosition(newValue);
+        flywheelGroup.setPosition(newValue);
     }
 
     @Override
@@ -137,12 +115,7 @@ public class ShooterSim implements ShooterIO {
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
-        hoodSim.setRawRotorPosition(Constants.Shooter.HOOD_GEAR_RATIO
-                        * Units.radiansToRotations(
-                                hoodSimModel.getAngleRads() - Constants.Shooter.HOOD_STARTING_POSITION_RADIANS)
-                - Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS);
-        hoodSim.setRotorVelocity(
-                Constants.Shooter.HOOD_GEAR_RATIO * Units.radiansToRotations(hoodSimModel.getVelocityRadPerSec()));
+        updateHoodRotor();
 
         // Update internal raw position offset
         hood.setPosition(newValueRotations);
@@ -150,12 +123,7 @@ public class ShooterSim implements ShooterIO {
 
     @Override
     public void setFlywheelControl(ControlRequest request) {
-        flywheelLeader.setControl(request);
-    }
-
-    @Override
-    public void setFlywheelFollowerControl(ControlRequest request) {
-        flywheelFollower.setControl(request);
+        flywheelGroup.setControl(request);
     }
 
     @Override
@@ -164,70 +132,52 @@ public class ShooterSim implements ShooterIO {
     }
 
     @Override
-    public double getFlywheelLeaderPositionMeters() {
-        return flywheelLeader.getPosition().getValueAsDouble();
-    }
+    public void updateInputs(ShooterIOInputs inputs) {
+        flywheelGroup.periodic();
+        if (flywheelGroup.hasLostPosition()) { // position doesn't matter
+            flywheelGroup.setPosition(0);
+        }
 
-    @Override
-    public double getFlywheelFollowerPositionMeters() {
-        return flywheelFollower.getPosition().getValueAsDouble();
-    }
+        inputs.flywheelPositionMeters = flywheelGroup.getAveragePosition();
+        inputs.flywheelVelocityMps = SimpleMath.average(flywheelGroup.getVelocities());
+        inputs.flywheelVoltage = SimpleMath.average(flywheelGroup.getVoltages());
+        inputs.flywheelCurrentDraw = Arrays.stream(flywheelGroup.getSimStates())
+                .map(TalonFXSimState::getSupplyCurrentMeasure)
+                .reduce(Amps.zero(), Current::plus);
 
-    @Override
-    public double getFlywheelLeaderVelocityMps() {
-        return flywheelLeader.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getFlywheelFollowerVelocityMps() {
-        return flywheelFollower.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getFlywheelLeaderVoltage() {
-        return flywheelLeader.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getFlywheelFollowerVoltage() {
-        return flywheelFollower.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getHoodVoltage() {
-        return hood.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getHoodPositionRotations() {
-        return hood.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getHoodVelocityRotationsPerSecond() {
-        return hood.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public Current getFlywheelLeaderCurrentDraw() {
-        return flywheelSimLeader.getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public Current getFlywheelFollowerCurrentDraw() {
-        return flywheelSimFollower.getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public Current getHoodCurrentDraw() {
-        return hoodSim.getSupplyCurrentMeasure();
+        inputs.hoodConnected = hood.isConnected();
+        inputs.hoodPositionRotations = hood.getPosition().getValueAsDouble();
+        inputs.hoodVelocityRotationsPerSecond = hood.getVelocity().getValueAsDouble();
+        inputs.hoodVoltage = hood.getMotorVoltage().getValueAsDouble();
+        inputs.hoodCurrentDraw = hood.getSimState().getSupplyCurrentMeasure();
     }
 
     @Override
     public void close() {
-        flywheelLeader.close();
-        flywheelFollower.close();
+        flywheelGroup.close();
         hood.close();
+    }
+
+    private void updateFlywheelRotor() {
+        for (TalonFXSimState simState : flywheelGroup.getSimStates()) {
+            simState.setRawRotorPosition(
+                    Constants.Shooter.FLYWHEEL_GEAR_RATIO * flywheelSimModel.getAngularPositionRotations());
+            simState.setRotorVelocity(Constants.Shooter.FLYWHEEL_GEAR_RATIO
+                    * Units.radiansToRotations(flywheelSimModel.getAngularVelocityRadPerSec()));
+            simState.setRotorAcceleration(Constants.Shooter.FLYWHEEL_GEAR_RATIO
+                    * Units.radiansToRotations(flywheelSimModel.getAngularAccelerationRadPerSecSq()));
+        }
+    }
+
+    private void updateHoodRotor() {
+        hood.getSimState()
+                .setRawRotorPosition(Constants.Shooter.HOOD_GEAR_RATIO
+                                * Units.radiansToRotations(
+                                        hoodSimModel.getAngleRads() - Constants.Shooter.HOOD_STARTING_POSITION_RADIANS)
+                        - Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS);
+        hood.getSimState()
+                .setRotorVelocity(Constants.Shooter.HOOD_GEAR_RATIO
+                        * Units.radiansToRotations(hoodSimModel.getVelocityRadPerSec()));
     }
 
     @Override
@@ -236,41 +186,26 @@ public class ShooterSim implements ShooterIO {
     }
 
     private void updateMotorSimulations() {
-        flywheelSimLeader.setSupplyVoltage(RobotController.getBatteryVoltage());
-        flywheelSimFollower.setSupplyVoltage(RobotController.getBatteryVoltage());
-        hoodSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        for (TalonFXSimState simState : flywheelGroup.getSimStates()) {
+            simState.setSupplyVoltage(RobotController.getBatteryVoltage());
+        }
 
-        double hoodVoltage = hoodSim.getMotorVoltage();
-        double flywheelLeaderVoltage = flywheelSimLeader.getMotorVoltage();
-        double flywheelFollowerVoltage = flywheelSimFollower.getMotorVoltage();
+        hood.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
+
+        double hoodVoltage = hood.getSimState().getMotorVoltage();
+        double flywheelVoltage = SimpleMath.average(Arrays.stream(flywheelGroup.getSimStates())
+                .mapToDouble(TalonFXSimState::getMotorVoltage)
+                .toArray());
 
         hoodSimModel.setInputVoltage(hoodVoltage);
         hoodSimModel.update(periodicDt);
 
         flywheelSimModel.setInputVoltage(
                 (RobotContainer.model.fuelManager.isShootingFuel() ? FLYWHEEL_SHOOT_VOLTAGE_MULTIPLIER : 1.0)
-                        * ((flywheelLeaderVoltage + flywheelFollowerVoltage) / 2.0));
+                        * flywheelVoltage);
         flywheelSimModel.update(periodicDt);
 
-        hoodSim.setRawRotorPosition(Constants.Shooter.HOOD_GEAR_RATIO
-                        * Units.radiansToRotations(
-                                hoodSimModel.getAngleRads() - Constants.Shooter.HOOD_STARTING_POSITION_RADIANS)
-                - Constants.Shooter.HOOD_GRAVITY_POSITION_OFFSET_ROTATIONS);
-        hoodSim.setRotorVelocity(
-                Constants.Shooter.HOOD_GEAR_RATIO * Units.radiansToRotations(hoodSimModel.getVelocityRadPerSec()));
-
-        flywheelSimLeader.setRawRotorPosition(
-                Constants.Shooter.FLYWHEEL_GEAR_RATIO * flywheelSimModel.getAngularPositionRotations());
-        flywheelSimLeader.setRotorVelocity(Constants.Shooter.FLYWHEEL_GEAR_RATIO
-                * Units.radiansToRotations(flywheelSimModel.getAngularVelocityRadPerSec()));
-        flywheelSimLeader.setRotorAcceleration(Constants.Shooter.FLYWHEEL_GEAR_RATIO
-                * Units.radiansToRotations(flywheelSimModel.getAngularAccelerationRadPerSecSq()));
-
-        flywheelSimFollower.setRawRotorPosition(
-                Constants.Shooter.FLYWHEEL_GEAR_RATIO * flywheelSimModel.getAngularPositionRotations());
-        flywheelSimFollower.setRotorVelocity(Constants.Shooter.FLYWHEEL_GEAR_RATIO
-                * Units.radiansToRotations(flywheelSimModel.getAngularVelocityRadPerSec()));
-        flywheelSimFollower.setRotorAcceleration(Constants.Shooter.FLYWHEEL_GEAR_RATIO
-                * Units.radiansToRotations(flywheelSimModel.getAngularAccelerationRadPerSecSq()));
+        updateHoodRotor();
+        updateFlywheelRotor();
     }
 }

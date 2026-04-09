@@ -4,12 +4,10 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
-import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import frc.robot.Constants;
@@ -24,8 +22,6 @@ public class ClimberSim implements ClimberIO {
     private final double periodicDt;
 
     private final TalonFX motorClimber;
-
-    private final TalonFXSimState motorClimberSim;
 
     private AbstractDriveTrainSimulation drivetrainSim;
 
@@ -61,11 +57,9 @@ public class ClimberSim implements ClimberIO {
 
         motorClimber = new TalonFX(RobotMap.Climber.MOTOR_ID);
 
-        motorClimberSim = motorClimber.getSimState();
+        motorClimber.getSimState().Orientation = ChassisReference.Clockwise_Positive; // correct
 
-        motorClimberSim.Orientation = ChassisReference.Clockwise_Positive; // correct
-
-        RobotContainer.pdp.registerSimDevice(12, this::getCurrentDraw);
+        RobotContainer.pdp.registerSimDevice(12, motorClimber.getSimState()::getSupplyCurrentMeasure);
     }
 
     @Override
@@ -79,43 +73,29 @@ public class ClimberSim implements ClimberIO {
     }
 
     @Override
-    public double getVoltage() {
-        return motorClimber.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
     public void setPosition(double newValue) {
         // Reset internal sim state
         currentPhysicsSim.setState(newValue, 0);
 
         // Update raw rotor position to match internal sim state (has to be called before setPosition to
         // have correct offset)
-        motorClimberSim.setRawRotorPosition(
-                currentPhysicsSim.getPositionMeters() / Constants.Climber.METERS_PER_ROTATION);
-        motorClimberSim.setRotorVelocity(
-                currentPhysicsSim.getVelocityMetersPerSecond() / Constants.Climber.METERS_PER_ROTATION);
+        updateRotor();
 
         // Update internal raw position offset
         motorClimber.setPosition(newValue);
     }
 
     @Override
-    public double getPosition() {
-        return motorClimber.getPosition().getValueAsDouble();
+    public void updateInputs(ClimberIOInputs inputs) {
+        inputs.connected = motorClimber.isConnected();
+        inputs.positionMeters = motorClimber.getPosition().getValueAsDouble();
+        inputs.velocityMps = motorClimber.getVelocity().getValueAsDouble();
+        inputs.voltage = motorClimber.getMotorVoltage().getValueAsDouble();
+        inputs.currentDraw = motorClimber.getSimState().getSupplyCurrentMeasure();
     }
 
     @Override
-    public double getVelocity() {
-        return motorClimber.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public Current getCurrentDraw() {
-        return motorClimberSim.getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public void close() throws Exception {
+    public void close() {
         motorClimber.close();
     }
 
@@ -133,6 +113,16 @@ public class ClimberSim implements ClimberIO {
             }
         }
         return false;
+    }
+
+    private void updateRotor() {
+        motorClimber
+                .getSimState()
+                .setRawRotorPosition(currentPhysicsSim.getPositionMeters() / Constants.Climber.METERS_PER_ROTATION);
+        motorClimber
+                .getSimState()
+                .setRotorVelocity(
+                        currentPhysicsSim.getVelocityMetersPerSecond() / Constants.Climber.METERS_PER_ROTATION);
     }
 
     @Override
@@ -157,16 +147,13 @@ public class ClimberSim implements ClimberIO {
                     physicsSimSupportingRobot.getVelocityMetersPerSecond());
         }
 
-        motorClimberSim.setSupplyVoltage(RobotController.getBatteryVoltage());
+        motorClimber.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
 
-        double motorVoltage = motorClimberSim.getMotorVoltage();
+        double motorVoltage = motorClimber.getSimState().getMotorVoltage();
 
         currentPhysicsSim.setInputVoltage(motorVoltage);
         currentPhysicsSim.update(periodicDt);
 
-        motorClimberSim.setRawRotorPosition(
-                currentPhysicsSim.getPositionMeters() / Constants.Climber.METERS_PER_ROTATION);
-        motorClimberSim.setRotorVelocity(
-                currentPhysicsSim.getVelocityMetersPerSecond() / Constants.Climber.METERS_PER_ROTATION);
+        updateRotor();
     }
 }

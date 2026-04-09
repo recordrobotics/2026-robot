@@ -1,39 +1,36 @@
 package frc.robot.subsystems.io.real;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.units.measure.Current;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.IntakeIO;
+import frc.robot.utils.SimpleMath;
+import frc.robot.utils.TalonFXMotorGroup;
+import java.util.Arrays;
 
 public class IntakeReal implements IntakeIO {
 
-    @SuppressWarnings("unused")
-    private final double periodicDt;
-
     private final TalonFX wheel;
-    private final TalonFX armLeader;
-    private final TalonFX armFollower;
+    private final TalonFXMotorGroup armGroup;
 
-    public IntakeReal(double periodicDt) {
-        this.periodicDt = periodicDt;
-
+    public IntakeReal() {
         wheel = new TalonFX(RobotMap.Intake.WHEEL_ID);
-        armLeader = new TalonFX(RobotMap.Intake.ARM_LEADER_ID);
-        armFollower = new TalonFX(RobotMap.Intake.ARM_FOLLOWER_ID);
+        armGroup = new TalonFXMotorGroup(
+                "Intake Arm",
+                new TalonFXMotorGroup.MotorConfig(
+                        RobotMap.Intake.ARM_LEFT_ID, "Left", InvertedValue.CounterClockwise_Positive),
+                new TalonFXMotorGroup.MotorConfig(
+                        RobotMap.Intake.ARM_RIGHT_ID, "Right", InvertedValue.Clockwise_Positive));
     }
 
     @Override
-    public void applyArmLeaderTalonFXConfig(TalonFXConfiguration configuration) {
-        armLeader.getConfigurator().apply(configuration);
-    }
-
-    @Override
-    public void applyArmFollowerTalonFXConfig(TalonFXConfiguration configuration) {
-        armFollower.getConfigurator().apply(configuration);
+    public void applyArmTalonFXConfig(TalonFXConfiguration configuration) {
+        armGroup.applyConfig(configuration);
     }
 
     @Override
@@ -42,19 +39,8 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public Follower createArmFollower() {
-        return new Follower(
-                RobotMap.Intake.ARM_LEADER_ID, MotorAlignmentValue.Opposed); // motors face in opposite directions
-    }
-
-    @Override
-    public void setArmLeaderControl(ControlRequest request) {
-        armLeader.setControl(request);
-    }
-
-    @Override
-    public void setArmFollowerControl(ControlRequest request) {
-        armFollower.setControl(request);
+    public void setArmControl(ControlRequest request) {
+        armGroup.setControl(request);
     }
 
     @Override
@@ -64,8 +50,7 @@ public class IntakeReal implements IntakeIO {
 
     @Override
     public void setArmPositionRotations(double newValue) {
-        armLeader.setPosition(newValue);
-        armFollower.setPosition(newValue);
+        armGroup.setPosition(newValue);
     }
 
     @Override
@@ -74,74 +59,25 @@ public class IntakeReal implements IntakeIO {
     }
 
     @Override
-    public double getArmLeaderPositionRotations() {
-        return armLeader.getPosition().getValueAsDouble();
-    }
+    public void updateInputs(IntakeIOInputs inputs) {
+        armGroup.periodic();
 
-    @Override
-    public double getArmFollowerPositionRotations() {
-        return armFollower.getPosition().getValueAsDouble();
-    }
+        inputs.armHasPosition = !armGroup.hasLostPosition();
+        inputs.armPositionRotations = armGroup.getAveragePosition();
+        inputs.armVelocityRotationsPerSecond = SimpleMath.average(armGroup.getVelocities());
+        inputs.armVoltage = SimpleMath.average(armGroup.getVoltages());
+        inputs.armCurrentDraw = Arrays.stream(armGroup.getCurrents()).reduce(Amps.zero(), Current::plus);
 
-    @Override
-    public double getWheelPositionMeters() {
-        return wheel.getPosition().getValueAsDouble();
-    }
-
-    @Override
-    public double getArmLeaderVoltage() {
-        return armLeader.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getArmFollowerVoltage() {
-        return armFollower.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getWheelVoltage() {
-        return wheel.getMotorVoltage().getValueAsDouble();
-    }
-
-    @Override
-    public double getArmLeaderVelocityRotationsPerSecond() {
-        return armLeader.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getArmFollowerVelocityRotationsPerSecond() {
-        return armFollower.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public double getWheelVelocityMps() {
-        return wheel.getVelocity().getValueAsDouble();
-    }
-
-    @Override
-    public Current getArmLeaderCurrentDraw() {
-        return armLeader.getSupplyCurrent().getValue();
-    }
-
-    @Override
-    public Current getArmFollowerCurrentDraw() {
-        return armFollower.getSupplyCurrent().getValue();
-    }
-
-    @Override
-    public Current getWheelCurrentDraw() {
-        return wheel.getSupplyCurrent().getValue();
+        inputs.wheelConnected = wheel.isConnected();
+        inputs.wheelPositionMeters = wheel.getPosition().getValueAsDouble();
+        inputs.wheelVelocityMps = wheel.getVelocity().getValueAsDouble();
+        inputs.wheelVoltage = wheel.getMotorVoltage().getValueAsDouble();
+        inputs.wheelCurrentDraw = wheel.getSupplyCurrent().getValue();
     }
 
     @Override
     public void close() {
         wheel.close();
-        armLeader.close();
-        armFollower.close();
-    }
-
-    @Override
-    public void simulationPeriodic() {
-        // This is IntakeReal, no simulation needed
+        armGroup.close();
     }
 }

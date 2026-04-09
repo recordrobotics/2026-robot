@@ -164,8 +164,8 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
     private void addHeadingDataToEstimator() {
         double timestamp = Timer.getTimestamp();
         Rotation3d heading = new Rotation3d(
-                use3DRotation() ? RobotContainer.poseSensorFusion.nav.getRoll().getRadians() : 0,
-                use3DRotation() ? RobotContainer.poseSensorFusion.nav.getPitch().getRadians() : 0,
+                use3DRotation() ? RobotContainer.poseSensorFusion.imu.getRoll().getRadians() : 0,
+                use3DRotation() ? RobotContainer.poseSensorFusion.imu.getPitch().getRadians() : 0,
                 RobotContainer.poseSensorFusion
                         .getEstimatedPosition()
                         .getRotation()
