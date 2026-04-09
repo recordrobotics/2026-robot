@@ -54,6 +54,7 @@ import java.util.Objects;
 import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import org.photonvision.simulation.VisionSystemSim;
 
 /**
@@ -85,8 +86,6 @@ public final class RobotContainer {
         FIXED
     }
 
-    public static LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
-
     public static Drivetrain drivetrain;
     public static PoseSensorFusion poseSensorFusion;
     public static PowerDistributionPanel pdp;
@@ -101,16 +100,21 @@ public final class RobotContainer {
     public static ShootOrchestrator shootOrchestrator;
     public static VisionSystemSim visionSim;
 
+    private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.68;
+
     private static Alert noEncoderResetAlert;
 
-    private static LoggedDashboardChooser<AbstractControl> driveMode = new LoggedDashboardChooser<>("Drive Mode");
+    private static final LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
+    private static final LoggedDashboardChooser<AbstractControl> driveMode = new LoggedDashboardChooser<>("Drive Mode");
+    private static final LoggedDashboardChooser<FieldStartingLocation> fieldStartingLocationChooser =
+            new LoggedDashboardChooser<>("Starting Location");
+    private static final LoggedNetworkBoolean resetLocationButton =
+            new LoggedNetworkBoolean("Autonomous/ResetLocationButton");
+    private static final LoggedNetworkBoolean encoderResetButton = new LoggedNetworkBoolean("Autonomous/EncoderReset");
+    private static final LoggedNetworkBoolean shootTuningButton = new LoggedNetworkBoolean("ShootTuning");
+    private static final LoggedNetworkBoolean defenseModeButton = new LoggedNetworkBoolean("DefenseMode");
     private static AbstractControl defaultControl;
     private static AbstractControl testControl;
-
-    private static LoggedDashboardChooser<FieldStartingLocation> fieldStartingLocationChooser =
-            new LoggedDashboardChooser<>("Starting Location");
-
-    private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.68;
 
     private RobotContainer() {
         initialize();
@@ -122,9 +126,6 @@ public final class RobotContainer {
         RobotController.setBrownoutVoltage(5.75);
 
         noEncoderResetAlert = new Alert("Encoders not reset!", AlertType.kError);
-
-        SmartDashboard.putBoolean("Autonomous/ResetLocationButton", false);
-        SmartDashboard.putBoolean("Autonomous/EncoderReset", false);
 
         EnumSet.allOf(ShootMode.class).forEach(v -> shootModeChooser.addOption(v.name(), v));
         shootModeChooser.addDefaultOption(ShootMode.AUTO.name(), ShootMode.AUTO);
@@ -217,9 +218,6 @@ public final class RobotContainer {
             registerPoweredSubsystems(intake, turret, shooter, spindexer, feeder, climber);
             SimulatedBattery.setVoltage(ACTUAL_RESTING_BATTERY_VOLTAGE);
         }
-
-        SmartDashboard.putBoolean("ShootTuning", false);
-        SmartDashboard.putBoolean("DefenseMode", false);
     }
 
     public static void teleopInit() {
@@ -253,7 +251,7 @@ public final class RobotContainer {
     }
 
     public static boolean isInDefenseMode() {
-        return SmartDashboard.getBoolean("DefenseMode", false);
+        return defenseModeButton.get();
     }
 
     private static boolean shouldBeShooting() {
@@ -350,14 +348,14 @@ public final class RobotContainer {
         // Reset pose trigger
         new Trigger(() -> getControl().isPoseResetTriggered())
                 .onTrue(Commands.runOnce(poseSensorFusion::alignRotationWithDriverStation));
-        new Trigger(() -> SmartDashboard.getBoolean("Autonomous/ResetLocationButton", false))
+        new Trigger(resetLocationButton)
                 .onTrue(Commands.runOnce(() ->
                                 poseSensorFusion.setToPose(getStartingLocation().getPose()))
                         .ignoringDisable(true));
-        new Trigger(() -> SmartDashboard.getBoolean("Autonomous/EncoderReset", false))
+        new Trigger(encoderResetButton)
                 .onTrue(Commands.runOnce(RobotContainer::resetEncoders).ignoringDisable(true));
 
-        new Trigger(() -> SmartDashboard.getBoolean("ShootTuning", false)).onTrue(new ShootTuning());
+        new Trigger(shootTuningButton).onTrue(new ShootTuning());
     }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.

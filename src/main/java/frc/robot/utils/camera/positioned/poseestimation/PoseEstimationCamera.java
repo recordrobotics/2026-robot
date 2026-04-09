@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.PoseSensorFusion;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.camera.PhysicalCamera;
@@ -19,6 +18,7 @@ import frc.robot.utils.camera.positioned.poseestimation.CameraPoseEstimate.TXTYM
 import java.util.List;
 import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 /**
  * Abstract class for cameras that provide pose estimates.
@@ -33,22 +33,22 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
     public static final double DEFAULT_ROTATION_STDDEV_MULTIPLIER = 5.0;
 
     /**
-     * The SmartDashboard entry for whether to trust rotation measurements.
+     * The dashboard entry for whether to trust rotation measurements.
      */
-    private static final String USE_ROTATION_ENTRY = "UseRotation";
+    private final LoggedNetworkBoolean useRotationToggle;
     /**
-     * The SmartDashboard entry for forcing unconstrained measurements.
+     * The dashboard entry for forcing unconstrained measurements.
      * <p>If true, unconstrained measurements will always be used regardless of distance.
      * <p>Useful for setting initial rotation on the field.
      */
-    private static final String FORCE_UNCONSTRAINED_ENTRY = "ForceUnconstrained";
+    private final LoggedNetworkBoolean forceUnconstrainedToggle;
 
-    private static final String FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY = "ForceUnconstrainedWhenDisabled";
+    private final LoggedNetworkBoolean forceUnconstrainedWhenDisabledToggle;
 
     /**
-     * The SmartDashboard entry for forcing unthrottled measurements.
+     * The dashboard entry for forcing unthrottled measurements.
      */
-    private static final String FORCE_UNTHROTTLED_ENTRY = "ForceUnthrottled";
+    private final LoggedNetworkBoolean forceUnthrottledToggle;
 
     /**
      * List of estimates from the camera from last periodic.
@@ -127,7 +127,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
 
     /**
      * Constructs a PoseEstimationCamera with the given name and physical camera type and default settings.
-     * <p>Sets up SmartDashboard entries for configuring rotation trust and forcing unconstrained measurements.
+     * <p>Sets up dashboard entries for configuring rotation trust and forcing unconstrained measurements.
      * @param name The name of the camera. This is used for network connection and logging.
      * @param physicalCamera The physical camera type.
      * @param toCamera The transform from either the mechanism or robot to the camera, depending on if the camera will be moving.
@@ -145,7 +145,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
 
     /**
      * Constructs a PoseEstimationCamera with the given name and physical camera type.
-     * <p>Sets up SmartDashboard entries for configuring rotation trust and forcing unconstrained measurements.
+     * <p>Sets up dashboard entries for configuring rotation trust and forcing unconstrained measurements.
      * @param name The name of the camera. This is used for network connection and logging.
      * @param physicalCamera The physical camera type.
      * @param maxDistanceToCurrentEstimate Maximum distance from last pose to accept vision measurements.
@@ -169,12 +169,12 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
         this.txtyMaxDistance = txtyMaxDistance;
         this.rotationStdDevMultiplier = rotationStdDevMultiplier;
 
-        // Allow configuration from SmartDashboard
-        SmartDashboard.putBoolean(getPrefix() + USE_ROTATION_ENTRY, useRotation);
-        SmartDashboard.putBoolean(getPrefix() + FORCE_UNCONSTRAINED_ENTRY, forceUnconstrained);
-        SmartDashboard.putBoolean(getPrefix() + FORCE_UNTHROTTLED_ENTRY, forceUnthrottled);
-        SmartDashboard.putBoolean(
-                getPrefix() + FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY, forceUnconstrainedWhenDisabled);
+        // Allow configuration from dashboard
+        useRotationToggle = new LoggedNetworkBoolean(getPrefix() + "UseRotation", useRotation);
+        forceUnconstrainedToggle = new LoggedNetworkBoolean(getPrefix() + "ForceUnconstrained", forceUnconstrained);
+        forceUnthrottledToggle = new LoggedNetworkBoolean(getPrefix() + "ForceUnthrottled", forceUnthrottled);
+        forceUnconstrainedWhenDisabledToggle = new LoggedNetworkBoolean(
+                getPrefix() + "ForceUnconstrainedWhenDisabled", forceUnconstrainedWhenDisabled);
     }
 
     /**
@@ -216,7 +216,7 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
      */
     public PoseEstimationCamera setUseRotation(boolean useRotation) {
         this.useRotation = useRotation;
-        SmartDashboard.putBoolean(getPrefix() + USE_ROTATION_ENTRY, useRotation);
+        useRotationToggle.set(useRotation);
         return this;
     }
 
@@ -226,20 +226,19 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
      */
     public PoseEstimationCamera setForceUnconstrained(boolean forceUnconstrained) {
         this.forceUnconstrained = forceUnconstrained;
-        SmartDashboard.putBoolean(getPrefix() + FORCE_UNCONSTRAINED_ENTRY, forceUnconstrained);
+        forceUnconstrainedToggle.set(forceUnconstrained);
         return this;
     }
 
     public PoseEstimationCamera setForceUnthrottled(boolean forceUnthrottled) {
         this.forceUnthrottled = forceUnthrottled;
-        SmartDashboard.putBoolean(getPrefix() + FORCE_UNTHROTTLED_ENTRY, forceUnthrottled);
+        forceUnthrottledToggle.set(forceUnthrottled);
         return this;
     }
 
     public PoseEstimationCamera setForceUnconstrainedWhenDisabled(boolean forceUnconstrainedWhenDisabled) {
         this.forceUnconstrainedWhenDisabled = forceUnconstrainedWhenDisabled;
-        SmartDashboard.putBoolean(
-                getPrefix() + FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY, forceUnconstrainedWhenDisabled);
+        forceUnconstrainedWhenDisabledToggle.set(forceUnconstrainedWhenDisabled);
         return this;
     }
 
@@ -560,10 +559,9 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
         Logger.recordOutput(prefix + "ToCamera", getMechanismToCamera());
         Logger.recordOutput(prefix + "Ignored", isIgnored());
 
-        // Update from SmartDashboard
-        useRotation = SmartDashboard.getBoolean(prefix + USE_ROTATION_ENTRY, true);
-        forceUnconstrained = SmartDashboard.getBoolean(prefix + FORCE_UNCONSTRAINED_ENTRY, false);
-        forceUnconstrainedWhenDisabled =
-                SmartDashboard.getBoolean(prefix + FORCE_UNCONSTRAINED_WHEN_DISABLED_ENTRY, false);
+        // Update from dashboard
+        useRotation = useRotationToggle.get();
+        forceUnconstrained = forceUnconstrainedToggle.get();
+        forceUnconstrainedWhenDisabled = forceUnconstrainedWhenDisabledToggle.get();
     }
 }

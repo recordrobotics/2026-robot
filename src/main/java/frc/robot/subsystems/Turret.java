@@ -18,7 +18,6 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -34,6 +33,7 @@ import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public final class Turret extends KillableSubsystem implements PoweredSubsystem, PositionedSubsystem {
 
@@ -50,6 +50,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
     private static final double TWO_PI = 2.0 * Math.PI;
+
+    private static final LoggedNetworkNumber ffMul = new LoggedNetworkNumber("TURRET_FFMUL", 1.0);
 
     private final TurretIO io;
     private final SysIdRoutine sysIdRoutine;
@@ -119,8 +121,6 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                         state -> Logger.recordOutput("Turret/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(v -> io.setControl(voltageRequest.withOutput(v.in(Volts))), null, this));
 
-        SmartDashboard.putNumber("TURRET_FFMUL", 1.0);
-
         PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
 
@@ -131,7 +131,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     @Override
     public void periodicManaged() {
-        Constants.Turret.FF_MUL = SmartDashboard.getNumber("TURRET_FFMUL", 1.0);
+        Constants.Turret.FF_MUL = ffMul.get();
 
         if (getLimitSwitchStates().hasFault()) {
             positionStatus = PositionStatus.SENSOR_FAULT;

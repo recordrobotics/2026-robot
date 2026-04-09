@@ -17,7 +17,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Feeder.FeederState;
@@ -31,6 +30,8 @@ import frc.robot.utils.ProjectileSimulationUtils;
 import frc.robot.utils.SimpleMath;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class ShootOrchestrator extends ManagedSubsystemBase {
     public static final double ALLIANCE_ZONE_THRESHOLD_X = 4.0; // TODO make correct
@@ -78,6 +79,14 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             FIXED_SHOT_CALCULATION.shootAngleRadians() - Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS;
     private static final double FIXED_FUEL_VELOCITY = FIXED_SHOT_CALCULATION.fuelVelocityMagnitudeMps();
 
+    private static final LoggedNetworkNumber shotFeedforward = new LoggedNetworkNumber("SHOTFEED", 1.224808013371447);
+    private static final LoggedNetworkNumber hoodAngleDashboardOverride =
+            new LoggedNetworkNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
+    private static final LoggedNetworkNumber shootVelocityDashboardOverride =
+            new LoggedNetworkNumber("SHOOT_VELOCITY", 0);
+    private static final LoggedNetworkBoolean shootOverride = new LoggedNetworkBoolean("SHOOT_OVERRIDE", false);
+    private static final LoggedNetworkNumber shootAngleOffset = new LoggedNetworkNumber("SHOOT_ANGLE_OFFSET", 0);
+
     public enum FeedMode {
         AUTO,
         ALWAYS,
@@ -106,18 +115,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
 
     public ShootOrchestrator() {
-        // nothing to do
-        SmartDashboard.putNumber("SHOTTFED", 1.224808013371447);
-
-        SmartDashboard.putNumber("HOOD_ANGLE", hoodAngleOverride);
-        SmartDashboard.putNumber("SHOOT_VELOCITY", shootVelocityOverride);
-        SmartDashboard.putBoolean("SHOOT_OVERRIDE", false);
-
         Logger.recordOutput("TRENCHES", new Translation2d[] {
             BLUE_TRENCH_HP_SIDE, BLUE_TRENCH_DEPOT_SIDE, RED_TRENCH_HP_SIDE, RED_TRENCH_DEPOT_SIDE
         });
-
-        SmartDashboard.putNumber("SHOOT_ANGLE_OFFSET", 0);
     }
 
     public void setEnableShooting(boolean enable) {
@@ -211,7 +211,6 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     }
 
     private void feedforwardShooter() {
-        double f = SmartDashboard.getNumber("SHOTTFED", 1.224808013371447);
         double currentTime = Timer.getTimestamp();
 
         if (RobotContainer.feeder.isBottomBeamBroken()) {
@@ -225,7 +224,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         if (timeAtBallHit > currentTime) {
             double timeLeft = timeAtBallHit - currentTime;
             if (timeLeft <= 0.06 && timeLeft >= 0.02) {
-                shooterFeedforward = f;
+                shooterFeedforward = shotFeedforward.get();
             }
         } else {
             shooterFeedforward = 0;
@@ -320,10 +319,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             Logger.recordOutput("ShootOrchestrator/IsInTrench", isInTrench);
 
             if (shootingEnabled) {
-                if (!SmartDashboard.getBoolean("SHOOT_OVERRIDE", false)) {
+                if (!shootOverride.get()) {
                     double shotPitch = Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1)))
                             - Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS;
-                    shotPitch += SmartDashboard.getNumber("SHOOT_ANGLE_OFFSET", 0);
+                    shotPitch += shootAngleOffset.get();
                     RobotContainer.shooter.setTargetState(new ShooterState(
                             isInTrench
                                     ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS
@@ -337,13 +336,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                             shootVelocityOverride,
                             shooterFeedforward));
                 } else {
-                    double hoodAngle =
-                            SmartDashboard.getNumber("HOOD_ANGLE", Constants.Shooter.HOOD_MAX_POSITION_RADIANS);
-                    double flyVel = SmartDashboard.getNumber("SHOOT_VELOCITY", 0);
-
                     RobotContainer.shooter.setTargetState(new ShooterState(
-                            isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngle,
-                            flyVel,
+                            isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngleDashboardOverride.get(),
+                            shootVelocityDashboardOverride.get(),
                             shooterFeedforward));
                 }
             } else {

@@ -1,8 +1,8 @@
 package frc.robot.utils.camera;
 
 import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 /**
  * A generic camera class that can be extended for specific camera types.
@@ -10,10 +10,7 @@ import org.littletonrobotics.junction.Logger;
  */
 public abstract class GenericCamera {
 
-    /**
-     * The SmartDashboard entry for enabling/disabling the camera.
-     */
-    private static final String ENABLED_ENTRY = "Enabled";
+    private final LoggedNetworkBoolean enabledToggle;
 
     /**
      * The name of the camera.
@@ -43,7 +40,7 @@ public abstract class GenericCamera {
 
     /**
      * Constructs a GenericCamera with the given name and physical camera type.
-     * <p>Sets up SmartDashboard entry for enabling/disabling the camera at the path "Camera/{name}/Enabled".
+     * <p>Sets up dashboard entry for enabling/disabling the camera at the path "Camera/{name}/Enabled".
      * <p>Disconnected alert is set to show camera as disconnected.
      * @param name The name of the camera. This is used for network connection and logging.
      * @param physicalCamera The physical camera type.
@@ -58,8 +55,8 @@ public abstract class GenericCamera {
         this.disabledAlert = new Alert("Camera " + name + " disabled!", Alert.AlertType.kWarning);
         disabledAlert.set(!enabled);
 
-        // Allow camera enable/disable from SmartDashboard
-        SmartDashboard.putBoolean(getPrefix() + ENABLED_ENTRY, enabled);
+        // Allow camera enable/disable from dashboard
+        enabledToggle = new LoggedNetworkBoolean(getPrefix() + "Enabled", enabled);
     }
 
     /**
@@ -80,7 +77,7 @@ public abstract class GenericCamera {
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        SmartDashboard.putBoolean(getPrefix() + ENABLED_ENTRY, enabled);
+        enabledToggle.set(enabled);
     }
 
     /**
@@ -122,16 +119,16 @@ public abstract class GenericCamera {
 
     /**
      * Logs camera values and alerts.
-     * Also updates the enabled state from SmartDashboard.
+     * Also updates the enabled state from dashboard.
      */
     public void logValues() {
         String prefix = getPrefix();
 
         Logger.recordOutput(prefix + "Connected", isConnected());
-        Logger.recordOutput(prefix + ENABLED_ENTRY, isEnabled());
+        Logger.recordOutput(prefix + "Enabled", isEnabled());
 
-        // Update enabled state from SmartDashboard
-        enabled = SmartDashboard.getBoolean(prefix + ENABLED_ENTRY, true);
+        // Update enabled state from dashboard
+        enabled = enabledToggle.get();
 
         disconnectedAlert.set(!isConnected());
         disabledAlert.set(!isEnabled());

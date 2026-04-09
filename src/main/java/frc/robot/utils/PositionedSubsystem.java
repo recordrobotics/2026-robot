@@ -2,8 +2,8 @@ package frc.robot.utils;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.WeakHashMap;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public interface PositionedSubsystem {
 
@@ -38,7 +38,7 @@ public interface PositionedSubsystem {
 
         private static PositionedSubsystemManager instance;
 
-        private record Entry(Alert warningAlert, Alert errorAlert, String name) {
+        private record Entry(Alert warningAlert, Alert errorAlert, String name, LoggedNetworkBoolean overrideKnown) {
 
             private void setWarning(String errorMessage) {
                 warningAlert.setText(errorMessage);
@@ -56,10 +56,6 @@ public interface PositionedSubsystem {
                 warningAlert.set(false);
                 errorAlert.set(false);
             }
-
-            public String overridePath() {
-                return "Positioned/" + name + "/OverrideKnown";
-            }
         }
 
         private final WeakHashMap<PositionedSubsystem, Entry> subsystems = new WeakHashMap<>();
@@ -72,19 +68,20 @@ public interface PositionedSubsystem {
         }
 
         public void registerSubsystem(PositionedSubsystem subsystem) {
-            Entry entry = new Entry(
-                    new Alert("", AlertType.kWarning),
-                    new Alert("", AlertType.kError),
-                    subsystem.getClass().getSimpleName());
-            subsystems.put(subsystem, entry);
-            SmartDashboard.putBoolean(entry.overridePath(), false);
+            String name = subsystem.getClass().getSimpleName();
+            subsystems.put(
+                    subsystem,
+                    new Entry(
+                            new Alert("", AlertType.kWarning),
+                            new Alert("", AlertType.kError),
+                            name,
+                            new LoggedNetworkBoolean("Positioned/" + name + "/OverrideKnown")));
         }
 
         private static void updateEntry(PositionedSubsystem subsystem, Entry entry) {
-            boolean overrideKnown = SmartDashboard.getBoolean(entry.overridePath(), false);
-            subsystem.setOverrideKnown(overrideKnown);
+            subsystem.setOverrideKnown(entry.overrideKnown().get());
 
-            if (overrideKnown) {
+            if (entry.overrideKnown().get()) {
                 entry.setWarning(entry.name() + " override known");
             } else {
                 PositionStatus status = subsystem.getPositionStatus();

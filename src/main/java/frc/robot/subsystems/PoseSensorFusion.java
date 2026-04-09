@@ -14,7 +14,6 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
@@ -43,13 +42,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 /**
  * Subsystem for fusing multiple pose sensors (odometry, IMU, vision) into a single robot pose estimation
  */
 public final class PoseSensorFusion extends ManagedSubsystemBase {
 
-    public static LoggedDashboardChooser<RTCMode> rtcModeChooser = new LoggedDashboardChooser<>("Camera/RTCMode");
+    public static final LoggedDashboardChooser<RTCMode> rtcModeChooser = new LoggedDashboardChooser<>("Camera/RTCMode");
 
     /**
      * The maximum standard deviation for a vision measurement (used to indicate an untrusted measurement)
@@ -89,6 +89,10 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
             return DriverStationUtils.getCurrentAlliance() == Alliance.Red ? redPose : bluePose;
         }
     }
+
+    private static final LoggedNetworkBoolean filterTagsToggle = new LoggedNetworkBoolean("Camera/FilterTags");
+    private static final LoggedNetworkBoolean prioritizeTurretToggle =
+            new LoggedNetworkBoolean("Camera/PrioritizeTurret", true);
 
     /**
      * The NAV sensor used for orientation and acceleration data
@@ -212,9 +216,6 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         EnumSet.allOf(RTCMode.class).forEach(v -> rtcModeChooser.addOption(v.name(), v));
         rtcModeChooser.addDefaultOption(RTCMode.OFF.name(), RTCMode.OFF);
-
-        SmartDashboard.putBoolean("Camera/FilterTags", false);
-        SmartDashboard.putBoolean("Camera/PrioritizeTurret", true);
     }
 
     public record DeferredPoseEstimation(
@@ -324,16 +325,11 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
         RTCMode rtcMode = rtcModeChooser.get();
         Pose2d currentEstimate = getEstimatedPosition();
 
-        boolean filterTags = SmartDashboard.getBoolean("Camera/FilterTags", false);
-        boolean prioritizeTurret = SmartDashboard.getBoolean("Camera/PrioritizeTurret", false);
-
-        if (prioritizeTurret) {
-            if (turretCamera.hasVision()) {
-                lastTurretVisionTime = Timer.getTimestamp();
-            }
+        if (prioritizeTurretToggle.get() && turretCamera.hasVision()) {
+            lastTurretVisionTime = Timer.getTimestamp();
         }
 
-        if (prioritizeTurret && Timer.getTimestamp() - lastTurretVisionTime < 0.1) {
+        if (prioritizeTurretToggle.get() && Timer.getTimestamp() - lastTurretVisionTime < 0.1) {
             cameras.stream().forEach(camera -> {
                 if (camera != turretCamera) {
                     camera.setIgnore(true);
@@ -357,7 +353,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                 camera.setComputeRobotToCamera(false);
             }
 
-            if (filterTags) {
+            if (filterTagsToggle.get()) {
                 camera.setFilter(
                         DriverStationUtils.getCurrentAlliance() == Alliance.Red
                                 ? RED_HUB_TAG_FILTER

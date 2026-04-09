@@ -18,7 +18,6 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -34,6 +33,7 @@ import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public final class Intake extends KillableSubsystem implements PoweredSubsystem, PositionedSubsystem {
     // Arm Leader is on the left of the intake (right of the robot) and Arm Follower is on the right of the intake (left
@@ -57,6 +57,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     private static final double RESET_VOLTAGE = -2.0;
     private static final double RESET_VELOCITY_THRESHOLD = 0.06;
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
+
+    private static final LoggedNetworkBoolean disableWheelToggle = new LoggedNetworkBoolean("Intake/DisableWheel");
 
     private final IntakeIO io;
     private final SysIdRoutine sysIdRoutineArm;
@@ -198,8 +200,6 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
                         state -> Logger.recordOutput("Intake/Wheel/SysIdTestState", state.toString())),
                 new SysIdRoutine.Mechanism(
                         v -> io.setWheelControl(wheelVoltageRequest.withOutput(v.in(Volts))), null, this));
-
-        SmartDashboard.putBoolean("Intake/DisableWheel", false);
 
         PositionedSubsystemManager.getInstance().registerSubsystem(this);
     }
@@ -355,7 +355,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             actualWheelTargetVelocityMps = wheelTargetVelocityMps;
 
             if (!isForceDisabled()) {
-                if (SmartDashboard.getBoolean("Intake/DisableWheel", false) || RobotContainer.isInDefenseMode()) {
+                if (disableWheelToggle.get() || RobotContainer.isInDefenseMode()) {
                     io.setWheelControl(wheelRequest.withVelocity(0));
                 } else if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdWheel)) {
                     io.setWheelControl(wheelRequest.withVelocity(actualWheelTargetVelocityMps));

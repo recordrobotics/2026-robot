@@ -46,7 +46,7 @@ public abstract class PositionedCamera<T extends PositionedCamera<T>> extends Ge
 
     /**
      * Constructs a PoseEstimationCamera with the given name and physical camera type and default settings.
-     * <p>Sets up SmartDashboard entries for configuring rotation trust and forcing unconstrained measurements.
+     * <p>Sets up dashboard entries for configuring rotation trust and forcing unconstrained measurements.
      * @param name The name of the camera. This is used for network connection and logging.
      * @param physicalCamera The physical camera type.
      * @param toCamera The transform from either the mechanism or robot to the camera, depending on if the camera will be moving.
