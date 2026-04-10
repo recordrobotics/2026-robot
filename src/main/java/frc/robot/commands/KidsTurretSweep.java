@@ -12,7 +12,6 @@ public class KidsTurretSweep extends SequentialCommandGroup {
     private static final double SWEEP_HALF_RANGE = Units.degreesToRadians(45);
     private static final double SWEEP_STEP = SWEEP_HALF_RANGE * 2 / (2.0 / 0.02); // full ±45° in 2 seconds
 
-    public static boolean kidsShootActive = false;
     private double sweepPos;
     private int sweepDir;
 
