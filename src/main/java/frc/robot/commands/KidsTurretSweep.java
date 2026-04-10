@@ -1,9 +1,7 @@
 package frc.robot.commands;
-
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotContainer;
 import java.util.Optional;
@@ -20,7 +18,9 @@ public class KidsTurretSweep extends SequentialCommandGroup {
     public KidsTurretSweep() {
         addRequirements(RobotContainer.shooter);
         sweepPos = Units.rotationsToRadians(RobotContainer.turret.getPositionRotations());
-        addCommands(new RunCommand(
+        addCommands(
+                    Commands.waitUntil(() -> RobotContainer.getControl().getKidShootPressed()),
+                    Commands.run(
                         () -> {
                             sweepPos += sweepDir * SWEEP_STEP;
                             if (sweepPos >= SWEEP_HALF_RANGE) {
@@ -31,15 +31,14 @@ public class KidsTurretSweep extends SequentialCommandGroup {
                                 sweepDir = 1;
                             }
                             RobotContainer.shootOrchestrator.turretAngleOverride = Optional.of(sweepPos);
-                            SmartDashboard.putNumber("KidsTurretSweep/TurretAngle", sweepPos);
                         },
                         RobotContainer.shooter)
-                .until(() -> RobotContainer.getControl().getKidShoot()));
+                .until(() -> RobotContainer.getControl().getKidShootPressed()));
 
         addCommands(new KidsShoot());
     }
 
     public static Command createCommand() {
-        return new KidsTurretSweep().finallyDo(() -> RobotContainer.turretSweepEnabled.set(false));
+        return new KidsTurretSweep().repeatedly().finallyDo(() -> RobotContainer.shootOrchestrator.setEnableShooting(false));
     }
 }
