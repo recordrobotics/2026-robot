@@ -222,7 +222,7 @@ public final class RobotContainer {
         // Sets up Control scheme chooser
         addControls(
                 new XboxControls(CONTROL_XBOX_PORT),
-                new JoystickControls(CONTROL_JOYSTICK_PORT), 
+                new JoystickControls(CONTROL_JOYSTICK_PORT),
                 new JoystickKidControls(CONTROL_JOYSTICK_PORT, KIDS_JOYSTICK_PORT),
                 new SwitchControls(CONTROL_XBOX_PORT));
 
