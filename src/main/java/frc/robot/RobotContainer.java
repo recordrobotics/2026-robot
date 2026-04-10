@@ -212,7 +212,10 @@ public final class RobotContainer {
         PlannedAuto.setAutoSupplier(AutoPath::getAutoChooser);
 
         // Sets up Control scheme chooser
-        addControls(new XboxControls(CONTROL_XBOX_PORT), new JoystickControls(CONTROL_JOYSTICK_PORT));
+        addControls(
+                new XboxControls(CONTROL_XBOX_PORT),
+                new JoystickControls(CONTROL_JOYSTICK_PORT),
+                new SwitchControls(CONTROL_XBOX_PORT));
 
         configureTriggers();
 
