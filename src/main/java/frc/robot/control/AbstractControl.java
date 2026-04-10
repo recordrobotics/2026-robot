@@ -40,6 +40,8 @@ public interface AbstractControl {
 
     boolean getKidShoot();
 
+    boolean getKidShootPressed();
+
     Transform2d getKidRawDriverInput();
 
     double getKidsSpeedLevel();
