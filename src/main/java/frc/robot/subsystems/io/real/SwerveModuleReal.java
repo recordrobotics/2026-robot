@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.ModuleConstants;
 
@@ -14,10 +15,13 @@ public class SwerveModuleReal implements SwerveModuleIO {
     private final TalonFX turningMotor;
     private final CANcoder absoluteTurningMotorEncoder;
 
-    public SwerveModuleReal(ModuleConstants m) {
+    public SwerveModuleReal(ModuleConstants m, int driveTrack, int turnTrack) {
         driveMotor = new TalonFX(m.driveMotorChannel());
         turningMotor = new TalonFX(m.turningMotorChannel());
         absoluteTurningMotorEncoder = new CANcoder(m.absoluteTurningMotorEncoderChannel());
+
+        RobotContainer.orchestra.add(driveMotor, driveTrack);
+        RobotContainer.orchestra.add(turningMotor, turnTrack);
     }
 
     @Override

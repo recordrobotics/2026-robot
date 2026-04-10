@@ -33,6 +33,7 @@ import frc.robot.utils.ModuleConstants.InvalidConfigException;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
+import frc.robot.utils.TalonFXOrchestra;
 import frc.robot.utils.modifiers.ControlModifierService;
 import frc.robot.utils.modifiers.ControlModifierService.ControlModifier;
 import frc.robot.utils.modifiers.DrivetrainControl;
@@ -57,8 +58,19 @@ public final class Drivetrain extends ManagedSubsystemBase {
     private static final PDPChannel[] MODULE_PDP_CHANNELS = {
         new PDPChannel(0, 1), new PDPChannel(2, 3), new PDPChannel(6, 7), new PDPChannel(4, 5)
     };
-
     private static final String[] MODULE_NAMES = {"FL", "FR", "BL", "BR"};
+    private static final int[] MODULE_DRIVE_TRACKS = {
+        TalonFXOrchestra.Tracks.FL_DRIVE,
+        TalonFXOrchestra.Tracks.FR_DRIVE,
+        TalonFXOrchestra.Tracks.BL_DRIVE,
+        TalonFXOrchestra.Tracks.BR_DRIVE
+    };
+    private static final int[] MODULE_TURN_TRACKS = {
+        TalonFXOrchestra.Tracks.FL_TURN,
+        TalonFXOrchestra.Tracks.FR_TURN,
+        TalonFXOrchestra.Tracks.BL_TURN,
+        TalonFXOrchestra.Tracks.BR_TURN
+    };
 
     private static final boolean DEBUG_LOG_MODIFIERS = true;
 
@@ -135,7 +147,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
             swerveDriveSimulation = null;
 
             for (int i = 0; i < moduleConstants.length; i++) {
-                moduleIO[i] = new SwerveModuleReal(moduleConstants[i]);
+                moduleIO[i] = new SwerveModuleReal(moduleConstants[i], MODULE_DRIVE_TRACKS[i], MODULE_TURN_TRACKS[i]);
             }
         } else {
             /* Create a swerve drive simulation */
@@ -152,6 +164,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
                 moduleIO[i] = new SwerveModuleSim(
                         swerveDriveSimulation.getModules()[i],
                         moduleConstants[i],
+                        MODULE_DRIVE_TRACKS[i],
+                        MODULE_TURN_TRACKS[i],
                         MODULE_PDP_CHANNELS[i].driveChannel(),
                         MODULE_PDP_CHANNELS[i].turnChannel());
             }

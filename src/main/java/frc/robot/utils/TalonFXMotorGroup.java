@@ -223,6 +223,10 @@ public class TalonFXMotorGroup implements AutoCloseable {
         return Arrays.stream(motors).map(m -> m.device.getSimState()).toArray(TalonFXSimState[]::new);
     }
 
+    public TalonFX getMotor(int index) {
+        return motors[index].device;
+    }
+
     @Override
     public void close() {
         for (int i = 0; i < motors.length; i++) {

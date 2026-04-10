@@ -47,6 +47,7 @@ import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.RuckigWarmup;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
+import frc.robot.utils.TalonFXOrchestra;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
@@ -101,6 +102,8 @@ public final class RobotContainer {
     public static ShootOrchestrator shootOrchestrator;
     public static VisionSystemSim visionSim;
 
+    public static TalonFXOrchestra orchestra;
+
     private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.68;
 
     private static Alert noEncoderResetAlert;
@@ -136,6 +139,8 @@ public final class RobotContainer {
                 .forEach(v -> fieldStartingLocationChooser.addOption(v.toString(), v));
         fieldStartingLocationChooser.addDefaultOption(
                 FieldStartingLocation.TrenchDepot.toString(), FieldStartingLocation.TrenchDepot);
+
+        orchestra = new TalonFXOrchestra();
 
         pdp = new PowerDistributionPanel();
 

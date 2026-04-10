@@ -62,7 +62,12 @@ public class SwerveModuleSim implements SwerveModuleIO {
     }
 
     public SwerveModuleSim(
-            SwerveModuleSimulation moduleSimulation, ModuleConstants m, int drivePdpChannel, int turnPdpChannel) {
+            SwerveModuleSimulation moduleSimulation,
+            ModuleConstants m,
+            int driveTrack,
+            int turnTrack,
+            int drivePdpChannel,
+            int turnPdpChannel) {
         driveMotor = new TalonFX(m.driveMotorChannel());
         turningMotor = new TalonFX(m.turningMotorChannel());
         absoluteTurningMotorEncoder = new CANcoder(m.absoluteTurningMotorEncoderChannel());
@@ -78,6 +83,9 @@ public class SwerveModuleSim implements SwerveModuleIO {
         absoluteTurningMotorEncoder.getSimState().SensorOffset = m.turningEncoderOffset();
         moduleSimulation.useDriveMotorController(new TalonFXMotorControllerSim(driveMotor));
         moduleSimulation.useSteerMotorController(new TalonFXMotorControllerSim(turningMotor));
+
+        RobotContainer.orchestra.add(driveMotor, driveTrack);
+        RobotContainer.orchestra.add(turningMotor, turnTrack);
 
         RobotContainer.pdp.registerSimDevice(drivePdpChannel, driveMotor.getSimState()::getSupplyCurrentMeasure);
         RobotContainer.pdp.registerSimDevice(turnPdpChannel, turningMotor.getSimState()::getSupplyCurrentMeasure);

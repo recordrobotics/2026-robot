@@ -22,6 +22,7 @@ import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ShooterIO;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.TalonFXMotorGroup;
+import frc.robot.utils.TalonFXOrchestra;
 import java.util.Arrays;
 
 public class ShooterSim implements ShooterIO {
@@ -75,6 +76,10 @@ public class ShooterSim implements ShooterIO {
         flywheelGroup.getSimState(0).setMotorType(MotorType.KrakenX60);
         flywheelGroup.getSimState(1).setMotorType(MotorType.KrakenX60);
         hood.getSimState().setMotorType(MotorType.KrakenX44);
+
+        RobotContainer.orchestra.add(hood, TalonFXOrchestra.Tracks.HOOD);
+        RobotContainer.orchestra.add(flywheelGroup.getMotor(0), TalonFXOrchestra.Tracks.FLYWHEEL_LEFT);
+        RobotContainer.orchestra.add(flywheelGroup.getMotor(1), TalonFXOrchestra.Tracks.FLYWHEEL_RIGHT);
 
         RobotContainer.pdp.registerSimDevice(
                 15, () -> flywheelGroup.getSimState(0).getSupplyCurrentMeasure());

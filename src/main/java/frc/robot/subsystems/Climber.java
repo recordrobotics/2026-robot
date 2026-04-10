@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -99,7 +100,8 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
                         .withSupplyCurrentLowerTime(1)
                         .withStatorCurrentLimit(Constants.Climber.STATOR_CURRENT_LIMIT)
                         .withSupplyCurrentLimitEnable(true)
-                        .withStatorCurrentLimitEnable(true)));
+                        .withStatorCurrentLimitEnable(true))
+                .withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
 
         climberRequest = new MotionMagicExpoVoltage(0);
         voltageRequest = new VoltageOut(0);

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
@@ -143,7 +144,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         configLeader.Feedback.SensorToMechanismRatio = Constants.Intake.ARM_GEAR_RATIO;
         configLeader.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        io.applyArmTalonFXConfig(configLeader);
+        io.applyArmTalonFXConfig(configLeader.withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
 
         TalonFXConfiguration configWheel = new TalonFXConfiguration();
 
@@ -169,7 +170,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         configWheel.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         configWheel.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-        io.applyWheelTalonFXConfig(configWheel);
+        io.applyWheelTalonFXConfig(configWheel.withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
 
         setState(targetState);
 

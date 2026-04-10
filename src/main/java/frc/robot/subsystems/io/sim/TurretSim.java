@@ -18,6 +18,7 @@ import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.io.TurretIO;
+import frc.robot.utils.TalonFXOrchestra;
 
 public class TurretSim implements TurretIO {
 
@@ -60,6 +61,8 @@ public class TurretSim implements TurretIO {
 
         turret.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
         turret.getSimState().setMotorType(MotorType.KrakenX44);
+
+        RobotContainer.orchestra.add(turret, TalonFXOrchestra.Tracks.TURRET);
 
         frontLeftLimitSwitchSim = new DIOSim(frontLeftLimitSwitch);
         backLeftLimitSwitchSim = new DIOSim(backLeftLimitSwitch);

@@ -18,6 +18,7 @@ import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.RobotModel.FuelManager.LineSegment;
 import frc.robot.subsystems.io.FeederIO;
+import frc.robot.utils.TalonFXOrchestra;
 
 public class FeederSim implements FeederIO {
 
@@ -50,6 +51,8 @@ public class FeederSim implements FeederIO {
         feeder = new TalonFX(RobotMap.Feeder.MOTOR_ID);
         feeder.getSimState().Orientation = ChassisReference.Clockwise_Positive;
         feeder.getSimState().setMotorType(TalonFXSimState.MotorType.KrakenX60);
+
+        RobotContainer.orchestra.add(feeder, TalonFXOrchestra.Tracks.FEEDER);
 
         bottomBeambreakSim = new DIOSim(bottomBeambreak);
         topBeambreakSim = new DIOSim(topBeambreak);

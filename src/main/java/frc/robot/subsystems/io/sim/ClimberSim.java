@@ -15,6 +15,7 @@ import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ClimberIO;
 import frc.robot.utils.SimpleMath;
+import frc.robot.utils.TalonFXOrchestra;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 
 public class ClimberSim implements ClimberIO {
@@ -56,6 +57,7 @@ public class ClimberSim implements ClimberIO {
         this.drivetrainSim = drivetrainSim;
 
         motorClimber = new TalonFX(RobotMap.Climber.MOTOR_ID);
+        RobotContainer.orchestra.add(motorClimber, TalonFXOrchestra.Tracks.CLIMBER);
 
         motorClimber.getSimState().Orientation = ChassisReference.Clockwise_Positive; // correct
 

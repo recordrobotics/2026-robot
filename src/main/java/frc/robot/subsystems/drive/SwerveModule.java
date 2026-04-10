@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -94,7 +95,8 @@ public final class SwerveModule {
                         .withSupplyCurrentLowerLimit(m.driveMotorSupplyLowerCurrentLimit())
                         .withSupplyCurrentLowerTime(m.driveMotorSupplyLowerCurrentLimitTime())
                         .withSupplyCurrentLimitEnable(true)
-                        .withStatorCurrentLimitEnable(true)));
+                        .withStatorCurrentLimitEnable(true))
+                .withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
 
         TalonFXConfiguration turnConfig = new TalonFXConfiguration();
 
@@ -124,7 +126,8 @@ public final class SwerveModule {
                         .withSupplyCurrentLowerLimit(m.turnMotorSupplyLowerCurrentLimit())
                         .withSupplyCurrentLowerTime(m.turnMotorSupplyLowerCurrentLimitTime())
                         .withSupplyCurrentLimitEnable(true)
-                        .withStatorCurrentLimitEnable(true)));
+                        .withStatorCurrentLimitEnable(true))
+                .withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
 
         CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
         encoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;

@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
@@ -108,7 +109,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         hoodConfig.Feedback.SensorToMechanismRatio = Constants.Shooter.HOOD_GEAR_RATIO;
         hoodConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        io.applyHoodTalonFXConfig(hoodConfig);
+        io.applyHoodTalonFXConfig(hoodConfig.withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
 
         TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
         Slot0Configs flywheelSlot0Configs = flywheelConfig.Slot0;
@@ -131,7 +132,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
         flywheelConfig.Feedback.SensorToMechanismRatio = 1.0 / Constants.Shooter.FLYWHEEL_METERS_PER_ROTATION;
         flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        io.applyFlywheelTalonFXConfig(flywheelConfig);
+        io.applyFlywheelTalonFXConfig(flywheelConfig.withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
 
         setTargetState(new ShooterState(Constants.Shooter.HOOD_STARTING_POSITION_RADIANS, 0.0, 0));
 

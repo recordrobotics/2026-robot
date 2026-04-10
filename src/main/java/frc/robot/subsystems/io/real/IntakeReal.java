@@ -7,10 +7,12 @@ import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.units.measure.Current;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.IntakeIO;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.TalonFXMotorGroup;
+import frc.robot.utils.TalonFXOrchestra;
 import java.util.Arrays;
 
 public class IntakeReal implements IntakeIO {
@@ -26,6 +28,10 @@ public class IntakeReal implements IntakeIO {
                         RobotMap.Intake.ARM_LEFT_ID, "Left", InvertedValue.CounterClockwise_Positive),
                 new TalonFXMotorGroup.MotorConfig(
                         RobotMap.Intake.ARM_RIGHT_ID, "Right", InvertedValue.Clockwise_Positive));
+
+        RobotContainer.orchestra.add(wheel, TalonFXOrchestra.Tracks.INTAKE_WHEEL);
+        RobotContainer.orchestra.add(armGroup.getMotor(0), TalonFXOrchestra.Tracks.INTAKE_ARM_LEFT);
+        RobotContainer.orchestra.add(armGroup.getMotor(1), TalonFXOrchestra.Tracks.INTAKE_ARM_RIGHT);
     }
 
     @Override

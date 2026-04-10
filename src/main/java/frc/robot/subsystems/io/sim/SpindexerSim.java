@@ -14,6 +14,7 @@ import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.SpindexerIO;
+import frc.robot.utils.TalonFXOrchestra;
 
 public class SpindexerSim implements SpindexerIO {
 
@@ -39,6 +40,8 @@ public class SpindexerSim implements SpindexerIO {
 
         spindexer.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
         spindexer.getSimState().setMotorType(TalonFXSimState.MotorType.KrakenX60);
+
+        RobotContainer.orchestra.add(spindexer, TalonFXOrchestra.Tracks.SPINDEXER);
 
         RobotContainer.pdp.registerSimDevice(11, spindexer.getSimState()::getSupplyCurrentMeasure);
     }

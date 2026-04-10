@@ -3,8 +3,10 @@ package frc.robot.subsystems.io.real;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.SpindexerIO;
+import frc.robot.utils.TalonFXOrchestra;
 
 public class SpindexerReal implements SpindexerIO {
 
@@ -12,6 +14,7 @@ public class SpindexerReal implements SpindexerIO {
 
     public SpindexerReal() {
         spindexer = new TalonFX(RobotMap.Spindexer.MOTOR_ID);
+        RobotContainer.orchestra.add(spindexer, TalonFXOrchestra.Tracks.SPINDEXER);
     }
 
     @Override

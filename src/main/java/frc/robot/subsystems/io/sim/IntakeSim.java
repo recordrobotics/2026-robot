@@ -28,6 +28,7 @@ import frc.robot.subsystems.io.IntakeIO;
 import frc.robot.utils.IntakeSimulationUtils;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.TalonFXMotorGroup;
+import frc.robot.utils.TalonFXOrchestra;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.dyn4j.geometry.Rectangle;
@@ -103,6 +104,10 @@ public class IntakeSim implements IntakeIO {
 
         wheel.getSimState().Orientation = ChassisReference.Clockwise_Positive; // Positive is intake, negative is eject
         wheel.getSimState().setMotorType(MotorType.KrakenX44);
+
+        RobotContainer.orchestra.add(wheel, TalonFXOrchestra.Tracks.INTAKE_WHEEL);
+        RobotContainer.orchestra.add(armGroup.getMotor(0), TalonFXOrchestra.Tracks.INTAKE_ARM_LEFT);
+        RobotContainer.orchestra.add(armGroup.getMotor(1), TalonFXOrchestra.Tracks.INTAKE_ARM_RIGHT);
 
         Rectangle intakeRect = IntakeSimulationUtils.getIntakeRectangle(
                 drivetrainSim, WIDTH.in(Meters), LENGTH_EXTENDED.in(Meters), IntakeSimulation.IntakeSide.BACK);

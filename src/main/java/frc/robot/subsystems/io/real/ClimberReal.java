@@ -3,8 +3,10 @@ package frc.robot.subsystems.io.real;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ClimberIO;
+import frc.robot.utils.TalonFXOrchestra;
 
 public class ClimberReal implements ClimberIO {
 
@@ -12,6 +14,7 @@ public class ClimberReal implements ClimberIO {
 
     public ClimberReal() {
         motor = new TalonFX(RobotMap.Climber.MOTOR_ID);
+        RobotContainer.orchestra.add(motor, TalonFXOrchestra.Tracks.CLIMBER);
     }
 
     @Override

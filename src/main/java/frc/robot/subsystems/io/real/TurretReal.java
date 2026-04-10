@@ -4,8 +4,10 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.TurretIO;
+import frc.robot.utils.TalonFXOrchestra;
 
 public class TurretReal implements TurretIO {
 
@@ -17,6 +19,7 @@ public class TurretReal implements TurretIO {
 
     public TurretReal() {
         turret = new TalonFX(RobotMap.Turret.MOTOR_ID);
+        RobotContainer.orchestra.add(turret, TalonFXOrchestra.Tracks.TURRET);
     }
 
     @Override

@@ -4,8 +4,10 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DigitalInput;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.FeederIO;
+import frc.robot.utils.TalonFXOrchestra;
 
 public class FeederReal implements FeederIO {
 
@@ -15,6 +17,7 @@ public class FeederReal implements FeederIO {
 
     public FeederReal() {
         feeder = new TalonFX(RobotMap.Feeder.MOTOR_ID);
+        RobotContainer.orchestra.add(feeder, TalonFXOrchestra.Tracks.FEEDER);
     }
 
     @Override

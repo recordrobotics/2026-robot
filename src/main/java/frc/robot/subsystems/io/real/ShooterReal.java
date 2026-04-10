@@ -7,10 +7,12 @@ import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.units.measure.Current;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ShooterIO;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.TalonFXMotorGroup;
+import frc.robot.utils.TalonFXOrchestra;
 import java.util.Arrays;
 
 public class ShooterReal implements ShooterIO {
@@ -26,6 +28,10 @@ public class ShooterReal implements ShooterIO {
                 new TalonFXMotorGroup.MotorConfig(
                         RobotMap.Shooter.FLYWHEEL_RIGHT_ID, "Right", InvertedValue.Clockwise_Positive));
         hood = new TalonFX(RobotMap.Shooter.HOOD_ID);
+
+        RobotContainer.orchestra.add(hood, TalonFXOrchestra.Tracks.HOOD);
+        RobotContainer.orchestra.add(flywheelGroup.getMotor(0), TalonFXOrchestra.Tracks.FLYWHEEL_LEFT);
+        RobotContainer.orchestra.add(flywheelGroup.getMotor(1), TalonFXOrchestra.Tracks.FLYWHEEL_RIGHT);
     }
 
     @Override
