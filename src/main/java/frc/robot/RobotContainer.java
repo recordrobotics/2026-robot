@@ -16,7 +16,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.FieldStartingLocation;
 import frc.robot.Constants.RobotState.Mode;
+import frc.robot.RobotContainer.ShootMode;
 import frc.robot.commands.JoystickTurret;
+import frc.robot.commands.KidsTurretSweep;
 // Local imports
 // Local imports
 import frc.robot.commands.ShootTuning;
@@ -509,6 +511,7 @@ public final class RobotContainer {
                 .onTrue(Commands.runOnce(() -> shootTuningButton.set(false)).andThen(new ShootTuning()));
                 
         new Trigger(joystickTurretButton).whileTrue(new JoystickTurret().ignoringDisable(true));
+        new Trigger(() -> RobotContainer.turretSweepEnabled.get()).whileTrue(KidsTurretSweep.createCommand());
     }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
