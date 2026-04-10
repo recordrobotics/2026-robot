@@ -124,6 +124,8 @@ public final class RobotContainer {
     private static SafeAlert noEncoderResetAlert;
     private static SafeAlert shootModeAlert;
 
+        private static final LoggedNetworkBoolean turretSweepEnabled =
+            new LoggedNetworkBoolean("/SmartDashboard/TurretSweep", false);
     private static final LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
     private static final LoggedDashboardChooser<AbstractControl> driveMode = new LoggedDashboardChooser<>("Drive Mode");
     private static final LoggedDashboardChooser<FieldStartingLocation> fieldStartingLocationChooser =
@@ -506,7 +508,7 @@ public final class RobotContainer {
                 .onTrue(Commands.runOnce(() -> shootTuningButton.set(false)).andThen(new ShootTuning()));
                 
         new Trigger(joystickTurretButton).whileTrue(new JoystickTurret().ignoringDisable(true));
-        new Trigger(() -> RobotContainer.turretSweepEnabled.get()).whileTrue(KidsTurretSweep.createCommand());
+        new Trigger(RobotContainer.turretSweepEnabled).whileTrue(KidsTurretSweep.createCommand());
     }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
