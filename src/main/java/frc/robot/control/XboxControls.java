@@ -120,6 +120,11 @@ public class XboxControls implements AbstractControl {
     }
 
     @Override
+    public boolean getKidShootPressed() {
+        return false;
+    }
+
+    @Override
     public double getKidsSpeedLevel() {
         return 0;
     }
