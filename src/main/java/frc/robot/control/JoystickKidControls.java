@@ -81,6 +81,11 @@ public class JoystickKidControls implements AbstractControl {
     }
 
     @Override
+    public boolean getKidShootPressed() {
+        return kidJoystick.getRawButtonPressed(1);
+    }
+
+    @Override
     public boolean isReverseIntakePressed() {
         return false;
     }
@@ -195,7 +200,7 @@ public class JoystickKidControls implements AbstractControl {
 
     @Override
     public boolean isIntakePressed() {
-        return false;
+        return joystick.getRawButtonPressed(2);
     }
 
     @Override
