@@ -14,9 +14,10 @@ public class KidsShoot extends SequentialCommandGroup {
                             RobotContainer.shootOrchestrator.setEnableShooting(true);
                         },
                         RobotContainer.shooter),
-                Commands.waitUntil(() -> RobotContainer.feeder.isTopBeamBroken() || RobotContainer.feeder.isBottomBeamBroken())
-                .andThen(Commands.waitSeconds(0.3))
-                .withTimeout(2),
+                Commands.waitUntil(() ->
+                                RobotContainer.feeder.isTopBeamBroken() || RobotContainer.feeder.isBottomBeamBroken())
+                        .andThen(Commands.waitSeconds(0.3))
+                        .withTimeout(2),
                 Commands.runOnce(
                         () -> {
                             RobotContainer.shootOrchestrator.setEnableShooting(false);

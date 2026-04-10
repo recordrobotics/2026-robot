@@ -77,10 +77,12 @@ public class JoystickControls implements AbstractControl {
     public boolean getKidShoot() {
         return false;
     }
+
     @Override
     public boolean getKidShootPressed() {
         return false;
     }
+
     @Override
     public double getKidsSpeedLevel() {
         return 0;
