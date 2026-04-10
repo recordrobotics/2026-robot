@@ -124,7 +124,7 @@ public final class RobotContainer {
     private static SafeAlert noEncoderResetAlert;
     private static SafeAlert shootModeAlert;
 
-        private static final LoggedNetworkBoolean turretSweepEnabled =
+    private static final LoggedNetworkBoolean turretSweepEnabled =
             new LoggedNetworkBoolean("/SmartDashboard/TurretSweep", false);
     private static final LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
     private static final LoggedDashboardChooser<AbstractControl> driveMode = new LoggedDashboardChooser<>("Drive Mode");
