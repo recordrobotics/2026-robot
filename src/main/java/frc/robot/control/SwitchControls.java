@@ -146,6 +146,27 @@ public class SwitchControls implements AbstractControl {
     }
 
     @Override
+    public Transform2d getKidRawDriverInput() {
+        // Returns the raw driver input as a Transform2d
+        return Transform2d.kZero;
+    }
+
+    @Override
+    public boolean getKidShoot() {
+        return false;
+    }
+
+    @Override
+    public boolean getKidShootPressed() {
+        return false;
+    }
+
+    @Override
+    public double getKidsSpeedLevel() {
+        return 0;
+    }
+
+    @Override
     public boolean isPoseResetTriggered() {
         return xbox.getRawButtonPressed(14);
     }
