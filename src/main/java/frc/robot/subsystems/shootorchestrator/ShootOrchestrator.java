@@ -71,7 +71,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private static final double TOP_BEAM_TIME_TO_BALL_HIT = 0.04;
 
     private static final double TRENCH_WIDTH_METERS = 1.361281;
-    private static final double TRENCH_OFFSET_METERS = 0.3;
+    private static final double TRENCH_OFFSET_METERS = 0.5;
 
     private static final ShotCalculation FIXED_SHOT_CALCULATION = hubCalculator.calculateShot(2.944349, 0);
     private static final double FIXED_TURRET_ANGLE_RADIANS = Units.degreesToRadians(90);
@@ -368,7 +368,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
             double timeUntilHoodDown =
                     RobotContainer.shooter.getTimeUntilHoodAt(Constants.Shooter.HOOD_MAX_POSITION_RADIANS)
-                            + 0.04 /* latency compensation */;
+                            + 0.1 /* latency compensation */;
 
             Logger.recordOutput("ShootOrchestrator/HoodTime", timeUntilHoodDown);
 
