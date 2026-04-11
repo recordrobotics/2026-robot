@@ -393,6 +393,8 @@ public final class Constants {
         public static final double KRAKEN_TURN_KP = 68.174;
         public static final double KRAKEN_TURN_KD = 3.2858;
 
+        public static final double FEEDFORWARD_KA = KRAKEN_DRIVE_KA * 4; // 4 is good
+
         // Wheel diameter
         public static final double WHEEL_DIAMETER = Units.inchesToMeters(4); // TODO: measure
 
@@ -402,8 +404,8 @@ public final class Constants {
         public static final double MAX_ANGULAR_ACCELERATION_RADIANS =
                 54.9727426818 / WHEEL_BASE_RADIUS; // do the math if you want but this is right trust
 
-        public static final double DRIVE_MAX_ACCELERATION = 13.18;
-        public static final double DRIVE_MAX_JERK = 131.28;
+        public static final double DRIVE_MAX_ACCELERATION = 12.0 / KRAKEN_DRIVE_KA;
+        public static final double DRIVE_MAX_JERK = DRIVE_MAX_ACCELERATION * 10;
 
         public static final double TURN_MMEXPO_KV = 1.5;
         public static final double TURN_MMEXPO_KA = 0.02;

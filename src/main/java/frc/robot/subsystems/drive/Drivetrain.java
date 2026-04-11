@@ -230,8 +230,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
         double robotAccelX = robotForceX / Constants.Frame.ROBOT_MASS_KG;
         double robotAccelY = robotForceY / Constants.Frame.ROBOT_MASS_KG;
 
-        double robotVoltageX = robotAccelX * Constants.Swerve.KRAKEN_DRIVE_KA;
-        double robotVoltageY = robotAccelY * Constants.Swerve.KRAKEN_DRIVE_KA;
+        double robotVoltageX = robotAccelX * Constants.Swerve.FEEDFORWARD_KA;
+        double robotVoltageY = robotAccelY * Constants.Swerve.FEEDFORWARD_KA;
 
         return Math.cos(wheelAngleRadians) * robotVoltageX + Math.sin(wheelAngleRadians) * robotVoltageY;
     }
@@ -266,6 +266,9 @@ public final class Drivetrain extends ManagedSubsystemBase {
                 RobotContainer.ROBOT_PERIODIC // The loop time of the robot code, in seconds
                 );
 
+        double[] setpointFFX = previousSetpoint.feedforwards().robotRelativeForcesXNewtons();
+        double[] setpointFFY = previousSetpoint.feedforwards().robotRelativeForcesYNewtons();
+
         SwerveModuleState[] swerveModuleStates = previousSetpoint.moduleStates();
 
         // Sets state for each module
@@ -276,8 +279,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
                 modules[i].setDesiredState(
                         swerveModuleStates[i],
                         projectFeedforward(
-                                robotRelativeForcesXNewtons[i],
-                                robotRelativeForcesYNewtons[i],
+                                robotRelativeForcesXNewtons[i] + setpointFFX[i],
+                                robotRelativeForcesYNewtons[i] + setpointFFY[i],
                                 states[i].angle.getRadians()));
             }
         }
