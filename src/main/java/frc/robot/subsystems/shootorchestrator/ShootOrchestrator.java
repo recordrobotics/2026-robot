@@ -55,7 +55,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             0.0);
     private static final double PASSING_ACCEPTABLE_RADIUS_METERS = BLUE_PASSING_TARGET_HP_SIDE.getY();
 
-    private static final Translation2d BLUE_TRENCH_HP_SIDE = new Translation2d(4.572, 0.664);
+    private static final Translation2d BLUE_TRENCH_HP_SIDE = new Translation2d(4.622, 0.644493);
     private static final Translation2d BLUE_TRENCH_DEPOT_SIDE =
             new Translation2d(BLUE_TRENCH_HP_SIDE.getX(), FlippingUtil.fieldSizeY - BLUE_TRENCH_HP_SIDE.getY());
     private static final Translation2d RED_TRENCH_HP_SIDE = new Translation2d(
@@ -231,16 +231,74 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
-    public boolean isInTrench(Pose2d pose, Translation2d trench) {
-        return Math.abs(pose.getY() - trench.getY()) < TRENCH_WIDTH_METERS / 2.0
-                && Math.abs(pose.getX() - trench.getX()) < TRENCH_OFFSET_METERS;
+    public boolean isInTrench(Translation2d start, Translation2d end, Translation2d trench) {
+        double minX = trench.getX() - TRENCH_OFFSET_METERS;
+        double maxX = trench.getX() + TRENCH_OFFSET_METERS;
+        double minY = trench.getY() - TRENCH_WIDTH_METERS / 2.0;
+        double maxY = trench.getY() + TRENCH_WIDTH_METERS / 2.0;
+
+        boolean startInside =
+                start.getX() >= minX && start.getX() <= maxX && start.getY() >= minY && start.getY() <= maxY;
+        boolean endInside = end.getX() >= minX && end.getX() <= maxX && end.getY() >= minY && end.getY() <= maxY;
+        if (startInside || endInside) {
+            return true;
+        }
+
+        // Slab intersection (segment param t in [0, 1])
+        double tMin = 0.0;
+        double tMax = 1.0;
+        final double eps = 1e-9;
+
+        // X slab
+        double dx = end.getX() - start.getX();
+        if (Math.abs(dx) < eps) {
+            if (start.getX() < minX || start.getX() > maxX) {
+                return false;
+            }
+        } else {
+            double tx1 = (minX - start.getX()) / dx;
+            double tx2 = (maxX - start.getX()) / dx;
+            if (tx1 > tx2) {
+                double temp = tx1;
+                tx1 = tx2;
+                tx2 = temp;
+            }
+            tMin = Math.max(tMin, tx1);
+            tMax = Math.min(tMax, tx2);
+            if (tMin > tMax) {
+                return false;
+            }
+        }
+
+        // Y slab
+        double dy = end.getY() - start.getY();
+        if (Math.abs(dy) < eps) {
+            if (start.getY() < minY || start.getY() > maxY) {
+                return false;
+            }
+        } else {
+            double ty1 = (minY - start.getY()) / dy;
+            double ty2 = (maxY - start.getY()) / dy;
+            if (ty1 > ty2) {
+                double temp = ty1;
+                ty1 = ty2;
+                ty2 = temp;
+            }
+            tMin = Math.max(tMin, ty1);
+            tMax = Math.min(tMax, ty2);
+            if (tMin > tMax) {
+                return false;
+            }
+        }
+
+        return tMax >= 0.0 && tMin <= 1.0;
     }
 
-    public boolean isInTrench(Pose2d pose) {
-        return isInTrench(pose, BLUE_TRENCH_HP_SIDE)
-                || isInTrench(pose, BLUE_TRENCH_DEPOT_SIDE)
-                || isInTrench(pose, RED_TRENCH_HP_SIDE)
-                || isInTrench(pose, RED_TRENCH_DEPOT_SIDE);
+    public boolean isInTrench(Translation2d start, Translation2d end) {
+        return isInTrench(start, end, BLUE_TRENCH_HP_SIDE)
+                || isInTrench(start, end, BLUE_TRENCH_DEPOT_SIDE)
+                || isInTrench(start, end, RED_TRENCH_HP_SIDE)
+                || isInTrench(start, end, RED_TRENCH_DEPOT_SIDE);
     }
 
     @Override
@@ -308,15 +366,27 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                         Math.copySign(Constants.Turret.STARTING_POSITION_RADIANS, turretPos), 0, 0);
             }
 
+            double timeUntilHoodDown =
+                    RobotContainer.shooter.getTimeUntilHoodAt(Constants.Shooter.HOOD_MAX_POSITION_RADIANS)
+                            + 0.04 /* latency compensation */;
+
+            Logger.recordOutput("ShootOrchestrator/HoodTime", timeUntilHoodDown);
+
             Pose2d robotPoseTrench = SimpleMath.integrateChassisSpeeds(
                     RobotContainer.poseSensorFusion.getEstimatedPosition(),
                     RobotContainer.drivetrain.getChassisSpeeds(),
-                    0.2);
-            Pose3d fuelReleasePoseTrench =
-                    new Pose3d(robotPoseTrench).transformBy(new Transform3d(fuelReleaseOffset, Rotation3d.kZero));
+                    timeUntilHoodDown);
+            Translation3d hoodPosition = RobotContainer.model.fuelManager.getShooterHoodPosition();
+            Pose3d hoodPoseTrench =
+                    new Pose3d(robotPoseTrench).transformBy(new Transform3d(hoodPosition, Rotation3d.kZero));
+            Pose3d hoodPoseCurrent = new Pose3d(robotPose).transformBy(new Transform3d(hoodPosition, Rotation3d.kZero));
 
-            boolean isInTrench = isInTrench(fuelReleasePoseTrench.toPose2d());
+            boolean isInTrench = isInTrench(
+                    hoodPoseCurrent.getTranslation().toTranslation2d(),
+                    hoodPoseTrench.getTranslation().toTranslation2d());
             Logger.recordOutput("ShootOrchestrator/IsInTrench", isInTrench);
+
+            Logger.recordOutput("ShootOrchestrator/Trench", hoodPoseTrench);
 
             if (shootingEnabled) {
                 if (!shootOverride.get()) {

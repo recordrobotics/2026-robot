@@ -11,6 +11,8 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.trajectory.ExponentialProfile;
+import edu.wpi.first.math.trajectory.ExponentialProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Current;
@@ -64,6 +66,10 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     private final VoltageOut hoodVoltageRequest = new VoltageOut(0);
 
     private final Alert hoodDisconnectedAlert = new Alert("Hood disconnected!", AlertType.kError);
+
+    private final ExponentialProfile hoodProfile =
+            new ExponentialProfile(ExponentialProfile.Constraints.fromCharacteristics(
+                    7.0, Constants.Shooter.HOOD_MMEXPO_KV, Constants.Shooter.HOOD_MMEXPO_KA));
 
     private double hoodTargetPositionRotations;
     private double flywheelTargetVelocityMps;
@@ -285,6 +291,12 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     @Override
     public PositionStatus getPositionStatus() {
         return positionStatus;
+    }
+
+    public double getTimeUntilHoodAt(double targetHoodAngle) {
+        State currentState = new State(inputs.hoodPositionRotations, inputs.hoodVelocityRotationsPerSecond);
+        double targetPositionRotations = Units.radiansToRotations(targetHoodAngle);
+        return hoodProfile.timeLeftUntil(currentState, new State(targetPositionRotations, 0));
     }
 
     /** frees up all hardware allocations */

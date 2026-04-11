@@ -1159,6 +1159,22 @@ public final class RobotModel extends ManagedSubsystemBase {
                     .getTranslation();
         }
 
+        public Translation3d getShooterHoodPosition() {
+            Translation3d shooterHoodStart = new Translation3d(0.024704, 0.127000, 0.526709);
+            Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
+            Translation3d shooterOrigin = new Translation3d(0.210586, 0.239469, 0.455638);
+            return shooterHoodStart
+                    .rotateAround(
+                            shooterOrigin,
+                            new Rotation3d(
+                                    0,
+                                    Constants.Shooter.HOOD_MAX_POSITION_RADIANS - RobotContainer.shooter.getHoodAngle(),
+                                    0))
+                    .rotateAround(
+                            shooterBallStart,
+                            new Rotation3d(Rotation2d.fromRotations(RobotContainer.turret.getPositionRotations())));
+        }
+
         public void update() {
             fuelObjects.forEach(fuelObject -> fuelObject.update(0.02));
 
