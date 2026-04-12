@@ -371,6 +371,14 @@ public final class Constants {
         public static final ImmutableTime KRAKEN_DRIVE_SUPPLY_LOWER_CURRENT_LIMIT_TIME =
                 ImmutableTime.of(Seconds.of(1.0));
 
+        // All of the DRIVE motor values treat the 4 drive motors as one gearbox, with one output. This means that
+        // applying KRAKEN_DRIVE_KA to all drive motors will accelerate the whole robot at 1 m/s^2.
+        /* Units:
+         * Ks: V
+         * Kv: V/(m/s)
+         * Ka: V/(m/s^2)
+         * Kp: V/(m/s)
+         */
         public static final double FALCON_DRIVE_KS = 0.13192;
         public static final double FALCON_DRIVE_KV = 2.7547;
         public static final double FALCON_DRIVE_KA = 0.24758;
@@ -410,7 +418,7 @@ public final class Constants {
         public static final double TURN_MMEXPO_KV = 1.5;
         public static final double TURN_MMEXPO_KA = 0.02;
 
-        /** The max speed the robot can travel safely */
+        /** The max speed the robot can travel */
         public static final double MAX_MODULE_SPEED = 4.5; // TODO: measure
 
         // Offset rotation origin for testing turret feedforward
