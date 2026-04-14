@@ -209,7 +209,8 @@ public final class SimpleMath {
 
     public static double average(double... values) {
         if (values.length == 0) {
-            throw new IllegalArgumentException("Cannot compute average of zero values");
+            // throw new IllegalArgumentException("Cannot compute average of zero values");
+            return 0; // TODO bug fix
         }
         double sum = 0;
         for (double v : values) {
