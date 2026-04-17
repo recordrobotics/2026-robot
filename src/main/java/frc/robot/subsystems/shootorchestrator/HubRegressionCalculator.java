@@ -80,7 +80,27 @@ public class HubRegressionCalculator implements ShotCalculator {
     }
 
     public static double calculateTimeOfFlight(double distance, double robotVelocity) {
-        return 0.0; // TODO: add time of flight regression
+        double distance2 = distance * distance;
+        double distance3 = distance2 * distance;
+        double distance4 = distance3 * distance;
+        double robotVelocity2 = robotVelocity * robotVelocity;
+        double robotVelocity3 = robotVelocity2 * robotVelocity;
+        double robotVelocity4 = robotVelocity3 * robotVelocity;
+        return 1.31892611933
+                + -0.0683937405325 * robotVelocity
+                + 0.00374486350338 * robotVelocity2
+                + -0.00193237414201 * robotVelocity3
+                + -0.000338254753748 * robotVelocity4
+                + -0.223678576703 * distance
+                + 0.0326917274421 * distance * robotVelocity
+                + 0.00123375588771 * distance * robotVelocity2
+                + 0.000284834497372 * distance * robotVelocity3
+                + 0.0980559153379 * distance2
+                + -0.00570370842433 * distance2 * robotVelocity
+                + -0.000115350359524 * distance2 * robotVelocity2
+                + -0.0128365409099 * distance3
+                + 0.000277738089997 * distance3 * robotVelocity
+                + 0.000560687425104 * distance4;
     }
 
     public static double calculateAllowableShootAngleError(double distance, double robotVelocity) {

@@ -73,7 +73,27 @@ public class PassingRegressionCalculator implements ShotCalculator {
     }
 
     public static double calculateTimeOfFlight(double distance, double robotVelocity) {
-        return 0.0; // TODO: add time of flight regression
+        double distance2 = distance * distance;
+        double distance3 = distance2 * distance;
+        double distance4 = distance3 * distance;
+        double robotVelocity2 = robotVelocity * robotVelocity;
+        double robotVelocity3 = robotVelocity2 * robotVelocity;
+        double robotVelocity4 = robotVelocity3 * robotVelocity;
+        return 0.318176436189
+                + -0.126179623528 * robotVelocity
+                + -0.0162401043712 * robotVelocity2
+                + -0.00123084197628 * robotVelocity3
+                + 0.000114401352533 * robotVelocity4
+                + 0.294410686104 * distance
+                + 0.0239731528507 * distance * robotVelocity
+                + 0.00374675565053 * distance * robotVelocity2
+                + 5.21785854748e-05 * distance * robotVelocity3
+                + -0.0354196665062 * distance2
+                + -0.00265585289049 * distance2 * robotVelocity
+                + -0.000200235259338 * distance2 * robotVelocity2
+                + 0.00242466018199 * distance3
+                + 8.7490922569e-05 * distance3 * robotVelocity
+                + -5.8036960984e-05 * distance4;
     }
 
     public static double calculateAllowableShootAngleError(double distance, double robotVelocity) {

@@ -41,7 +41,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             FlippingUtil.fieldSizeX - BLUE_HUB_POSITION.getX(),
             FlippingUtil.fieldSizeY - BLUE_HUB_POSITION.getY(),
             BLUE_HUB_POSITION.getZ());
-    private static final double HUB_RADIUS_METERS = Units.inchesToMeters(20); // TODO use hexagon?
+
     private static final Translation3d BLUE_PASSING_TARGET_HP_SIDE = new Translation3d(2.752, 1.664, 0.0);
     private static final Translation3d BLUE_PASSING_TARGET_DEPOT_SIDE = new Translation3d(
             BLUE_PASSING_TARGET_HP_SIDE.getX(), FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_HP_SIDE.getY(), 0.0);
@@ -53,7 +53,6 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             FlippingUtil.fieldSizeX - BLUE_PASSING_TARGET_DEPOT_SIDE.getX(),
             FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_DEPOT_SIDE.getY(),
             0.0);
-    private static final double PASSING_ACCEPTABLE_RADIUS_METERS = BLUE_PASSING_TARGET_HP_SIDE.getY();
 
     private static final Translation2d BLUE_TRENCH_HP_SIDE = new Translation2d(4.622, 0.644493);
     private static final Translation2d BLUE_TRENCH_DEPOT_SIDE =
