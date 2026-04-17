@@ -101,7 +101,13 @@ Before starting make sure to setup git with these recommended settings and alias
 - `git config --global alias.origin 'reset --hard origin/$(git branch --show-current)'`
 - `git config --global alias.fpush 'push --force-with-lease --force-if-includes'`
 
-This ensures your local commits will be rebased on top of any incoming changes when pulling, and provides useful aliases for safe force pushing and resetting current branch to origin.
+This ensures your local commits will be rebased on top of any incoming changes when pulling, and provides useful aliases for safe force pushing and resetting current branch to origin
+
+-----------------------------------------------
+
+## AdvantageKit Replay and ReplayWatch
+
+The code supports deterministic replay of logs using the Replay feature of AdvantageKit.
 
 -------------------------------------------------
 [Record Robotics](https://www.recordrobotics.org/)

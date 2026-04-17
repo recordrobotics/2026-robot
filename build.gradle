@@ -150,7 +150,7 @@ sonar {
 
 // Simulation configuration (e.g. environment variables).
 wpi.sim.addGui().defaultEnabled = false
-wpi.sim.addDriverstation().defaultEnabled = true
+wpi.sim.addDriverstation().defaultEnabled = false
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
 // in order to make them all available at runtime. Also adding the manifest so WPILib
@@ -197,12 +197,28 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs.addAll(["-Xlint:-removal"])
 }
 
-task simulateWithVerbose(type: JavaExec) {
+task simulateWithVerboseWindowsDs(type: JavaExec) {
     mainClass = 'frc.robot.Main' // Replace with your main class
     classpath = sourceSets.main.runtimeClasspath
     jvmArgs = ['-verbose:class']
     systemProperty 'java.library.path', "${project.buildDir}/jni/release"
     environment 'HALSIM_EXTENSIONS', "${project.buildDir}/jni/release/halsim_ds_socket.dll;"
+}
+
+task simulateWithVerboseWindowsGui(type: JavaExec) {
+    mainClass = 'frc.robot.Main' // Replace with your main class
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = ['-verbose:class']
+    systemProperty 'java.library.path', "${project.buildDir}/jni/release"
+    environment 'HALSIM_EXTENSIONS', "${project.buildDir}/jni/release/halsim_gui.dll;"
+}
+
+task simulateWithVerboseMacos(type: JavaExec) {
+    mainClass = 'frc.robot.Main' // Replace with your main class
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = ['-verbose:class']
+    systemProperty 'java.library.path', "${project.buildDir}/jni/release"
+    environment 'HALSIM_EXTENSIONS', "${project.buildDir}/jni/release/halsim_gui.dylib;"
 }
 
 checkstyle {
