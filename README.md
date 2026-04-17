@@ -87,12 +87,27 @@ An example keybinding is provided in [`.vscode/keybindings.json`](.vscode/keybin
 2. Type and select **Preferences: Open Keyboard Shortcuts (JSON)**.
 3. This is where you can define the custom keybinds (**this applies for your whole vscode user not just this repo**)
 
----
+-----------------------------------------------
 
 ## Spotless Pre-Push Hook
 
 Run this command to set up a git hook that will format your code with spotless before you push: `./gradlew spotlessInstallGitPrePushHook`
 
+## Git Config
+
+Before starting make sure to setup git with these recommended settings and aliases:
+
+- `git config --global pull.rebase true`
+- `git config --global alias.origin 'reset --hard origin/$(git branch --show-current)'`
+- `git config --global alias.fpush 'push --force-with-lease --force-if-includes'`
+
+This ensures your local commits will be rebased on top of any incoming changes when pulling, and provides useful aliases for safe force pushing and resetting current branch to origin
+
+-----------------------------------------------
+
+## AdvantageKit Replay and ReplayWatch
+
+The code supports deterministic replay of logs using the Replay feature of AdvantageKit.
 
 -------------------------------------------------
 [Record Robotics](https://www.recordrobotics.org/)

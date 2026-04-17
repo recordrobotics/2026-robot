@@ -33,6 +33,7 @@ import frc.robot.utils.ModuleConstants.MotorLocation;
 import frc.robot.utils.ModuleConstants.TurnMotorType;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
+import frc.robot.utils.libraries.LogFileUtilEx;
 import frc.robot.utils.wrappers.ImmutableCurrent;
 import frc.robot.utils.wrappers.ImmutableTime;
 import frc.robot.utils.wrappers.Pose2d;
@@ -798,7 +799,9 @@ public final class Constants {
         public static Mode getMode() {
             if (RobotBase.isReal()) return Mode.REAL;
             if (runningAsUnitTest) return Mode.TEST;
-            return RobotBase.isSimulation() ? Mode.SIM : Mode.REPLAY;
+            // Replay mode if akit log provided (from replay watch)
+            if (LogFileUtilEx.findReplayLogEnvVar() != null) return Mode.REPLAY;
+            return Mode.SIM;
         }
 
         private static AutoLogLevel.Level getAutoLogLevel() {
