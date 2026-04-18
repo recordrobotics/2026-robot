@@ -18,6 +18,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
+import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Feeder.FeederState;
 import frc.robot.subsystems.Shooter.ShooterState;
@@ -107,6 +108,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     private double lastShotYaw = 0;
     private boolean hasLastShotYaw = false;
+
+    private double lastShotTimeOfFlight = 0;
 
     private double timeAtBallHit = 0;
     private double shooterFeedforward = 0;
@@ -300,6 +303,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 || isInTrench(start, end, RED_TRENCH_DEPOT_SIDE);
     }
 
+    public double getShotTimeOfFlight() {
+        return lastShotTimeOfFlight;
+    }
+
     @Override
     public void periodicManaged() {
         setAutomatedTarget();
@@ -332,6 +339,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             Vector<N2> tangentialVelocity = fuelReleaseVelocityVector.minus(normTargetVector.times(radialVelocity));
 
             ShotCalculation shotCalculation = target.shotCalculator.calculateShot(distanceToTarget, radialVelocity);
+
+            lastShotTimeOfFlight = shotCalculation.timeOfFlightSeconds();
 
             double targetYaw = Math.atan2(relativeTarget.getY(), relativeTarget.getX());
             double targetPitch = shotCalculation.shootAngleRadians();
@@ -442,12 +451,14 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
         }
 
-        updateTrajectory(robotPose, fuelReleasePose);
+        if (Constants.RobotState.getMode() == Mode.SIM) {
+            updateTrajectory(robotPose, fuelReleasePose);
+            Logger.recordOutput("ShootOrchestrator/Trajectory", trajectory);
+        }
 
         Logger.recordOutput(
                 "ShootOrchestrator/Target",
                 target == null ? Pose3d.kZero : new Pose3d(target.position, Rotation3d.kZero));
-        Logger.recordOutput("ShootOrchestrator/Trajectory", trajectory);
         Logger.recordOutput("ShootOrchestrator/ShootingEnabled", shootingEnabled);
     }
 }

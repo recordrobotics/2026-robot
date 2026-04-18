@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shootorchestrator;
 
+@SuppressWarnings("java:S109") /* whole class is a magic number */
 public class PassingRegressionCalculator implements ShotCalculator {
 
     @Override

@@ -106,6 +106,11 @@ public final class RobotContainer {
 
     private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.68;
 
+    private static final double HUB_SCORE_REGISTER_TIME =
+            1.25; // takes 1.25 seconds from fuel crossing top of poly to scored
+    private static final double HUB_SCORE_TIME =
+            1; // hub allows 1 second for fuel to score after deactivation (maybe 3 but 1 safer)
+
     private static Alert noEncoderResetAlert;
 
     private static final LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
@@ -272,14 +277,13 @@ public final class RobotContainer {
 
     private static boolean shouldBeShooting() {
 
-        MatchTimeData matchData = DriverStationUtils.isHubActive();
-        boolean hubActive = matchData.hubActive();
+        MatchTimeData matchData = DriverStationUtils.getMatchTimeData();
 
         SmartDashboard.putNumber("ShiftTime", Math.ceil(matchData.timeLeftInShift()));
         SmartDashboard.putString("CurrentShift", matchData.shift().getName());
         SmartDashboard.putBoolean("WonAuto", matchData.wonAuto());
 
-        Logger.recordOutput("HubActive", hubActive);
+        Logger.recordOutput("HubActive", matchData.currentHubActive());
 
         if (shootModeChooser.get() == null) return false;
 
@@ -293,7 +297,15 @@ public final class RobotContainer {
             case DISABLED:
                 return false;
             case AUTO:
-                if (ShootOrchestrator.isInAllianceZone() && hubActive) {
+                double timeToScore = shootOrchestrator.getShotTimeOfFlight() + HUB_SCORE_REGISTER_TIME;
+                boolean shouldAutoShoot = matchData.currentHubActive()
+                        // start early if next shift active
+                        || (matchData.nextHubActive() && matchData.timeLeftInShift() <= timeToScore)
+                        ||
+                        // shoot even after shift deactivates while fuel is still being scored
+                        (matchData.previousHubActive() && matchData.timeSinceShift() <= HUB_SCORE_TIME - timeToScore);
+
+                if (ShootOrchestrator.isInAllianceZone() && shouldAutoShoot) {
                     return !getControl().isShooterInvertPressed();
                 } else {
                     return getControl().isShooterInvertPressed();
