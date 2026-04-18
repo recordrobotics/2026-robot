@@ -16,7 +16,6 @@ public class KidsTurretSweep extends SequentialCommandGroup {
     private int sweepDir;
 
     public KidsTurretSweep() {
-        addRequirements(RobotContainer.shooter);
         sweepPos = Units.rotationsToRadians(RobotContainer.turret.getPositionRotations());
         addCommands(
                 Commands.waitUntil(() -> RobotContainer.getControl().getKidShootPressed()),
@@ -35,7 +34,7 @@ public class KidsTurretSweep extends SequentialCommandGroup {
                                 RobotContainer.shooter)
                         .until(() -> RobotContainer.getControl().getKidShootPressed()));
 
-        addCommands(new KidsShoot());
+        addCommands(new KidsShoot(sweepPos));
     }
 
     public static Command createCommand() {
