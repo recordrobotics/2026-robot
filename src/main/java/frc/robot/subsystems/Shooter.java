@@ -200,6 +200,12 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         }
     }
 
+    private void checkHoodBeyondLimit() {
+        if (getHoodAngle() < Constants.Shooter.HOOD_MIN_POSITION_RADIANS) {
+            positionStatus = PositionStatus.UNKNOWN;
+        }
+    }
+
     public double getFlywheelVelocityMps() {
         return inputs.flywheelVelocityMps;
     }
@@ -212,6 +218,8 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         hoodDisconnectedAlert.set(!inputs.hoodConnected);
 
         RobotContainer.model.shooterModel.updateHood(getHoodAngle());
+
+        checkHoodBeyondLimit();
 
         if (overrideKnown) {
             positionStatus = PositionStatus.KNOWN;

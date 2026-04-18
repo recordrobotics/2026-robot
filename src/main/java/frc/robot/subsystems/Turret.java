@@ -196,7 +196,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                         if (RobotContainer.intake.isNearStartPosition()) {
                             resetState = ResetState.WAIT_FOR_INTAKE;
                         } else {
-                            positionStatus = PositionStatus.MECHANICAL_FAULT;
+                            positionStatus = PositionStatus.RESETTING_FAULT;
                             resetState = ResetState.NOT_RESETTING;
                         }
                         io.setControl(voltageRequest.withOutput(0));

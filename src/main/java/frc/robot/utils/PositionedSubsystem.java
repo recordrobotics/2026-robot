@@ -17,10 +17,10 @@ public interface PositionedSubsystem {
          */
         KNOWN,
         /**
-         * The position could not be determined due to a mechanical fault.
+         * The position could not be determined due to a mechanical issue.
          * (For example elevator hit physical stop above limit switch)
          */
-        MECHANICAL_FAULT,
+        RESETTING_FAULT,
         /**
          * The position could not be determined due to a sensor fault.
          * (For example encoder or sensor disconnected)
@@ -88,7 +88,7 @@ public interface PositionedSubsystem {
                 switch (status) {
                     case UNKNOWN -> entry.setWarning(entry.name() + " unknown position");
                     case KNOWN -> entry.clear();
-                    case MECHANICAL_FAULT -> entry.setError(entry.name() + " mechanical fault");
+                    case RESETTING_FAULT -> entry.setError(entry.name() + " resetting fault");
                     case SENSOR_FAULT -> entry.setError(entry.name() + " sensor fault");
                 }
             }
