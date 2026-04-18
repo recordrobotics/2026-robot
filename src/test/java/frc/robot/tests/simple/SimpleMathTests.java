@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.utils.SimpleMath;
+import java.util.OptionalDouble;
 import org.junit.jupiter.api.Test;
 
 class SimpleMathTests {
@@ -353,49 +354,31 @@ class SimpleMathTests {
 
     @Test
     void testAverageSingleValue() {
-        double result = SimpleMath.average(5.0);
+        double result = SimpleMath.average(5.0).orElseThrow();
         assertEquals(5.0, result, DELTA);
     }
 
     @Test
     void testAverageMultipleValues() {
-        double result = SimpleMath.average(1.0, 2.0, 3.0, 4.0, 5.0);
+        double result = SimpleMath.average(1.0, 2.0, 3.0, 4.0, 5.0).orElseThrow();
         assertEquals(3.0, result, DELTA);
     }
 
     @Test
     void testAverageNegativeValues() {
-        double result = SimpleMath.average(-1.0, -2.0, -3.0);
+        double result = SimpleMath.average(-1.0, -2.0, -3.0).orElseThrow();
         assertEquals(-2.0, result, DELTA);
     }
 
     @Test
     void testAverageMixedValues() {
-        double result = SimpleMath.average(-1.0, 0.0, 1.0);
+        double result = SimpleMath.average(-1.0, 0.0, 1.0).orElseThrow();
         assertEquals(0.0, result, DELTA);
     }
 
     @Test
     void testAverageEmptyArray() {
-        assertThrows(IllegalArgumentException.class, SimpleMath::average);
-    }
-
-    @Test
-    void testAverage4() {
-        double result = SimpleMath.average4(1.0, 2.0, 3.0, 4.0);
-        assertEquals(2.5, result, DELTA);
-    }
-
-    @Test
-    void testAverage4WithNegatives() {
-        double result = SimpleMath.average4(-1.0, -2.0, 3.0, 4.0);
-        assertEquals(1.0, result, DELTA);
-    }
-
-    @Test
-    void testAverage4WithZeros() {
-        double result = SimpleMath.average4(0.0, 0.0, 0.0, 0.0);
-        assertEquals(0.0, result, DELTA);
+        assertEquals(SimpleMath.average(), OptionalDouble.empty());
     }
 
     @Test

@@ -194,8 +194,9 @@ public class IntakeSim implements IntakeIO {
 
         inputs.armHasPosition = !armGroup.hasLostPosition();
         inputs.armPositionRotations = armGroup.getAveragePosition();
-        inputs.armVelocityRotationsPerSecond = SimpleMath.average(armGroup.getVelocities());
-        inputs.armVoltage = SimpleMath.average(armGroup.getVoltages());
+        inputs.armVelocityRotationsPerSecond =
+                SimpleMath.average(armGroup.getVelocities()).orElse(0);
+        inputs.armVoltage = SimpleMath.average(armGroup.getVoltages()).orElse(0);
         inputs.armCurrentDraw = Arrays.stream(armGroup.getSimStates())
                 .map(TalonFXSimState::getSupplyCurrentMeasure)
                 .reduce(Amps.zero(), Current::plus);
@@ -241,8 +242,9 @@ public class IntakeSim implements IntakeIO {
 
         double wheelVoltage = wheel.getSimState().getMotorVoltage();
         double armVoltage = SimpleMath.average(Arrays.stream(armGroup.getSimStates())
-                .mapToDouble(TalonFXSimState::getMotorVoltage)
-                .toArray());
+                        .mapToDouble(TalonFXSimState::getMotorVoltage)
+                        .toArray())
+                .orElse(0);
 
         wheelSimModel.setInputVoltage(wheelVoltage * calculateVoltageMultiplier(rollerFuelCount.get()));
         wheelSimModel.update(periodicDt);

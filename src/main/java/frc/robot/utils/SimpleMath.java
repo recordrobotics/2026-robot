@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N3;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.OptionalDouble;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -207,21 +208,21 @@ public final class SimpleMath {
         return Math.signum(a) == Math.signum(b);
     }
 
-    public static double average(double... values) {
+    /**
+     * Returns the average of the given values, or an empty OptionalDouble if no values are given
+     * @param values Values to average
+     * @return The average of the given values, or an empty OptionalDouble if no values are given
+     */
+    public static OptionalDouble average(double... values) {
         if (values.length == 0) {
-            // throw new IllegalArgumentException("Cannot compute average of zero values");
-            return 0; // TODO bug fix
+            return OptionalDouble.empty();
         }
+
         double sum = 0;
         for (double v : values) {
             sum += v;
         }
-        return sum / values.length;
-    }
-
-    @SuppressWarnings("java:S109")
-    public static double average4(double a, double b, double c, double d) {
-        return (a + b + c + d) / 4.0;
+        return OptionalDouble.of(sum / values.length);
     }
 
     /**

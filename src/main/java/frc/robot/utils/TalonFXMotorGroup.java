@@ -38,6 +38,7 @@ public class TalonFXMotorGroup implements AutoCloseable {
     private int leaderIndex = -1;
     private ControlRequest lastControlRequest;
     private boolean lostAllMotors = false;
+    private double lastPositionSet = 0;
 
     private final Alert errorAlert = new Alert("", AlertType.kError);
     private final Alert lostAllMotorPositionsAlert = new Alert("", AlertType.kWarning);
@@ -57,6 +58,15 @@ public class TalonFXMotorGroup implements AutoCloseable {
                     motors[i], new TalonFX(motors[i].deviceId()), new Follower(-1, MotorAlignmentValue.Aligned));
         }
 
+        updateLastConnected();
+        leaderIndex = findLeader();
+        if (leaderIndex != -1) {
+            for (int i = 0; i < this.motors.length; i++) {
+                if (i != leaderIndex) {
+                    updateFollower(this.motors[i]);
+                }
+            }
+        }
         periodic();
     }
 
@@ -75,7 +85,7 @@ public class TalonFXMotorGroup implements AutoCloseable {
         }
     }
 
-    public void updateFollower(MotorData motor) {
+    public final void updateFollower(MotorData motor) {
         motor.device.setControl(motor.followerRequest
                 .withLeaderID(motors[leaderIndex].config.deviceId)
                 .withMotorAlignment(
@@ -89,6 +99,11 @@ public class TalonFXMotorGroup implements AutoCloseable {
             motors[leaderIndex].lastConnected = false;
 
             leaderIndex = findLeader();
+
+            if (leaderIndex == -1) {
+                lostAllMotors = true;
+                return;
+            }
 
             for (int i = 0; i < motors.length; i++) {
                 if (i != leaderIndex) {
@@ -120,7 +135,15 @@ public class TalonFXMotorGroup implements AutoCloseable {
     }
 
     public double getAveragePosition() {
-        return SimpleMath.average(getPositions());
+        double avg = SimpleMath.average(getPositions()).orElse(lastPositionSet);
+        lastPositionSet = avg;
+        return avg;
+    }
+
+    public final void updateLastConnected() {
+        for (int i = 0; i < motors.length; i++) {
+            motors[i].lastConnected = motors[i].device.isConnected();
+        }
     }
 
     public double[] getPositions() {
@@ -158,6 +181,7 @@ public class TalonFXMotorGroup implements AutoCloseable {
             }
             lostAllMotors = false;
         }
+        lastPositionSet = position;
     }
 
     public void updateAlert() {
@@ -204,9 +228,7 @@ public class TalonFXMotorGroup implements AutoCloseable {
             lostAllMotors = true;
         }
 
-        for (int i = 0; i < motors.length; i++) {
-            motors[i].lastConnected = motors[i].device.isConnected();
-        }
+        updateLastConnected();
     }
 
     public TalonFXSimState getSimState(int index) {

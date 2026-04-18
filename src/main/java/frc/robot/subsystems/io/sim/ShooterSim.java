@@ -144,8 +144,9 @@ public class ShooterSim implements ShooterIO {
         }
 
         inputs.flywheelPositionMeters = flywheelGroup.getAveragePosition();
-        inputs.flywheelVelocityMps = SimpleMath.average(flywheelGroup.getVelocities());
-        inputs.flywheelVoltage = SimpleMath.average(flywheelGroup.getVoltages());
+        inputs.flywheelVelocityMps =
+                SimpleMath.average(flywheelGroup.getVelocities()).orElse(0);
+        inputs.flywheelVoltage = SimpleMath.average(flywheelGroup.getVoltages()).orElse(0);
         inputs.flywheelCurrentDraw = Arrays.stream(flywheelGroup.getSimStates())
                 .map(TalonFXSimState::getSupplyCurrentMeasure)
                 .reduce(Amps.zero(), Current::plus);
@@ -199,8 +200,9 @@ public class ShooterSim implements ShooterIO {
 
         double hoodVoltage = hood.getSimState().getMotorVoltage();
         double flywheelVoltage = SimpleMath.average(Arrays.stream(flywheelGroup.getSimStates())
-                .mapToDouble(TalonFXSimState::getMotorVoltage)
-                .toArray());
+                        .mapToDouble(TalonFXSimState::getMotorVoltage)
+                        .toArray())
+                .orElse(0);
 
         hoodSimModel.setInputVoltage(hoodVoltage);
         hoodSimModel.update(periodicDt);

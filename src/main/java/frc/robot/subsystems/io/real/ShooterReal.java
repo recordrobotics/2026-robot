@@ -72,8 +72,9 @@ public class ShooterReal implements ShooterIO {
         }
 
         inputs.flywheelPositionMeters = flywheelGroup.getAveragePosition();
-        inputs.flywheelVelocityMps = SimpleMath.average(flywheelGroup.getVelocities());
-        inputs.flywheelVoltage = SimpleMath.average(flywheelGroup.getVoltages());
+        inputs.flywheelVelocityMps =
+                SimpleMath.average(flywheelGroup.getVelocities()).orElse(0);
+        inputs.flywheelVoltage = SimpleMath.average(flywheelGroup.getVoltages()).orElse(0);
         inputs.flywheelCurrentDraw = Arrays.stream(flywheelGroup.getCurrents()).reduce(Amps.zero(), Current::plus);
 
         inputs.hoodConnected = hood.isConnected();

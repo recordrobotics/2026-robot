@@ -70,8 +70,9 @@ public class IntakeReal implements IntakeIO {
 
         inputs.armHasPosition = !armGroup.hasLostPosition();
         inputs.armPositionRotations = armGroup.getAveragePosition();
-        inputs.armVelocityRotationsPerSecond = SimpleMath.average(armGroup.getVelocities());
-        inputs.armVoltage = SimpleMath.average(armGroup.getVoltages());
+        inputs.armVelocityRotationsPerSecond =
+                SimpleMath.average(armGroup.getVelocities()).orElse(0);
+        inputs.armVoltage = SimpleMath.average(armGroup.getVoltages()).orElse(0);
         inputs.armCurrentDraw = Arrays.stream(armGroup.getCurrents()).reduce(Amps.zero(), Current::plus);
 
         inputs.wheelConnected = wheel.isConnected();

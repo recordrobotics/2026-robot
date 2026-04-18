@@ -327,22 +327,25 @@ public final class Drivetrain extends ManagedSubsystemBase {
     @AutoLogLevel(level = Level.SYSID)
     public double sysIdOnlyGetDriveMotorVolts() {
         return SimpleMath.average(Arrays.stream(modules)
-                .mapToDouble(SwerveModule::getDriveMotorVoltsSysIdOnly)
-                .toArray());
+                        .mapToDouble(SwerveModule::getDriveMotorVoltsSysIdOnly)
+                        .toArray())
+                .orElseThrow();
     }
 
     @AutoLogLevel(level = Level.SYSID)
     public double sysIdOnlyGetDriveMotorPosition() {
         return SimpleMath.average(Arrays.stream(modules)
-                .mapToDouble(s -> s.getModulePosition().distanceMeters)
-                .toArray());
+                        .mapToDouble(s -> s.getModulePosition().distanceMeters)
+                        .toArray())
+                .orElseThrow();
     }
 
     @AutoLogLevel(level = Level.SYSID)
     public double sysIdOnlyGetDriveMotorVelocity() {
         return SimpleMath.average(Arrays.stream(modules)
-                .mapToDouble(s -> s.getModuleState().speedMetersPerSecond)
-                .toArray());
+                        .mapToDouble(s -> s.getModuleState().speedMetersPerSecond)
+                        .toArray())
+                .orElseThrow();
     }
 
     public void sysIdOnlyTurnMotors(Voltage volts) {
@@ -354,22 +357,25 @@ public final class Drivetrain extends ManagedSubsystemBase {
     @AutoLogLevel(level = Level.SYSID)
     public double sysIdOnlyGetTurnMotorVolts() {
         return SimpleMath.average(Arrays.stream(modules)
-                .mapToDouble(SwerveModule::getTurnMotorVoltsSysIdOnly)
-                .toArray());
+                        .mapToDouble(SwerveModule::getTurnMotorVoltsSysIdOnly)
+                        .toArray())
+                .orElseThrow();
     }
 
     @AutoLogLevel(level = Level.SYSID)
     public double sysIdOnlyGetTurnMotorPosition() {
         return SimpleMath.average(Arrays.stream(modules)
-                .mapToDouble(s -> s.getModuleState().angle.getRotations())
-                .toArray());
+                        .mapToDouble(s -> s.getModuleState().angle.getRotations())
+                        .toArray())
+                .orElseThrow();
     }
 
     @AutoLogLevel(level = Level.SYSID)
     public double sysIdOnlyGetTurnMotorVelocity() {
         return SimpleMath.average(Arrays.stream(modules)
-                .mapToDouble(SwerveModule::getTurnWheelVelocity)
-                .toArray());
+                        .mapToDouble(SwerveModule::getTurnWheelVelocity)
+                        .toArray())
+                .orElseThrow();
     }
 
     /**
