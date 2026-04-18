@@ -12,7 +12,7 @@ import java.util.Optional;
 public class JoystickTurret extends Command {
 
     private static final double KID_FLYWHEEL_MIN_VELOCITY = 0;
-    private static final double KID_FLYWHEEL_MAX_VELOCITY = 10;
+    private static final double KID_FLYWHEEL_MAX_VELOCITY = 28;
 
     private double turretAngle;
     private double hoodAngle;
