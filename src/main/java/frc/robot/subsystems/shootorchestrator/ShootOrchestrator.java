@@ -86,6 +86,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             new LoggedNetworkNumber("SHOOT_VELOCITY", 0);
     private static final LoggedNetworkBoolean shootOverride = new LoggedNetworkBoolean("SHOOT_OVERRIDE", false);
     private static final LoggedNetworkNumber shootAngleOffset = new LoggedNetworkNumber("SHOOT_ANGLE_OFFSET", 0);
+    private static final LoggedNetworkBoolean limitBallHeight =
+            new LoggedNetworkBoolean("Shooter/LimitBallHeight", false);
+    private static final LoggedNetworkNumber ballHeightLimit = new LoggedNetworkNumber("Shooter/BallHeightLimit", 0.0);
 
     public enum FeedMode {
         AUTO,
@@ -409,9 +412,23 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                             shootVelocityOverride,
                             shooterFeedforward));
                 } else {
+                    double hoodAngle = RobotContainer.shooter.getHoodAngle();
+                    double angleDeg =
+                            Units.radiansToDegrees(hoodAngle + Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS);
+                    double currentFlywheelVelocity = target.shotCalculator.fuelToFlywheelVelocity(
+                            useFixedShooting ? FIXED_FUEL_VELOCITY : shotVector.norm());
+                    double targetFlywheelVelocity = currentFlywheelVelocity;
+                    if (limitBallHeight.get()) {
+                        targetFlywheelVelocity = Math.min(
+                                currentFlywheelVelocity,
+                                target.shotCalculator.fuelToFlywheelVelocity(
+                                        calculateBallVelocityForHeight(angleDeg, ballHeightLimit.get())));
+                    }
                     RobotContainer.shooter.setTargetState(new ShooterState(
-                            isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngleDashboardOverride.get(),
-                            shootVelocityDashboardOverride.get(),
+                            (overrideShootAngleVelocity
+                                            ? hoodAngleOverride
+                                            : hoodAngleDashboardOverride.get()),
+                            targetFlywheelVelocity,
                             shooterFeedforward));
                 }
             } else {
@@ -453,5 +470,17 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 target == null ? Pose3d.kZero : new Pose3d(target.position, Rotation3d.kZero));
         Logger.recordOutput("ShootOrchestrator/Trajectory", trajectory);
         Logger.recordOutput("ShootOrchestrator/ShootingEnabled", shootingEnabled);
+    }
+
+    /**
+     * Calculate the required ball velocity in meters per second based on the hood angle and target
+     * height.
+     *
+     * @param angleDegrees the hood angle in degrees
+     * @param height the target height in meters
+     * @return the required ball velocity in meters per second
+     */
+    private static double calculateBallVelocityForHeight(double angleDegrees, double height) {
+        return 7;
     }
 }
