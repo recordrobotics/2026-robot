@@ -425,9 +425,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                                         calculateBallVelocityForHeight(angleDeg, ballHeightLimit.get())));
                     }
                     RobotContainer.shooter.setTargetState(new ShooterState(
-                            (overrideShootAngleVelocity
-                                            ? hoodAngleOverride
-                                            : hoodAngleDashboardOverride.get()),
+                            (overrideShootAngleVelocity ? hoodAngleOverride : hoodAngleDashboardOverride.get()),
                             targetFlywheelVelocity,
                             shooterFeedforward));
                 }
