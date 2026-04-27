@@ -401,7 +401,7 @@ public final class Constants {
         public static final double KRAKEN_TURN_KP = 68.174;
         public static final double KRAKEN_TURN_KD = 3.2858;
 
-        public static final double FEEDFORWARD_KA = KRAKEN_DRIVE_KA * 4; // 4 is good
+        public static final double FEEDFORWARD_KA = KRAKEN_DRIVE_KA * 1; // 4 is good
 
         // Wheel diameter
         public static final double WHEEL_DIAMETER = Units.inchesToMeters(4); // TODO: measure
