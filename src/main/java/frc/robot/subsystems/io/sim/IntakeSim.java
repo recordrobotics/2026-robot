@@ -114,7 +114,7 @@ public class IntakeSim implements IntakeIO {
 
         intakeSimulation = new IntakeSimulation("Fuel", drivetrainSim, intakeRect, FuelManager.getNodeCount());
         intakeSimulation.setCustomIntakeCondition(gm -> {
-            boolean passed = wheel.getVelocity().getValueAsDouble() > Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS - 2.0;
+            boolean passed = wheel.getVelocity().getValueAsDouble() > Constants.Intake.WHEEL_INTAKE_VELOCITY_MPS - 3.0;
             if (passed) {
                 try {
                     RobotContainer.model.fuelManager.intakeFuel(gm.getPose3d(), fuel -> {
