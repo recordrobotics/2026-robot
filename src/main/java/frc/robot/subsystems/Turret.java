@@ -42,8 +42,6 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     public static final double MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS = Units.degreesToRotations(90);
 
-    private static final double POSITION_TOLERANCE = Units.degreesToRotations(12);
-
     private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(2.7).per(Second);
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
     private static final Time SYSID_TIMEOUT = Seconds.of(1.0);
@@ -113,7 +111,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         io.applyTalonFXConfig(config.withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
-        setTarget(Constants.Turret.STARTING_POSITION_RADIANS, 0, 0);
+        setTarget(new TurretState(Constants.Turret.STARTING_POSITION_RADIANS, 0, 0));
 
         sysIdRoutine = new SysIdRoutine(
                 new SysIdRoutine.Config(
@@ -306,16 +304,12 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         return bestPos;
     }
 
-    public void setTarget(
-            double targetPositionRadians,
-            double targetVelocityRadiansPerSecond,
-            double targetAccelerationRadiansPerSecondSquared) {
-
+    public void setTarget(TurretState state) {
         this.targetPositionRotations = Units.radiansToRotations(
-                getClosestTurretPosition(Units.rotationsToRadians(getPositionRotations()), targetPositionRadians));
-        this.targetVelocityRotationsPerSecond = Units.radiansToRotations(targetVelocityRadiansPerSecond);
+                getClosestTurretPosition(Units.rotationsToRadians(getPositionRotations()), state.positionRadians()));
+        this.targetVelocityRotationsPerSecond = Units.radiansToRotations(state.velocityRadiansPerSecond());
         this.targetAccelerationRotationsPerSecondSquared =
-                Units.radiansToRotations(targetAccelerationRadiansPerSecondSquared);
+                Units.radiansToRotations(state.accelerationRadiansPerSecondSquared());
         setControl();
     }
 
@@ -328,9 +322,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         }
     }
 
-    @AutoLogLevel
-    public boolean atGoal() {
-        return SimpleMath.isWithinTolerance(getPositionRotations(), targetPositionRotations, POSITION_TOLERANCE);
+    public boolean atGoal(double positionToleranceRadians) {
+        return SimpleMath.isWithinTolerance(
+                getPositionRotations(), targetPositionRotations, Units.radiansToRotations(positionToleranceRadians));
     }
 
     @Override
@@ -379,6 +373,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     public void close() {
         io.close();
     }
+
+    public record TurretState(
+            double positionRadians, double velocityRadiansPerSecond, double accelerationRadiansPerSecondSquared) {}
 
     public record RobotToMechanismUpdate(Transform3d robotToMechanism, double timestamp) {}
 

@@ -92,6 +92,26 @@ public final class Constants {
         public static final double HUB_RIM_HEIGHT_METERS = Units.feetToMeters(6);
         public static final double FUEL_DIAMETER_METERS = Units.inchesToMeters(5.906);
 
+        public static final Translation3d BLUE_HUB_POSITION =
+                new Translation3d(4.625594, 4.03463, Units.feetToMeters(6));
+        public static final Translation3d RED_HUB_POSITION = new Translation3d(
+                FlippingUtil.fieldSizeX - BLUE_HUB_POSITION.getX(),
+                FlippingUtil.fieldSizeY - BLUE_HUB_POSITION.getY(),
+                BLUE_HUB_POSITION.getZ());
+
+        public static final Translation3d BLUE_PASSING_TARGET_HP_SIDE = new Translation3d(2.752, 1.664, 0.0);
+        public static final Translation3d BLUE_PASSING_TARGET_DEPOT_SIDE = new Translation3d(
+                BLUE_PASSING_TARGET_HP_SIDE.getX(), FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_HP_SIDE.getY(), 0.0);
+
+        public static final Translation3d RED_PASSING_TARGET_HP_SIDE = new Translation3d(
+                FlippingUtil.fieldSizeX - BLUE_PASSING_TARGET_HP_SIDE.getX(),
+                FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_HP_SIDE.getY(),
+                0.0);
+        public static final Translation3d RED_PASSING_TARGET_DEPOT_SIDE = new Translation3d(
+                FlippingUtil.fieldSizeX - BLUE_PASSING_TARGET_DEPOT_SIDE.getX(),
+                FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_DEPOT_SIDE.getY(),
+                0.0);
+
         private Game() {}
     }
 

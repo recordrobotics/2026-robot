@@ -1244,10 +1244,13 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                                 new Translation3d(
                                                                                 RobotContainer.shootOrchestrator
                                                                                         .getTarget()
-                                                                                        .shotCalculator()
-                                                                                        .flywheelToFuelVelocity(
-                                                                                                RobotContainer.shooter
-                                                                                                        .getFlywheelVelocityMps()),
+                                                                                        .map(
+                                                                                                t -> t.shotCalculator()
+                                                                                                        .flywheelToFuelVelocity(
+                                                                                                                RobotContainer
+                                                                                                                        .shooter
+                                                                                                                        .getFlywheelVelocityMps()))
+                                                                                        .orElse(0.0),
                                                                                 0,
                                                                                 0)
                                                                         .rotateBy(

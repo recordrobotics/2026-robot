@@ -6,33 +6,35 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.Shooter.ShooterState;
 
 public class ShootTuning extends SequentialCommandGroup {
 
-    public ShootTuning() {
-        double hoodStep =
-                (Constants.Shooter.HOOD_MIN_POSITION_RADIANS - Constants.Shooter.HOOD_MAX_POSITION_RADIANS) / 10.0;
-        double velocityStep = (18 - 6) / 10.0;
+    private static final double HOOD_STEP =
+            (Constants.Shooter.HOOD_MIN_POSITION_RADIANS - Constants.Shooter.HOOD_MAX_POSITION_RADIANS) / 10.0;
+    private static final double VELOCITY_STEP = (18 - 6) / 10.0;
 
+    public ShootTuning() {
         addRequirements(RobotContainer.shooter);
         addCommands(new InstantCommand(
                 () -> {
                     RobotContainer.shootOrchestrator.setEnableShooting(true);
-                    RobotContainer.shootOrchestrator.overrideShootAngleVelocity = true;
+                    RobotContainer.shootOrchestrator.setShooterOverride(
+                            new ShooterState(Constants.Shooter.HOOD_MAX_POSITION_RADIANS, 0, 0));
                 },
                 RobotContainer.shooter));
 
         for (double angle = Constants.Shooter.HOOD_MAX_POSITION_RADIANS;
                 angle >= Constants.Shooter.HOOD_MIN_POSITION_RADIANS;
-                angle += hoodStep) {
-            for (double velocity = 6; velocity <= 18; velocity += velocityStep) {
+                angle += HOOD_STEP) {
+            for (double velocity = 6; velocity <= 18; velocity += VELOCITY_STEP) {
                 final double finalAngle = angle;
                 final double finalVelocity = velocity;
                 addCommands(
                         new InstantCommand(
                                 () -> {
-                                    RobotContainer.shootOrchestrator.hoodAngleOverride = finalAngle;
-                                    RobotContainer.shootOrchestrator.shootVelocityOverride = finalVelocity;
+                                    RobotContainer.shootOrchestrator.setShooterOverride(
+                                            new ShooterState(finalAngle, finalVelocity, 0));
                                 },
                                 RobotContainer.shooter),
                         new WaitUntilCommand(() ->
@@ -44,7 +46,7 @@ public class ShootTuning extends SequentialCommandGroup {
         addCommands(new InstantCommand(
                 () -> {
                     RobotContainer.shootOrchestrator.setEnableShooting(false);
-                    RobotContainer.shootOrchestrator.overrideShootAngleVelocity = false;
+                    RobotContainer.shootOrchestrator.clearShooterOverride();
                 },
                 RobotContainer.shooter));
     }

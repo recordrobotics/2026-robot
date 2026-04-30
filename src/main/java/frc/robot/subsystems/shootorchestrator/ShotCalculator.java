@@ -5,8 +5,10 @@ public interface ShotCalculator {
             double shootAngleRadians,
             double fuelVelocityMagnitudeMps,
             double timeOfFlightSeconds,
-            double allowableShootAngleError,
-            double allowableVelocityMagnitudeError) {}
+            double allowableShootAngleMinRadians,
+            double allowableShootAngleMaxRadians,
+            double allowableVelocityMagnitudeMinMps,
+            double allowableVelocityMagnitudeMaxMps) {}
 
     double fuelToFlywheelVelocity(double fuelVelocityMps);
 

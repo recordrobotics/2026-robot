@@ -40,14 +40,9 @@ import org.littletonrobotics.junction.Logger;
 
 public final class Shooter extends KillableSubsystem implements PoweredSubsystem, PositionedSubsystem {
 
-    private static final double HOOD_POSITION_TOLERANCE = Units.degreesToRotations(5);
-    private static final double HOOD_VELOCITY_TOLERANCE = Units.degreesToRotations(500);
-
     private static final Velocity<VoltageUnit> SYSID_RAMP_RATE = Volts.of(1.3).per(Second);
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(0.4);
     private static final Time SYSID_TIMEOUT = Seconds.of(0.9);
-
-    private static final double FLYWHEEL_VELOCITY_TOLERANCE_MPS = 10; // TODO
 
     private static final double RESET_VOLTAGE = 1.0;
     private static final double RESET_VELOCITY_THRESHOLD = 0.01;
@@ -168,7 +163,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     }
 
     public void setTargetState(ShooterState targetState) {
-        hoodTargetPositionRotations = Units.radiansToRotations(targetState.hoodAngle);
+        hoodTargetPositionRotations = Units.radiansToRotations(targetState.hoodAngleRadians);
         flywheelTargetVelocityMps = targetState.flywheelVelocityMps;
         flywheelFeedforward = targetState.feedforward;
 
@@ -240,13 +235,21 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         }
     }
 
-    @AutoLogLevel
-    public boolean isAtTargetState() {
+    public boolean isAtTargetState(double angleToleranceRadians, double velocityToleranceMps) {
         return SimpleMath.isWithinTolerance(
-                        inputs.hoodPositionRotations, hoodTargetPositionRotations, HOOD_POSITION_TOLERANCE)
-                && SimpleMath.isWithinTolerance(inputs.hoodVelocityRotationsPerSecond, 0, HOOD_VELOCITY_TOLERANCE)
+                        inputs.hoodPositionRotations,
+                        hoodTargetPositionRotations,
+                        Units.radiansToRotations(angleToleranceRadians))
                 && SimpleMath.isWithinTolerance(
-                        inputs.flywheelVelocityMps, flywheelTargetVelocityMps, FLYWHEEL_VELOCITY_TOLERANCE_MPS);
+                        inputs.flywheelVelocityMps, flywheelTargetVelocityMps, velocityToleranceMps);
+    }
+
+    public boolean isAtTargetState(
+            double angleMinRadians, double angleMaxRadians, double velocityMinMps, double velocityMaxMps) {
+        return inputs.hoodPositionRotations >= Units.radiansToRotations(angleMinRadians)
+                && inputs.hoodPositionRotations <= Units.radiansToRotations(angleMaxRadians)
+                && inputs.flywheelVelocityMps >= velocityMinMps
+                && inputs.flywheelVelocityMps <= velocityMaxMps;
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
@@ -313,7 +316,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         io.close();
     }
 
-    public record ShooterState(double hoodAngle, double flywheelVelocityMps, double feedforward) {}
+    public record ShooterState(double hoodAngleRadians, double flywheelVelocityMps, double feedforward) {}
 
     public static class SysIdHood implements SysIdProvider {
         @Override

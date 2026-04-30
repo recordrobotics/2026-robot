@@ -21,8 +21,10 @@ public class PassingRegressionCalculator implements ShotCalculator {
                 Math.toRadians(calculateAngle(distanceToTargetMeters, robotVelocityTowardsTargetMps)),
                 calculateBallVelocity(distanceToTargetMeters, robotVelocityTowardsTargetMps),
                 calculateTimeOfFlight(distanceToTargetMeters, robotVelocityTowardsTargetMps),
-                calculateAllowableShootAngleError(distanceToTargetMeters, robotVelocityTowardsTargetMps),
-                calculateAllowableVelocityMagnitudeError(distanceToTargetMeters, robotVelocityTowardsTargetMps));
+                Math.toRadians(calculateAllowableShootAngleMin(distanceToTargetMeters, robotVelocityTowardsTargetMps)),
+                Math.toRadians(calculateAllowableShootAngleMax(distanceToTargetMeters, robotVelocityTowardsTargetMps)),
+                calculateAllowableVelocityMagnitudeMin(distanceToTargetMeters, robotVelocityTowardsTargetMps),
+                calculateAllowableVelocityMagnitudeMax(distanceToTargetMeters, robotVelocityTowardsTargetMps));
     }
 
     public static double calculateAngle(double distance, double robotVelocity) {
@@ -97,11 +99,20 @@ public class PassingRegressionCalculator implements ShotCalculator {
                 + -5.8036960984e-05 * distance4;
     }
 
-    public static double calculateAllowableShootAngleError(double distance, double robotVelocity) {
-        return 0.0; // TODO: add shoot angle error regression
+    // TODO: add regression
+    public static double calculateAllowableShootAngleMin(double distance, double robotVelocity) {
+        return calculateAngle(distance, robotVelocity) - 5;
     }
 
-    public static double calculateAllowableVelocityMagnitudeError(double distance, double robotVelocity) {
-        return 0.0; // TODO: add velocity magnitude error regression
+    public static double calculateAllowableShootAngleMax(double distance, double robotVelocity) {
+        return calculateAngle(distance, robotVelocity) + 5;
+    }
+
+    public static double calculateAllowableVelocityMagnitudeMin(double distance, double robotVelocity) {
+        return calculateBallVelocity(distance, robotVelocity) - 3.89;
+    }
+
+    public static double calculateAllowableVelocityMagnitudeMax(double distance, double robotVelocity) {
+        return calculateBallVelocity(distance, robotVelocity) + 3.89;
     }
 }

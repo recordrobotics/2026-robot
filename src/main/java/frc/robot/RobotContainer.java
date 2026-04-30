@@ -48,6 +48,7 @@ import frc.robot.utils.RuckigWarmup;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.TalonFXOrchestra;
+import frc.robot.utils.field.FieldUtils;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
@@ -305,7 +306,7 @@ public final class RobotContainer {
                         // shoot even after shift deactivates while fuel is still being scored
                         (matchData.previousHubActive() && matchData.timeSinceShift() <= HUB_SCORE_TIME - timeToScore);
 
-                if (ShootOrchestrator.isInAllianceZone() && shouldAutoShoot) {
+                if (FieldUtils.isInAllianceZone() && shouldAutoShoot) {
                     return !getControl().isShooterInvertPressed();
                 } else {
                     return getControl().isShooterInvertPressed();
