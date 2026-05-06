@@ -197,7 +197,7 @@ public class SwitchControls implements AbstractControl {
 
     @Override
     public boolean isSlowSpeedPressed() {
-        return xbox.getRawButton(11);
+        return xbox.getRawButton(11) || isIntakePressed();
     }
 
     @Override

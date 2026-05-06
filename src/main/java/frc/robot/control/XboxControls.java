@@ -197,7 +197,7 @@ public class XboxControls implements AbstractControl {
 
     @Override
     public boolean isSlowSpeedPressed() {
-        return xbox.getLeftStickButton();
+        return xbox.getLeftStickButton() || isIntakePressed();
     }
 
     @Override
