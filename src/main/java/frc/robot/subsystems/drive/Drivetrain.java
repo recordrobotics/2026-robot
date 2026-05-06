@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.*;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -34,6 +36,7 @@ import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import frc.robot.utils.TalonFXOrchestra;
+import frc.robot.utils.libraries.bumpsim.RobotBumpSim;
 import frc.robot.utils.modifiers.ControlModifierService;
 import frc.robot.utils.modifiers.ControlModifierService.ControlModifier;
 import frc.robot.utils.modifiers.DrivetrainControl;
@@ -126,12 +129,15 @@ public final class Drivetrain extends ManagedSubsystemBase {
             .withRobotMass(Kilograms.of(Constants.Frame.ROBOT_MASS_KG));
 
     private final SwerveDriveSimulation swerveDriveSimulation;
+    private final RobotBumpSim robotBumpSim;
 
     private final SwerveSetpointGenerator setpointGenerator;
     private SwerveSetpoint previousSetpoint;
 
     private int lastModifiersAppliedCount = 0;
     private SwerveModuleState[] lastModuleSetpoints = new SwerveModuleState[0];
+
+    private Pose3d lastSimPose3d = new Pose3d();
 
     public Drivetrain() throws InvalidConfigException {
         ModuleConstants[] moduleConstants = {
@@ -145,6 +151,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
 
         if (Constants.RobotState.getMode() == Mode.REAL) {
             swerveDriveSimulation = null;
+            robotBumpSim = null;
 
             for (int i = 0; i < moduleConstants.length; i++) {
                 moduleIO[i] = new SwerveModuleReal(moduleConstants[i], MODULE_DRIVE_TRACKS[i], MODULE_TURN_TRACKS[i]);
@@ -169,6 +176,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
                         MODULE_PDP_CHANNELS[i].driveChannel(),
                         MODULE_PDP_CHANNELS[i].turnChannel());
             }
+
+            robotBumpSim = new RobotBumpSim(kinematics.getModules());
         }
 
         modules = new SwerveModule[moduleConstants.length];
@@ -302,6 +311,15 @@ public final class Drivetrain extends ManagedSubsystemBase {
         for (SwerveModule module : modules) {
             module.simulationPeriodic();
         }
+
+        Pose2d simPose = swerveDriveSimulation.getSimulatedDriveTrainPose();
+
+        ChassisSpeeds fieldRelativeSpeeds = swerveDriveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative();
+        lastSimPose3d =
+                robotBumpSim.update(simPose, fieldRelativeSpeeds, SimulatedArena.getSimulationSubTicksIn1Period());
+        if (robotBumpSim.isOnRamp()) {
+            swerveDriveSimulation.setSimulationWorldPose(robotBumpSim.getSimWorldPose(simPose));
+        }
     }
 
     public void sysIdOnlyDriveMotorsSpin(Voltage volts) {
@@ -423,6 +441,10 @@ public final class Drivetrain extends ManagedSubsystemBase {
 
     public SwerveModule[] getModules() {
         return modules;
+    }
+
+    public Pose3d getLastSimPose3d() {
+        return lastSimPose3d;
     }
 
     public SwerveModulePosition[] getModulePositions() {

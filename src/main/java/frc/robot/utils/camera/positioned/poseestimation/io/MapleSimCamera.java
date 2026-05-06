@@ -1,7 +1,6 @@
 package frc.robot.utils.camera.positioned.poseestimation.io;
 
 import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -81,20 +80,20 @@ public class MapleSimCamera extends PoseEstimationCamera {
      */
     @Override
     public List<CameraPoseEstimate> makeEstimates() {
-        Pose2d maplePose = RobotContainer.model.getRobot();
+        Pose3d maplePose = RobotContainer.model.getRobot();
         if (addNoise) {
             maplePose = SimpleMath.poseNoise(maplePose, MAPLE_SIM_STDDEV, MAPLE_SIM_STDDEV);
         }
 
-        final Pose2d finalMaplePose = maplePose;
+        final Pose3d finalMaplePose = maplePose;
 
         return List.of(new CameraPoseEstimate(
-                new Pose3d(finalMaplePose),
-                Optional.of(finalMaplePose),
+                finalMaplePose,
+                Optional.of(finalMaplePose.toPose2d()),
                 MAPLE_SIM_TAGS.stream()
                         .map(tag -> new TXTYMeasurement(
-                                finalMaplePose,
-                                new Translation3d(finalMaplePose.getTranslation())
+                                finalMaplePose.toPose2d(),
+                                new Translation3d(finalMaplePose.toPose2d().getTranslation())
                                         .getDistance(tag.pose.getTranslation()),
                                 tag.ID))
                         .toList(),

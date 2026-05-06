@@ -138,6 +138,10 @@ public final class SimpleMath {
         return new Rotation3d(noise);
     }
 
+    public static Pose3d poseNoise(Pose3d pose, double stdDev, double stdDevRot) {
+        return poseNoise(pose, stdDev, stdDev, stdDev, stdDevRot, stdDevRot, stdDevRot);
+    }
+
     public static Pose3d poseNoise(
             Pose3d pose,
             double stdDevX,

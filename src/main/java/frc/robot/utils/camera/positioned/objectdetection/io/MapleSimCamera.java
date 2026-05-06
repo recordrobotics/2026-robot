@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -120,8 +119,8 @@ public class MapleSimCamera extends ObjectDetectionCamera {
     }
 
     private List<ObjectDetectionResult> getDetections() {
-        Pose2d fieldToRobot = RobotContainer.model.getRobot();
-        Pose3d fieldToCamera = new Pose3d(fieldToRobot).transformBy(getRobotToCamera());
+        Pose3d fieldToRobot = RobotContainer.model.getRobot();
+        Pose3d fieldToCamera = fieldToRobot.transformBy(getRobotToCamera());
 
         return SimulatedArena.getInstance().gamePiecesOnField().stream()
                 .map(target -> {

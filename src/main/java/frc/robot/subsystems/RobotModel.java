@@ -22,6 +22,7 @@ import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.ProjectileSimulationUtils;
 import frc.robot.utils.field.FieldIntersection;
+import frc.robot.utils.maplesim.ImprovedRebuiltFuelOnField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +37,6 @@ import java.util.function.Supplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 import org.littletonrobotics.junction.Logger;
 
 /** Represents the physical model of the robot, including mechanisms and their positions */
@@ -101,11 +101,11 @@ public final class RobotModel extends ManagedSubsystemBase {
 
     @AutoLogLevel(level = Level.SIM)
     @SuppressWarnings("java:S2325") // rest of the getters are non-static
-    public Pose2d getRobot() {
+    public Pose3d getRobot() {
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
-            return RobotContainer.drivetrain.getSwerveDriveSimulation().getSimulatedDriveTrainPose();
+            return RobotContainer.drivetrain.getLastSimPose3d();
         } else {
-            return Pose2d.kZero;
+            return Pose3d.kZero;
         }
     }
 
@@ -812,14 +812,8 @@ public final class RobotModel extends ManagedSubsystemBase {
             addFuelAtNode(fuelNodes[9]);
         }
 
-        public Pose3d getRobotPose3d() {
-            Pose2d robotPose2d = RobotContainer.model.getRobot();
-            return new Pose3d(
-                    new Translation3d(robotPose2d.getTranslation()), new Rotation3d(robotPose2d.getRotation()));
-        }
-
         public Pose3d fieldToRobotRelativePose(Pose3d fieldPose) {
-            Transform3d transform = fieldPose.minus(getRobotPose3d());
+            Transform3d transform = fieldPose.minus(RobotContainer.model.getRobot());
             return new Pose3d(transform.getTranslation(), transform.getRotation());
         }
 
@@ -1097,7 +1091,7 @@ public final class RobotModel extends ManagedSubsystemBase {
 
             SimulatedArena.getInstance()
                     .addGamePieceProjectile(new GamePieceProjectile(
-                                    RebuiltFuelOnField.REBUILT_FUEL_INFO,
+                                    ImprovedRebuiltFuelOnField.REBUILT_FUEL_INFO,
                                     fuelFieldPose.getTranslation().toTranslation2d(),
                                     ProjectileSimulationUtils.calculateInitialProjectileVelocityMPS(
                                             fuel.pose.toPose2d().getTranslation(),
@@ -1132,9 +1126,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         }
 
         public List<Pose3d> getFuelPoses() {
-            Pose2d robotPose2d = RobotContainer.model.getRobot();
-            Pose3d robotPose = new Pose3d(
-                    new Translation3d(robotPose2d.getTranslation()), new Rotation3d(robotPose2d.getRotation()));
+            Pose3d robotPose = RobotContainer.model.getRobot();
 
             return Collections.unmodifiableList(fuelObjects.stream()
                     .map(fuelObject -> robotPose.plus(
