@@ -118,7 +118,11 @@ public class SwitchControls implements AbstractControl {
         double x = Math.copySign(Math.pow(unsquaredX, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredX);
         double y = Math.copySign(Math.pow(unsquaredY, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredY);
 
-        return new Pair<>(x / 2, y / 2);
+        if (isFastSpeedPressed()) {
+            return new Pair<>(x, y);
+        } else {
+            return new Pair<>(x / 2, y / 2);
+        }
     }
 
     public Pair<Double, Double> getXYOriented() {
@@ -192,12 +196,16 @@ public class SwitchControls implements AbstractControl {
 
     @Override
     public boolean isUnstuckSpindexerPressed() {
-        return xbox.getRawButton(6);
+        return xbox.getRawButton(3); // TODO: find button index for xbox X location button
     }
 
     @Override
     public boolean isSlowSpeedPressed() {
         return xbox.getRawButton(11) || isIntakePressed();
+    }
+
+    public boolean isFastSpeedPressed() {
+        return xbox.getRawButton(6);
     }
 
     @Override
