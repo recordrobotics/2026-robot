@@ -155,7 +155,7 @@ public class IndependentSwervePoseEstimator {
         public void reset(Rotation2d gyroAngle, Translation2d position) {
             SwerveModulePosition modulePosition = module.getModulePosition();
             double distance = modulePosition.distanceMeters;
-            Rotation2d angle = modulePosition.angle.plus(gyroAngle).plus(Rotation2d.kCW_90deg);
+            Rotation2d angle = modulePosition.angle.plus(gyroAngle);
 
             reset(new Pose2d(position, angle), distance, angle);
         }
@@ -171,7 +171,7 @@ public class IndependentSwervePoseEstimator {
             double distanceTraveled = newDistance - lastDistance;
             lastDistance = newDistance;
 
-            Rotation2d newAngle = modulePosition.angle.plus(gyroAngle).plus(Rotation2d.kCW_90deg);
+            Rotation2d newAngle = modulePosition.angle.plus(gyroAngle);
 
             Translation2d movement;
             if (lastAngle.equals(newAngle)) {
@@ -180,9 +180,10 @@ public class IndependentSwervePoseEstimator {
                         new Translation2d(distanceTraveled * newAngle.getCos(), distanceTraveled * newAngle.getSin());
             } else {
                 double turnRadius = distanceTraveled / (newAngle.getRadians() - lastAngle.getRadians());
+                // integrate with constant curvature
                 movement = new Translation2d(
-                        turnRadius * (newAngle.getCos() - lastAngle.getCos()),
-                        turnRadius * (newAngle.getSin() - lastAngle.getSin()));
+                        turnRadius * (newAngle.getSin() - lastAngle.getSin()),
+                        turnRadius * (lastAngle.getCos() - newAngle.getCos()));
             }
 
             lastAngle = newAngle;
