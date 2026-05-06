@@ -25,6 +25,16 @@ public class ImprovedRebuiltFuelOnField extends RebuiltFuelOnField {
         instances.put(this, this);
     }
 
+    public ImprovedRebuiltFuelOnField(Pose2d initialPose, Translation2d initialVelocityMPS) {
+        super(initialPose.getTranslation());
+
+        super.setTransform(GeometryConvertor.toDyn4jTransform(initialPose));
+        super.setLinearVelocity(GeometryConvertor.toDyn4jVector2(initialVelocityMPS));
+
+        fuelBumpSim = new FuelBumpSim();
+        instances.put(this, this);
+    }
+
     @Override
     public Pose3d getPose3d() {
         return lastSimPose3d;

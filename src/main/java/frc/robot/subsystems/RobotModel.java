@@ -22,7 +22,6 @@ import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.ProjectileSimulationUtils;
 import frc.robot.utils.field.FieldIntersection;
-import frc.robot.utils.maplesim.ImprovedRebuiltFuelOnField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,6 +36,7 @@ import java.util.function.Supplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 import org.littletonrobotics.junction.Logger;
 
 /** Represents the physical model of the robot, including mechanisms and their positions */
@@ -1091,7 +1091,7 @@ public final class RobotModel extends ManagedSubsystemBase {
 
             SimulatedArena.getInstance()
                     .addGamePieceProjectile(new GamePieceProjectile(
-                                    ImprovedRebuiltFuelOnField.REBUILT_FUEL_INFO,
+                                    RebuiltFuelOnField.REBUILT_FUEL_INFO,
                                     fuelFieldPose.getTranslation().toTranslation2d(),
                                     ProjectileSimulationUtils.calculateInitialProjectileVelocityMPS(
                                             fuel.pose.toPose2d().getTranslation(),
