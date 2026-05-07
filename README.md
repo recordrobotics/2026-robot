@@ -93,6 +93,12 @@ An example keybinding is provided in [`.vscode/keybindings.json`](.vscode/keybin
 
 Run this command to set up a git hook that will format your code with spotless before you push: `./gradlew spotlessInstallGitPrePushHook`
 
+---
+
+## Git rebase on pull
+
+Run this command to set configure your git to rebase when code is pulled: `git config --global pull.rebase true`
+
 
 -------------------------------------------------
 [Record Robotics](https://www.recordrobotics.org/)
