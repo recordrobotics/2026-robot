@@ -15,8 +15,7 @@
     "**/.settings": true,
     "**/.svn": true,
     "**/*~": true,
-    "**/CVS": true,
-    "bin/": true
+    "**/CVS": true
   },
   "java.test.config": [
     {
