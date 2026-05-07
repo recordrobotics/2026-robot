@@ -36,8 +36,8 @@ This repository recommends the following VS Code extensions for the best develop
     </td>
     <td align="center">
       <a href="https://marketplace.visualstudio.com/items?itemName=SonarSource.sonarlint-vscode">
-        <img src="https://sonarsource.gallerycdn.vsassets.io/extensions/sonarsource/sonarlint-vscode/4.29.0/1755515927519/Microsoft.VisualStudio.Services.Icons.Default" width="64" alt="SonarLint"/><br/>
-        <b>SonarLint</b>
+        <img src="https://sonarsource.gallerycdn.vsassets.io/extensions/sonarsource/sonarlint-vscode/4.29.0/1755515927519/Microsoft.VisualStudio.Services.Icons.Default" width="64" alt="SonarQube"/><br/>
+        <b>SonarQube</b>
       </a>
     </td>
     <td align="center">
@@ -55,15 +55,15 @@ This repository recommends the following VS Code extensions for the best develop
   </tr>
 </table>
 
-### SonarLint Setup
+### SonarQube Setup
 
-To use the custom SonarLint rules configured for this repository, you need to copy the SonarLint rules from [`.vscode/settings.json`](.vscode/settings.json) into your **user settings**:
+To use the custom SonarQube rules configured for this repository, you need to copy the SonarQube rules from [`.vscode/settings.json`](.vscode/settings.json) into your **user settings**:
 
 1. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P` on Mac).
 2. Type and select **Preferences: Open User Settings (JSON)**.
 3. Copy the `"sonarlint.rules"` section from [`.vscode/settings.json`](.vscode/settings.json) into your user settings file.
 
-This ensures SonarLint uses the same code quality rules as the repository.
+This ensures SonarQube uses the same code quality rules as the repository.
 
 ### How to use Command Runner
 
