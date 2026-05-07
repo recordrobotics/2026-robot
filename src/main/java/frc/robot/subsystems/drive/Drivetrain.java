@@ -56,6 +56,13 @@ public final class Drivetrain extends ManagedSubsystemBase {
     private static final int BL = 2;
     private static final int BR = 3;
 
+    private static final SwerveModuleState[] X_HOLD_STATE = {
+        new SwerveModuleState(0, Rotation2d.fromDegrees(45.0)),
+        new SwerveModuleState(0, Rotation2d.fromDegrees(315.0)),
+        new SwerveModuleState(0, Rotation2d.fromDegrees(135.0)),
+        new SwerveModuleState(0, Rotation2d.fromDegrees(225.0))
+    };
+
     private record PDPChannel(int driveChannel, int turnChannel) {}
 
     private static final PDPChannel[] MODULE_PDP_CHANNELS = {
@@ -138,6 +145,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
     private SwerveModuleState[] lastModuleSetpoints = new SwerveModuleState[0];
 
     private Pose3d lastSimPose3d = new Pose3d();
+
+    private boolean useXHold = true;
 
     public Drivetrain() throws InvalidConfigException {
         ModuleConstants[] moduleConstants = {
@@ -280,7 +289,13 @@ public final class Drivetrain extends ManagedSubsystemBase {
 
         SwerveModuleState[] swerveModuleStates = previousSetpoint.moduleStates();
 
-        // Sets state for each module
+        if (Math.abs(previousSetpoint.robotRelativeSpeeds().vxMetersPerSecond) < 1E-3
+                && Math.abs(previousSetpoint.robotRelativeSpeeds().vyMetersPerSecond) < 1E-3
+                && Math.abs(previousSetpoint.robotRelativeSpeeds().omegaRadiansPerSecond) < 1E-3
+                && useXHold) {
+            swerveModuleStates = X_HOLD_STATE;
+        }
+
         if (!(SysIdManager.getProvider() instanceof SysIdSpin)
                 && !(SysIdManager.getProvider() instanceof SysIdForward)) {
             SwerveModuleState[] states = RobotContainer.drivetrain.getModuleStates();
