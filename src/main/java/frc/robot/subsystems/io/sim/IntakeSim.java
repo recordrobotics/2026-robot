@@ -16,6 +16,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -25,14 +26,27 @@ import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.RobotModel.FuelManager;
 import frc.robot.subsystems.io.IntakeIO;
+import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.IntakeSimulationUtils;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.TalonFXMotorGroup;
 import frc.robot.utils.TalonFXOrchestra;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.dyn4j.collision.CollisionBody;
+import org.dyn4j.collision.Fixture;
+import org.dyn4j.dynamics.Body;
+import org.dyn4j.dynamics.contact.Contact;
+import org.dyn4j.dynamics.contact.SolvedContact;
+import org.dyn4j.geometry.MassType;
 import org.dyn4j.geometry.Rectangle;
+import org.dyn4j.geometry.Vector2;
+import org.dyn4j.world.ContactCollisionData;
+import org.dyn4j.world.World;
+import org.dyn4j.world.listener.ContactListener;
 import org.ironmaple.simulation.IntakeSimulation;
+import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.littletonrobotics.junction.Logger;
 
@@ -82,6 +96,8 @@ public class IntakeSim implements IntakeIO {
     private double lastEjectTime = 0.0;
 
     private AtomicInteger rollerFuelCount = new AtomicInteger(0);
+
+    private double lastIntakeDamagedTime = 0.0;
 
     public IntakeSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
@@ -137,6 +153,15 @@ public class IntakeSim implements IntakeIO {
             }
             return passed;
         });
+
+        try {
+            Field physicsWorldField = SimulatedArena.class.getDeclaredField("physicsWorld");
+            physicsWorldField.setAccessible(true);
+            World<Body> physicsWorld = (World<Body>) physicsWorldField.get(SimulatedArena.getInstance());
+            physicsWorld.addContactListener(new BreakingContactListener());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            ConsoleLogger.logError("Failed to register intake contact listener", e);
+        }
 
         RobotContainer.pdp.registerSimDevice(9, () -> armGroup.getSimState(0).getSupplyCurrentMeasure());
         RobotContainer.pdp.registerSimDevice(10, () -> armGroup.getSimState(1).getSupplyCurrentMeasure());
@@ -220,6 +245,14 @@ public class IntakeSim implements IntakeIO {
         handleIntakeSimulation();
 
         Logger.recordOutput("Intake/SimCount", rollerFuelCount.get());
+
+        if (Timer.getTimestamp() - lastIntakeDamagedTime < 0.1) {
+            Logger.recordOutput("Intake/Damaged", true);
+            RobotContainer.getControl().vibrate(RumbleType.kBothRumble, 1);
+        } else {
+            Logger.recordOutput("Intake/Damaged", false);
+            RobotContainer.getControl().vibrate(RumbleType.kBothRumble, 0);
+        }
     }
 
     private void updateArmRotor() {
@@ -305,5 +338,59 @@ public class IntakeSim implements IntakeIO {
 
     private static double calculateVoltageMultiplier(int fuelCount) {
         return FUEL_VOLTAGE_MULTIPLIER_A / (fuelCount + FUEL_VOLTAGE_MULTIPLIER_B) / FUEL_VOLTAGE_MULTIPLIER_DIV;
+    }
+
+    public final class BreakingContactListener implements ContactListener<Body> {
+        @Override
+        public void postSolve(ContactCollisionData<Body> collision, SolvedContact contact) {
+            if (!intakeSimulation.isRunning()) return;
+
+            final CollisionBody<?> collisionBody1 = collision.getBody1(), collisionBody2 = collision.getBody2();
+            final Fixture fixture1 = collision.getFixture1(), fixture2 = collision.getFixture2();
+
+            if (collisionBody1 instanceof Body body1 && collisionBody2 instanceof Body body2) {
+                if (body1.getMass().getType() == MassType.INFINITE && fixture2 == IntakeSim.this.intakeSimulation) {
+                    processContact(contact, body2);
+                } else if (body2.getMass().getType() == MassType.INFINITE
+                        && fixture1 == IntakeSim.this.intakeSimulation) {
+                    processContact(contact, body1);
+                }
+            }
+        }
+
+        private void processContact(SolvedContact contact, Body body) {
+            Vector2 contactPoint = contact.getPoint();
+            Vector2 r = contactPoint.copy().subtract(body.getWorldCenter());
+
+            Vector2 vLinear = body.getLinearVelocity();
+            double omega = body.getAngularVelocity();
+
+            Vector2 vAngular = new Vector2(-r.y * omega, r.x * omega);
+            Vector2 vContact = vLinear.copy().add(vAngular);
+
+            double contactSpeed = vContact.getMagnitude();
+            if (contactSpeed > 0.3) {
+                lastIntakeDamagedTime = Timer.getTimestamp();
+            }
+        }
+
+        /* functions not used */
+        @Override
+        public void persist(ContactCollisionData<Body> collision, Contact oldContact, Contact newContact) {}
+
+        @Override
+        public void end(ContactCollisionData<Body> collision, Contact contact) {}
+
+        @Override
+        public void destroyed(ContactCollisionData<Body> collision, Contact contact) {}
+
+        @Override
+        public void collision(ContactCollisionData<Body> collision) {}
+
+        @Override
+        public void preSolve(ContactCollisionData<Body> collision, Contact contact) {}
+
+        @Override
+        public void begin(ContactCollisionData<Body> collision, Contact contact) {}
     }
 }
