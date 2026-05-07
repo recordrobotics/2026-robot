@@ -315,8 +315,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             shooterOnTarget = RobotContainer.shooter.isAtTargetState(Units.degreesToRadians(5), 10);
         } else {
             shooterOnTarget = RobotContainer.shooter.isAtTargetState(
-                    shootAngleToHoodAngle(shotCalculation.allowableShootAngleMinRadians()),
-                    shootAngleToHoodAngle(shotCalculation.allowableShootAngleMaxRadians()),
+                    shotCalculation.allowableShootAngleMinRadians(),
+                    shotCalculation.allowableShootAngleMaxRadians(),
                     target.shotCalculator.fuelToFlywheelVelocity(shotCalculation.allowableVelocityMagnitudeMinMps()),
                     target.shotCalculator.fuelToFlywheelVelocity(shotCalculation.allowableVelocityMagnitudeMaxMps()));
         }

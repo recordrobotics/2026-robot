@@ -108,18 +108,18 @@ public class HubRegressionCalculator implements ShotCalculator {
 
     // TODO: add regression
     public static double calculateAllowableShootAngleMin(double distance, double robotVelocity) {
-        return calculateAngle(distance, robotVelocity) - 5;
+        return -5;
     }
 
     public static double calculateAllowableShootAngleMax(double distance, double robotVelocity) {
-        return calculateAngle(distance, robotVelocity) + 5;
+        return 5;
     }
 
     public static double calculateAllowableVelocityMagnitudeMin(double distance, double robotVelocity) {
-        return calculateBallVelocity(distance, robotVelocity) - 3.89;
+        return -3.89;
     }
 
     public static double calculateAllowableVelocityMagnitudeMax(double distance, double robotVelocity) {
-        return calculateBallVelocity(distance, robotVelocity) + 3.89;
+        return 3.89;
     }
 }

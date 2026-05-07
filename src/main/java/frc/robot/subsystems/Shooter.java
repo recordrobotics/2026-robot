@@ -246,10 +246,11 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
     public boolean isAtTargetState(
             double angleMinRadians, double angleMaxRadians, double velocityMinMps, double velocityMaxMps) {
-        return inputs.hoodPositionRotations >= Units.radiansToRotations(angleMinRadians)
-                && inputs.hoodPositionRotations <= Units.radiansToRotations(angleMaxRadians)
-                && inputs.flywheelVelocityMps >= velocityMinMps
-                && inputs.flywheelVelocityMps <= velocityMaxMps;
+        return inputs.hoodPositionRotations >= Units.radiansToRotations(angleMinRadians) + hoodTargetPositionRotations
+                && inputs.hoodPositionRotations
+                        <= Units.radiansToRotations(angleMaxRadians) + hoodTargetPositionRotations
+                && inputs.flywheelVelocityMps >= velocityMinMps + flywheelTargetVelocityMps
+                && inputs.flywheelVelocityMps <= velocityMaxMps + flywheelTargetVelocityMps;
     }
 
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
