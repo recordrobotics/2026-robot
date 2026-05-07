@@ -21,7 +21,9 @@ public interface AbstractControl {
 
     boolean isClimbPressed();
 
-    boolean isShooterInvertPressed();
+    boolean isShooterPassPressed();
+
+    boolean isShooterDisableShootPressed();
 
     boolean isUnstuckSpindexerPressed();
 

@@ -272,7 +272,12 @@ public class TestControlBridge implements AbstractControl {
     }
 
     @Override
-    public boolean isShooterInvertPressed() {
+    public boolean isShooterPassPressed() {
+        return false; // TODO
+    }
+
+    @Override
+    public boolean isShooterDisableShootPressed() {
         return false; // TODO
     }
 

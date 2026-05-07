@@ -190,8 +190,13 @@ public class XboxControls implements AbstractControl {
     }
 
     @Override
-    public boolean isShooterInvertPressed() {
+    public boolean isShooterPassPressed() {
         return xbox.getRightTriggerAxis() > 0.75;
+    }
+
+    @Override
+    public boolean isShooterDisableShootPressed() {
+        return xbox.getYButton();
     }
 
     @Override

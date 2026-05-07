@@ -307,12 +307,12 @@ public final class RobotContainer {
                         (matchData.previousHubActive() && matchData.timeSinceShift() <= HUB_SCORE_TIME - timeToScore);
 
                 if (FieldUtils.isInAllianceZone() && shouldAutoShoot) {
-                    return !getControl().isShooterInvertPressed();
+                    return !getControl().isShooterDisableShootPressed();
                 } else {
-                    return getControl().isShooterInvertPressed();
+                    return getControl().isShooterPassPressed();
                 }
             case FIXED:
-                return getControl().isShooterInvertPressed();
+                return getControl().isShooterPassPressed();
             default:
                 return false;
         }

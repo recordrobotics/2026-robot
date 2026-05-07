@@ -190,8 +190,13 @@ public class SwitchControls implements AbstractControl {
     }
 
     @Override
-    public boolean isShooterInvertPressed() {
+    public boolean isShooterPassPressed() {
         return xbox.getRawButton(8);
+    }
+
+    @Override
+    public boolean isShooterDisableShootPressed() {
+        return xbox.getRawButton(4); // TODO: find button index for xbox Y location button
     }
 
     @Override

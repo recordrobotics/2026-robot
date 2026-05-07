@@ -165,8 +165,13 @@ public class JoystickControls implements AbstractControl {
     }
 
     @Override
-    public boolean isShooterInvertPressed() {
+    public boolean isShooterPassPressed() {
         return joystick.getRawButton(1);
+    }
+
+    @Override
+    public boolean isShooterDisableShootPressed() {
+        return joystick.getRawButton(10);
     }
 
     @Override
