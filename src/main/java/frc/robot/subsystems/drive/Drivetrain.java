@@ -82,7 +82,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
         TalonFXOrchestra.Tracks.BR_TURN
     };
 
-    private static final boolean DEBUG_LOG_MODIFIERS = true;
+    private static final boolean DEBUG_LOG_MODIFIERS = false;
 
     private static final Velocity<VoltageUnit> SYSID_DRIVE_RAMP_RATE =
             Volts.of(3.0).per(Second);
@@ -146,7 +146,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
 
     private Pose3d lastSimPose3d = new Pose3d();
 
-    private boolean useXHold = true;
+    private boolean useXHold = false;
 
     public Drivetrain() throws InvalidConfigException {
         ModuleConstants[] moduleConstants = {

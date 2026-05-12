@@ -50,7 +50,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     private static final double RESET_VELOCITY_THRESHOLD = 0.001;
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
-    private static final LoggedNetworkNumber ffMul = new LoggedNetworkNumber("TURRET_FFMUL", 1.0);
+    private static final LoggedNetworkNumber ffMul = new LoggedNetworkNumber("TURRET_FFMUL", 0.72);
+    private static final LoggedNetworkNumber ffSpring = new LoggedNetworkNumber("TURRET_FFSPRING", 1.11);
 
     private final TurretIO io;
     private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
@@ -137,6 +138,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         disconnectedAlert.set(!inputs.connected);
 
         Constants.Turret.FF_MUL = ffMul.get();
+        Constants.Turret.TURRET_SPRING_VOLTS = ffSpring.get();
 
         if (inputs.limitSwitchStates.hasFault()) {
             positionStatus = PositionStatus.SENSOR_FAULT;
@@ -247,11 +249,11 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         return inputs.positionRotations + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS;
     }
 
-    private double getSpringFeedforward() {
+    private double getSpringFeedforward(double velocityRotationsPerSecond) {
         double pos = inputs.positionRotations;
-        return pos > Constants.Turret.TURRET_SPRING_START_POS
+        return (pos > Constants.Turret.TURRET_SPRING_START_POS && velocityRotationsPerSecond > 0)
                 ? Constants.Turret.TURRET_SPRING_VOLTS
-                : pos < Constants.Turret.TURRET_SPRING_START_NEG ? -Constants.Turret.TURRET_SPRING_VOLTS : 0;
+                : (pos < Constants.Turret.TURRET_SPRING_START_NEG && velocityRotationsPerSecond < 0) ? -Constants.Turret.TURRET_SPRING_VOLTS : 0;
     }
 
     private double feedforward(double velocityRotationsPerSecond, double accelerationRotationsPerSecondSquared) {
@@ -264,7 +266,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                                         + Constants.Turret.KA * accelerationRotationsPerSecondSquared
                                         + Constants.Turret.KS * Math.signum(velocityRotationsPerSecond)
                                         + Constants.Turret.KVP * velocityError
-                                        + getSpringFeedforward()))
+                                        + getSpringFeedforward(velocityRotationsPerSecond)))
                 * Constants.Turret.FF_MUL;
     }
 

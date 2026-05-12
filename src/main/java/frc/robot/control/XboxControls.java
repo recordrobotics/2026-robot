@@ -65,6 +65,10 @@ public class XboxControls implements AbstractControl {
                     target.getRadians());
         } else {
             spinOutput = 0;
+            spinController.reset(RobotContainer.poseSensorFusion
+                    .getEstimatedPosition()
+                    .getRotation()
+                    .getRadians());
         }
 
         Pair<Double, Double> xy = getXYOriented();

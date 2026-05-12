@@ -309,8 +309,8 @@ public final class Constants {
         public static final double XBOX_SPIN_THRESHOLD = 0.1;
         public static final double XBOX_XY_EXPONENT = 3;
         public static final double XBOX_SPIN_EXPONENT = 5;
-        public static final double SPIN_KP = 5;
-        public static final double SPIN_KD = 0.4;
+        public static final double SPIN_KP = 4;
+        public static final double SPIN_KD = 0.28;
         public static final Constraints SPIN_CONSTRAINTS = new Constraints(
                 Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS, Constants.Swerve.MAX_ANGULAR_ACCELERATION_RADIANS);
         public static final double JOYSTICK_ABSOLUTE_SPIN_THRESHOLD = 0.9;
@@ -564,9 +564,9 @@ public final class Constants {
         public static final double KS = 0.3;
         public static final double KV = 2.1;
         public static final double KA_MM = 0.01;
-        public static final double KA = 0.1;
+        public static final double KA = 0.25;
         public static final double KVP = 0.2;
-        public static double FF_MUL = 1.0;
+        public static double FF_MUL = 0.72;
 
         public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(40);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
@@ -592,9 +592,9 @@ public final class Constants {
         public static final double BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CW = 0.453125;
         public static final double BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CCW = 0.437012;
 
-        public static final double TURRET_SPRING_START_POS = 0.21;
-        public static final double TURRET_SPRING_START_NEG = -0.159;
-        public static final double TURRET_SPRING_VOLTS = 0.2;
+        public static final double TURRET_SPRING_START_POS = 0.20;
+        public static final double TURRET_SPRING_START_NEG = -0.11;
+        public static double TURRET_SPRING_VOLTS = 1.11;
 
         public static final double STARTING_POSITION_RADIANS = Units.degreesToRadians(90.0);
 
