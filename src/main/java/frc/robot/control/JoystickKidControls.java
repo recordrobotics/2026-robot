@@ -111,15 +111,13 @@ public class JoystickKidControls implements AbstractControl {
     public Double getKidX() {
         double unsquaredX = SimpleMath.applyThresholdAndSensitivity(
                 kidJoystick.getX(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
-        double x = Math.copySign(Math.pow(unsquaredX, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredX);
-        return x;
+        return Math.copySign(Math.pow(unsquaredX, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredX);
     }
 
     public Double getKidY() {
         double unsquaredY = SimpleMath.applyThresholdAndSensitivity(
                 kidJoystick.getY(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
-        double y = Math.copySign(Math.pow(unsquaredY, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredY);
-        return y;
+        return Math.copySign(Math.pow(unsquaredY, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredY);
     }
 
     public Pair<Double, Double> getXYOriented() {
@@ -149,33 +147,27 @@ public class JoystickKidControls implements AbstractControl {
 
     public double getDirectionalSpeedLevel() {
         // Remaps speed meter from -1 -> 1 to 0.5 -> 4, then returns
-        double speed = SimpleMath.remap(
+        return SimpleMath.remap(
                 joystick.getRawAxis(3),
                 1,
                 -1,
                 Constants.Control.DIRECTIONAL_SPEED_METER_LOW,
                 Constants.Swerve.MAX_MODULE_SPEED);
-
-        return speed;
     }
 
     @Override
     public double getKidsSpeedLevel() {
-        double speed = SimpleMath.remap(kidJoystick.getRawAxis(3), 1, -1, 0, 1);
-
-        return speed;
+        return SimpleMath.remap(kidJoystick.getRawAxis(3), 1, -1, 0, 1);
     }
 
     public Double getSpinSpeedLevel() {
         // Remaps speed meter from -1 -> 1 to 0.5 -> MAX, then returns
-        double speed = SimpleMath.remap(
+        return SimpleMath.remap(
                 joystick.getRawAxis(3),
                 1,
                 -1,
                 Constants.Control.SPIN_SPEED_METER_LOW,
                 Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS / 3);
-
-        return speed;
     }
 
     @Override
@@ -214,8 +206,13 @@ public class JoystickKidControls implements AbstractControl {
     }
 
     @Override
-    public boolean isShooterInvertPressed() {
+    public boolean isShooterPassPressed() {
         return joystick.getRawButton(1);
+    }
+
+    @Override
+    public boolean isShooterDisableShootPressed() {
+        return joystick.getRawButton(10);
     }
 
     @Override
