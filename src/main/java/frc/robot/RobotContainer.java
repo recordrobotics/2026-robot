@@ -505,7 +505,7 @@ public final class RobotContainer {
 
         new Trigger(shootTuningButton)
                 .onTrue(Commands.runOnce(() -> shootTuningButton.set(false)).andThen(new ShootTuning()));
-                
+
         new Trigger(joystickTurretButton).whileTrue(new JoystickTurret().ignoringDisable(true));
         new Trigger(RobotContainer.turretSweepEnabled).whileTrue(KidsTurretSweep.createCommand());
     }
