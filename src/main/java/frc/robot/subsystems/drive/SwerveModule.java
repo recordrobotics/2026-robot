@@ -17,13 +17,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.subsystems.io.SwerveModuleIOInputsAutoLogged;
 import frc.robot.utils.ModuleConstants;
 import frc.robot.utils.SysIdManager;
+import frc.robot.utils.wrappers.SafeAlert;
 import org.littletonrobotics.junction.Logger;
 
 public final class SwerveModule {
@@ -50,11 +51,11 @@ public final class SwerveModule {
 
     private final String name;
 
-    private final Alert absEncoderErrorAlert;
-    private final Alert absEncoderWarningAlert;
+    private final SafeAlert absEncoderErrorAlert;
+    private final SafeAlert absEncoderWarningAlert;
 
-    private final Alert driveDisconnectedAlert;
-    private final Alert turnDisconnectedAlert;
+    private final SafeAlert driveDisconnectedAlert;
+    private final SafeAlert turnDisconnectedAlert;
 
     /**
      * Constructs a SwerveModule with a drive motor, turning motor, and absolute turning encoder.
@@ -144,11 +145,11 @@ public final class SwerveModule {
             inputs.turnMotorPositionRotations = inputs.encoderPositionRotations;
         }
 
-        absEncoderErrorAlert = new Alert("", Alert.AlertType.kError);
-        absEncoderWarningAlert = new Alert("", Alert.AlertType.kWarning);
+        absEncoderErrorAlert = new SafeAlert("", AlertType.kError);
+        absEncoderWarningAlert = new SafeAlert("", AlertType.kWarning);
 
-        driveDisconnectedAlert = new Alert(name + " drive motor disconnected", Alert.AlertType.kError);
-        turnDisconnectedAlert = new Alert(name + " turn motor disconnected", Alert.AlertType.kError);
+        driveDisconnectedAlert = new SafeAlert(name + " drive motor disconnected", AlertType.kError);
+        turnDisconnectedAlert = new SafeAlert(name + " turn motor disconnected", AlertType.kError);
 
         updateAbsEncoderAlert();
 

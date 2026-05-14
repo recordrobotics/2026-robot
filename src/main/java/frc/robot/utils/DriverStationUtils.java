@@ -2,6 +2,7 @@ package frc.robot.utils;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Optional;
@@ -9,9 +10,16 @@ import java.util.OptionalDouble;
 
 public final class DriverStationUtils {
 
+    private static Command practiceModeDetectionCommand;
+
     private static boolean inPracticeMode = false;
+    private static double teleopInitMatchTime = 0;
 
     private DriverStationUtils() {}
+
+    static {
+        practiceModeDetectionCommand = getPracticeModeDetectionCommand();
+    }
 
     public static Alliance getCurrentAlliance() {
         Optional<Alliance> alliance = DriverStation.getAlliance();
@@ -28,24 +36,31 @@ public final class DriverStationUtils {
         // Practice mode detection is only without FMS
         if (DriverStation.isFMSAttached()) return;
 
-        final double teleopInitMatchTime = DriverStation.getMatchTime();
-        CommandScheduler.getInstance().schedule(Commands.waitUntil(() -> {
-            double matchTime = DriverStation.getMatchTime();
+        teleopInitMatchTime = DriverStation.getMatchTime();
+        practiceModeDetectionCommand = getPracticeModeDetectionCommand();
+        CommandScheduler.getInstance().schedule(practiceModeDetectionCommand);
+    }
 
-            if (matchTime == -1) {
-                // Match time not valid, can't be in practice mode
-                return true;
-            }
+    private static Command getPracticeModeDetectionCommand() {
+        return Commands.waitUntil(DriverStationUtils::practiceModeDetection);
+    }
 
-            if (Math.abs(teleopInitMatchTime - matchTime) < 1e-4) return false; // Wait for update
+    private static boolean practiceModeDetection() {
+        double matchTime = DriverStation.getMatchTime();
 
-            // After update, make sure the match time goes down instead of up
-            if (matchTime < teleopInitMatchTime) {
-                inPracticeMode = true;
-            }
-
+        if (matchTime == -1) {
+            // Match time not valid, can't be in practice mode
             return true;
-        }));
+        }
+
+        if (Math.abs(teleopInitMatchTime - matchTime) < 1e-4) return false; // Wait for update
+
+        // After update, make sure the match time goes down instead of up
+        if (matchTime < teleopInitMatchTime) {
+            inPracticeMode = true;
+        }
+
+        return true;
     }
 
     public static boolean isInPracticeMode() {
@@ -117,11 +132,7 @@ public final class DriverStationUtils {
         }
 
         // Shift was is active for blue if red won auto, or red if blue won auto.
-        boolean shift1Active =
-                switch (alliance.get()) {
-                    case Red -> !redInactiveFirst;
-                    case Blue -> redInactiveFirst;
-                };
+        boolean shift1Active = alliance.get() == Alliance.Red ? !redInactiveFirst : redInactiveFirst;
 
         if (matchTime > 130) {
             // Transition shift, hub is active.

@@ -17,7 +17,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,6 +34,7 @@ import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
+import frc.robot.utils.wrappers.SafeAlert;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -91,7 +91,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
 
     private double lastNotNegativePositionTime = 0;
 
-    private final Alert wheelDisconnectedAlert = new Alert("Intake roller disconnected!", AlertType.kError);
+    private final SafeAlert wheelDisconnectedAlert = new SafeAlert("Intake roller disconnected!", AlertType.kError);
 
     public enum IntakeState {
         INTAKE,

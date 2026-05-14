@@ -1,6 +1,7 @@
 package frc.robot.utils.camera;
 
-import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.utils.wrappers.SafeAlert;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -30,13 +31,13 @@ public abstract class GenericCamera {
     /**
      * ERROR Alert for when the camera is disconnected.
      */
-    private final Alert disconnectedAlert;
+    private final SafeAlert disconnectedAlert;
 
     /**
      * WARNING Alert for when the camera is disabled.
      * <p>Less severe because the user intentionally disabled it.
      */
-    private final Alert disabledAlert;
+    private final SafeAlert disabledAlert;
 
     /**
      * Constructs a GenericCamera with the given name and physical camera type.
@@ -49,10 +50,10 @@ public abstract class GenericCamera {
         this.name = name;
         this.physicalCamera = physicalCamera;
 
-        this.disconnectedAlert = new Alert("Camera " + name + " disconnected!", Alert.AlertType.kError);
+        this.disconnectedAlert = new SafeAlert("Camera " + name + " disconnected!", AlertType.kError);
         disconnectedAlert.set(true);
 
-        this.disabledAlert = new Alert("Camera " + name + " disabled!", Alert.AlertType.kWarning);
+        this.disabledAlert = new SafeAlert("Camera " + name + " disabled!", AlertType.kWarning);
         disabledAlert.set(!enabled);
 
         // Allow camera enable/disable from dashboard

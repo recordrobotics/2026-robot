@@ -18,7 +18,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,6 +36,7 @@ import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
+import frc.robot.utils.wrappers.SafeAlert;
 import java.util.Arrays;
 import org.littletonrobotics.junction.Logger;
 
@@ -64,7 +64,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     private double lastMovementTime = 0;
     private boolean overrideKnown = false;
 
-    private final Alert disconnectedAlert = new Alert("Climber disconnected!", AlertType.kError);
+    private final SafeAlert disconnectedAlert = new SafeAlert("Climber disconnected!", AlertType.kError);
 
     public Climber(ClimberIO io) {
         this.io = io;

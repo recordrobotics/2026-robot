@@ -400,29 +400,28 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
 
             double stdDev = calculateStdDevs(fusion, estimate);
 
-            Optional<Pose2d> pose;
+            Pose2d pose;
 
             if (forceUnconstrained || (forceUnconstrainedWhenDisabled && DriverStation.isDisabled())) {
-                pose = Optional.of(estimate.unconstrainedPose().toPose2d());
+                pose = estimate.unconstrainedPose().toPose2d();
             } else {
                 Optional<TXTYMeasurement> txtyMeasurement = findValidTXTY(estimate, txtyId);
 
                 if (txtyMeasurement.isPresent()) {
-                    pose = Optional.of(txtyMeasurement.get().pose());
+                    pose = txtyMeasurement.get().pose();
                     stdDev = getPhysicalCamera().txtyStdDevs;
                 } else {
                     pose = choosePoseEstimate(estimate);
                 }
             }
 
-            if (pose.isPresent()
-                    && SimpleMath.isInField(pose.get())
-                    && (pose.get().getTranslation().getDistance(currentEstimate.getTranslation())
+            if (SimpleMath.isInField(pose)
+                    && (pose.getTranslation().getDistance(currentEstimate.getTranslation())
                                     <= maxDistanceToCurrentEstimate
                             || !SimpleMath.isInField(currentEstimate.getTranslation()))) {
                 lastStdDev = stdDev;
                 fusion.addVisionMeasurement(
-                        pose.get(),
+                        pose,
                         estimate.timestampSeconds(),
                         VecBuilder.fill(
                                 stdDev,
@@ -482,12 +481,12 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
      * @param estimate The camera pose estimate.
      * @return An optional chosen pose estimate.
      */
-    private Optional<Pose2d> choosePoseEstimate(CameraPoseEstimate estimate) {
+    private Pose2d choosePoseEstimate(CameraPoseEstimate estimate) {
         if (estimate.avgTagDist() <= unconstrainedMaxDistance) {
-            return Optional.of(estimate.unconstrainedPose().toPose2d());
+            return estimate.unconstrainedPose().toPose2d();
         } else {
             return estimate.constrainedPose()
-                    .or(() -> Optional.of(estimate.unconstrainedPose().toPose2d()));
+                    .orElse(estimate.unconstrainedPose().toPose2d());
         }
     }
 

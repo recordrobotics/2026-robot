@@ -38,6 +38,7 @@ public class ImprovedMapleMatch {
     public ImprovedMapleMatch() {
         sendActiveState();
         sendScore();
+        DriverStationSim.notifyNewData();
     }
 
     public void sendActiveState() {
@@ -87,6 +88,7 @@ public class ImprovedMapleMatch {
         nextShiftBlueActive = false;
 
         DriverStationSim.setGameSpecificMessage("");
+        DriverStationSim.notifyNewData();
         redActive = true;
         blueActive = true;
         sendActiveState();
@@ -105,6 +107,7 @@ public class ImprovedMapleMatch {
         }
 
         DriverStationSim.setGameSpecificMessage(redInactiveFirst ? "R" : "B");
+        DriverStationSim.notifyNewData();
     }
 
     public void updateActiveStates() {

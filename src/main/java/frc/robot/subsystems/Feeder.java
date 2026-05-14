@@ -10,7 +10,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -27,6 +27,7 @@ import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
+import frc.robot.utils.wrappers.SafeAlert;
 import org.littletonrobotics.junction.Logger;
 
 public final class Feeder extends KillableSubsystem implements PoweredSubsystem {
@@ -48,14 +49,15 @@ public final class Feeder extends KillableSubsystem implements PoweredSubsystem 
     private double targetVelocityRps;
     private FeederState targetState = FeederState.OFF;
 
-    private final Alert bottomBeambreakFaultAlert = new Alert("Feeder bottom beambreak fault", Alert.AlertType.kError);
-    private final Alert topBeambreakFaultAlert = new Alert("Feeder top beambreak fault", Alert.AlertType.kError);
-    private final Alert bottomBeambreakDisconnectedAlert =
-            new Alert("Feeder bottom beambreak disconnected", Alert.AlertType.kError);
-    private final Alert topBeambreakDisconnectedAlert =
-            new Alert("Feeder top beambreak disconnected", Alert.AlertType.kError);
+    private final SafeAlert bottomBeambreakFaultAlert =
+            new SafeAlert("Feeder bottom beambreak fault", AlertType.kError);
+    private final SafeAlert topBeambreakFaultAlert = new SafeAlert("Feeder top beambreak fault", AlertType.kError);
+    private final SafeAlert bottomBeambreakDisconnectedAlert =
+            new SafeAlert("Feeder bottom beambreak disconnected", AlertType.kError);
+    private final SafeAlert topBeambreakDisconnectedAlert =
+            new SafeAlert("Feeder top beambreak disconnected", AlertType.kError);
 
-    private final Alert disconnectedAlert = new Alert("Feeder disconnected!", Alert.AlertType.kError);
+    private final SafeAlert disconnectedAlert = new SafeAlert("Feeder disconnected!", AlertType.kError);
 
     private double lastBottomBeamNotbrokenTime = 0;
     private double lastTopBeamNotbrokenTime = 0;

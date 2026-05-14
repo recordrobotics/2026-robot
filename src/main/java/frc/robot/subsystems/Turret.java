@@ -18,7 +18,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -35,6 +35,7 @@ import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
+import frc.robot.utils.wrappers.SafeAlert;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -63,7 +64,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     private double targetVelocityRotationsPerSecond;
     private double targetAccelerationRotationsPerSecondSquared;
 
-    private Alert disconnectedAlert = new Alert("Turret disconnected!", Alert.AlertType.kError);
+    private SafeAlert disconnectedAlert = new SafeAlert("Turret disconnected!", AlertType.kError);
 
     private PositionStatus positionStatus = PositionStatus.UNKNOWN;
 
@@ -253,7 +254,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         double pos = inputs.positionRotations;
         return (pos > Constants.Turret.TURRET_SPRING_START_POS && velocityRotationsPerSecond > 0)
                 ? Constants.Turret.TURRET_SPRING_VOLTS
-                : (pos < Constants.Turret.TURRET_SPRING_START_NEG && velocityRotationsPerSecond < 0) ? -Constants.Turret.TURRET_SPRING_VOLTS : 0;
+                : (pos < Constants.Turret.TURRET_SPRING_START_NEG && velocityRotationsPerSecond < 0)
+                        ? -Constants.Turret.TURRET_SPRING_VOLTS
+                        : 0;
     }
 
     private double feedforward(double velocityRotationsPerSecond, double accelerationRotationsPerSecondSquared) {

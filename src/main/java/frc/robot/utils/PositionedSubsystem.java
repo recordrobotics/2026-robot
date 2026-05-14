@@ -1,7 +1,7 @@
 package frc.robot.utils;
 
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.utils.wrappers.SafeAlert;
 import java.util.WeakHashMap;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -38,7 +38,8 @@ public interface PositionedSubsystem {
 
         private static PositionedSubsystemManager instance;
 
-        private record Entry(Alert warningAlert, Alert errorAlert, String name, LoggedNetworkBoolean overrideKnown) {
+        private record Entry(
+                SafeAlert warningAlert, SafeAlert errorAlert, String name, LoggedNetworkBoolean overrideKnown) {
 
             private void setWarning(String errorMessage) {
                 warningAlert.setText(errorMessage);
@@ -72,8 +73,8 @@ public interface PositionedSubsystem {
             subsystems.put(
                     subsystem,
                     new Entry(
-                            new Alert("", AlertType.kWarning),
-                            new Alert("", AlertType.kError),
+                            new SafeAlert("", AlertType.kWarning),
+                            new SafeAlert("", AlertType.kError),
                             name,
                             new LoggedNetworkBoolean("Positioned/" + name + "/OverrideKnown", false)));
         }

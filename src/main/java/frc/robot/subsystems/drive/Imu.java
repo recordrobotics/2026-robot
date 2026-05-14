@@ -6,12 +6,12 @@ import com.ctre.phoenix6.configs.MountPoseConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.ImuIO;
 import frc.robot.subsystems.io.ImuIOInputsAutoLogged;
 import frc.robot.utils.ManagedSubsystemBase;
+import frc.robot.utils.wrappers.SafeAlert;
 import org.littletonrobotics.junction.Logger;
 
 public final class Imu extends ManagedSubsystemBase {
@@ -34,7 +34,7 @@ public final class Imu extends ManagedSubsystemBase {
     private double jerkX;
     private double jerkY;
 
-    private final Alert disconnectedAlert = new Alert("Imu disconnected!", AlertType.kError);
+    private final SafeAlert disconnectedAlert = new SafeAlert("Imu disconnected!", AlertType.kError);
 
     public Imu(ImuIO io) {
         this.io = io;

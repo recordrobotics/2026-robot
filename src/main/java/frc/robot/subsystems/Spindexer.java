@@ -10,7 +10,6 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -26,6 +25,7 @@ import frc.robot.utils.PoweredSubsystem;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
+import frc.robot.utils.wrappers.SafeAlert;
 import org.littletonrobotics.junction.Logger;
 
 public final class Spindexer extends KillableSubsystem implements PoweredSubsystem {
@@ -39,7 +39,7 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
     private final MotionMagicVelocityVoltage request = new MotionMagicVelocityVoltage(0.0);
     private final VoltageOut voltageRequest = new VoltageOut(0.0);
 
-    private final Alert disconnectedAlert = new Alert("Spindexer disconnected!", AlertType.kError);
+    private final SafeAlert disconnectedAlert = new SafeAlert("Spindexer disconnected!", AlertType.kError);
 
     private double targetVelocityRps;
     private SpindexerState targetState = SpindexerState.OFF;

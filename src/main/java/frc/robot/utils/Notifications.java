@@ -1,16 +1,16 @@
 package frc.robot.utils;
 
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
+import frc.robot.utils.wrappers.SafeAlert;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class Notifications {
 
-    private static List<Alert> alerts = new ArrayList<>();
+    private static List<SafeAlert> alerts = new ArrayList<>();
 
     private Notifications() {}
 
@@ -30,7 +30,7 @@ public final class Notifications {
                     default -> AlertType.kInfo;
                 };
 
-        Alert alert = new Alert(title + " - " + description, alertType);
+        SafeAlert alert = new SafeAlert(title + " - " + description, alertType);
         alerts.add(alert);
         alert.set(true);
     }

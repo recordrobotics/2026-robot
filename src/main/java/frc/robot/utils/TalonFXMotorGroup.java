@@ -8,9 +8,9 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.Constants;
+import frc.robot.utils.wrappers.SafeAlert;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,8 +40,8 @@ public class TalonFXMotorGroup implements AutoCloseable {
     private boolean lostAllMotors = false;
     private double lastPositionSet = 0;
 
-    private final Alert errorAlert = new Alert("", AlertType.kError);
-    private final Alert lostAllMotorPositionsAlert = new Alert("", AlertType.kWarning);
+    private final SafeAlert errorAlert = new SafeAlert("", AlertType.kError);
+    private final SafeAlert lostAllMotorPositionsAlert = new SafeAlert("", AlertType.kWarning);
 
     public TalonFXMotorGroup(String groupName, MotorConfig... motors) {
         this.groupName = groupName;

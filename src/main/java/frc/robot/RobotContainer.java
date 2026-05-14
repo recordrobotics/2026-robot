@@ -3,7 +3,6 @@ package frc.robot;
 import com.google.common.primitives.ImmutableIntArray;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -52,6 +51,7 @@ import frc.robot.utils.field.FieldUtils;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
+import frc.robot.utils.wrappers.SafeAlert;
 import java.util.EnumSet;
 import java.util.Objects;
 import org.ironmaple.simulation.motorsims.SimulatedBattery;
@@ -112,7 +112,7 @@ public final class RobotContainer {
     private static final double HUB_SCORE_TIME =
             1; // hub allows 1 second for fuel to score after deactivation (maybe 3 but 1 safer)
 
-    private static Alert noEncoderResetAlert;
+    private static SafeAlert noEncoderResetAlert;
 
     private static final LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
     private static final LoggedDashboardChooser<AbstractControl> driveMode = new LoggedDashboardChooser<>("Drive Mode");
@@ -136,7 +136,7 @@ public final class RobotContainer {
 
         RobotController.setBrownoutVoltage(5.75);
 
-        noEncoderResetAlert = new Alert("Encoders not reset!", AlertType.kError);
+        noEncoderResetAlert = new SafeAlert("Encoders not reset!", AlertType.kError);
 
         EnumSet.allOf(ShootMode.class).forEach(v -> shootModeChooser.addOption(v.name(), v));
         shootModeChooser.addDefaultOption(ShootMode.AUTO.name(), ShootMode.AUTO);
