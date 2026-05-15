@@ -52,7 +52,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
     private static final LoggedNetworkNumber ffMul = new LoggedNetworkNumber("TURRET_FFMUL", 0.72);
-    private static final LoggedNetworkNumber ffSpring = new LoggedNetworkNumber("TURRET_FFSPRING", 1.11);
+    private static final LoggedNetworkNumber ffSpringLow = new LoggedNetworkNumber("TURRET_FFSPRING_LOW", 1.11);
+    private static final LoggedNetworkNumber ffSpringHigh = new LoggedNetworkNumber("TURRET_FFSPRING_HIGH", 1.11);
+    private static final LoggedNetworkNumber lookaheadTime = new LoggedNetworkNumber("TURRET_LOOKAHEAD", 0.1);
 
     private final TurretIO io;
     private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
@@ -139,7 +141,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         disconnectedAlert.set(!inputs.connected);
 
         Constants.Turret.FF_MUL = ffMul.get();
-        Constants.Turret.TURRET_SPRING_VOLTS = ffSpring.get();
+        Constants.Turret.TURRET_SPRING_LOW_VOLTS = ffSpringLow.get();
+        Constants.Turret.TURRET_SPRING_HIGH_VOLTS = ffSpringHigh.get();
+        Constants.Turret.LOOKAHEAD_TIME = lookaheadTime.get();
 
         if (inputs.limitSwitchStates.hasFault()) {
             positionStatus = PositionStatus.SENSOR_FAULT;
@@ -213,7 +217,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
                 && !isForceDisabled()
                 && !(SysIdManager.getProvider() instanceof SysId)) {
             io.setControl(turretRequest
-                    .withPosition(targetPositionRotations - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS)
+                    .withPosition(targetPositionRotations
+                            - MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS
+                            + targetVelocityRotationsPerSecond * Constants.Turret.LOOKAHEAD_TIME)
                     .withIgnoreSoftwareLimits(false)
                     .withFeedForward(feedforward(
                             SimpleMath.rawDeadband(targetVelocityRotationsPerSecond, 0.001),
@@ -252,11 +258,18 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     private double getSpringFeedforward(double velocityRotationsPerSecond) {
         double pos = inputs.positionRotations;
-        return (pos > Constants.Turret.TURRET_SPRING_START_POS && velocityRotationsPerSecond > 0)
-                ? Constants.Turret.TURRET_SPRING_VOLTS
-                : (pos < Constants.Turret.TURRET_SPRING_START_NEG && velocityRotationsPerSecond < 0)
-                        ? -Constants.Turret.TURRET_SPRING_VOLTS
-                        : 0;
+
+        if (pos > Constants.Turret.TURRET_SPRING_LOW_START_POS && velocityRotationsPerSecond > 0)
+            return Constants.Turret.TURRET_SPRING_LOW_VOLTS;
+        if (pos > Constants.Turret.TURRET_SPRING_HIGH_START_POS && velocityRotationsPerSecond > 0)
+            return Constants.Turret.TURRET_SPRING_HIGH_VOLTS;
+
+        if (pos < Constants.Turret.TURRET_SPRING_LOW_START_NEG && velocityRotationsPerSecond < 0)
+            return -Constants.Turret.TURRET_SPRING_LOW_VOLTS;
+        if (pos < Constants.Turret.TURRET_SPRING_HIGH_START_NEG && velocityRotationsPerSecond < 0)
+            return -Constants.Turret.TURRET_SPRING_HIGH_VOLTS;
+
+        return 0;
     }
 
     private double feedforward(double velocityRotationsPerSecond, double accelerationRotationsPerSecondSquared) {

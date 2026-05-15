@@ -3,7 +3,6 @@ package frc.robot.subsystems.io.real;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,11 +17,6 @@ public class ImuNavX implements ImuIO {
 
     public ImuNavX(boolean inverted) {
         this.inverted = inverted;
-    }
-
-    @Override
-    public void applyPigeon2Config(Pigeon2Configuration config) {
-        /* not supported */
     }
 
     @Override

@@ -1,30 +1,23 @@
 package frc.robot.subsystems.io.sim;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.DIOSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.RobotMap;
 import frc.robot.subsystems.Turret;
-import frc.robot.subsystems.io.TurretIO;
-import frc.robot.utils.TalonFXOrchestra;
+import frc.robot.subsystems.io.real.TurretReal;
 
-public class TurretSim implements TurretIO {
+public class TurretSim extends TurretReal {
 
     private final double periodicDt;
 
-    private final TalonFX turret;
     private final DCMotor turretMotor = DCMotor.getKrakenX44(1);
 
     private final DCMotorSim turretSimModel = new DCMotorSim(
@@ -32,10 +25,6 @@ public class TurretSim implements TurretIO {
             turretMotor,
             0.0,
             0.0);
-
-    private final DigitalInput frontLeftLimitSwitch = new DigitalInput(RobotMap.Turret.FRONT_LEFT_LIMIT_SWITCH_ID);
-    private final DigitalInput backLeftLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_LEFT_LIMIT_SWITCH_ID);
-    private final DigitalInput backRightLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_RIGHT_LIMIT_SWITCH_ID);
 
     private final MagneticLimitSwitch frontLeftLimitSwitchSimModel = new MagneticLimitSwitch(
             Constants.Turret.FRONT_LEFT_LIMIT_SWITCH_POSITION_RADIANS,
@@ -57,12 +46,8 @@ public class TurretSim implements TurretIO {
     public TurretSim(double periodicDt) {
         this.periodicDt = periodicDt;
 
-        turret = new TalonFX(RobotMap.Turret.MOTOR_ID);
-
         turret.getSimState().Orientation = ChassisReference.CounterClockwise_Positive;
         turret.getSimState().setMotorType(MotorType.KrakenX44);
-
-        RobotContainer.orchestra.add(turret, TalonFXOrchestra.Tracks.TURRET);
 
         frontLeftLimitSwitchSim = new DIOSim(frontLeftLimitSwitch);
         backLeftLimitSwitchSim = new DIOSim(backLeftLimitSwitch);
@@ -75,16 +60,6 @@ public class TurretSim implements TurretIO {
     }
 
     @Override
-    public void applyTalonFXConfig(TalonFXConfiguration configuration) {
-        turret.getConfigurator().apply(configuration);
-    }
-
-    @Override
-    public void setControl(ControlRequest request) {
-        turret.setControl(request);
-    }
-
-    @Override
     public void setPositionRotations(double newValue) {
         // reset internal sim state
         turretSimModel.setState(Units.rotationsToRadians(newValue), 0);
@@ -93,42 +68,20 @@ public class TurretSim implements TurretIO {
         // have correct offset)
         updateRotor();
 
-        // Update internal raw position offset
-        turret.setPosition(newValue);
+        super.setPositionRotations(newValue);
 
         updateLimitSwitches();
     }
 
-    @Override
-    public void updateInputs(TurretIOInputs inputs) {
-        inputs.connected = turret.isConnected();
-        inputs.positionRotations = turret.getPosition().getValueAsDouble();
-        inputs.velocityRotationsPerSecond = turret.getVelocity().getValueAsDouble();
-        inputs.voltage = turret.getMotorVoltage().getValueAsDouble();
-        inputs.currentDraw = turret.getSimState().getSupplyCurrentMeasure();
-
-        inputs.forwardSoftLimitHit =
-                turret.getFault_ForwardSoftLimit().getValue().booleanValue();
-        inputs.reverseSoftLimitHit =
-                turret.getFault_ReverseSoftLimit().getValue().booleanValue();
-
-        inputs.limitSwitchStates = new LimitSwitchStates(
-                !frontLeftLimitSwitch.get(), !backLeftLimitSwitch.get(), !backRightLimitSwitch.get());
-    }
-
-    @Override
-    public void close() {
-        turret.close();
-        frontLeftLimitSwitch.close();
-        backLeftLimitSwitch.close();
-        backRightLimitSwitch.close();
-    }
-
     private double getSpringVoltage() {
         double pos = turret.getPosition().getValueAsDouble();
-        return pos > Constants.Turret.TURRET_SPRING_START_POS
-                ? Constants.Turret.TURRET_SPRING_VOLTS
-                : pos < Constants.Turret.TURRET_SPRING_START_NEG ? -Constants.Turret.TURRET_SPRING_VOLTS : 0;
+        if (pos > Constants.Turret.TURRET_SPRING_LOW_START_POS) return Constants.Turret.TURRET_SPRING_LOW_VOLTS;
+        if (pos > Constants.Turret.TURRET_SPRING_HIGH_START_POS) return Constants.Turret.TURRET_SPRING_HIGH_VOLTS;
+
+        if (pos < Constants.Turret.TURRET_SPRING_LOW_START_NEG) return -Constants.Turret.TURRET_SPRING_LOW_VOLTS;
+        if (pos < Constants.Turret.TURRET_SPRING_HIGH_START_NEG) return -Constants.Turret.TURRET_SPRING_HIGH_VOLTS;
+
+        return 0;
     }
 
     private void updateRotor() {

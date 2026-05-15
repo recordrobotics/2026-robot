@@ -25,21 +25,21 @@ public interface IntakeIO {
         public Current wheelCurrentDraw = Amps.zero();
     }
 
-    void updateInputs(IntakeIOInputs inputs);
+    default void updateInputs(IntakeIOInputs inputs) {}
 
-    void applyArmTalonFXConfig(TalonFXConfiguration configuration);
+    default void applyArmTalonFXConfig(TalonFXConfiguration configuration) {}
 
-    void applyWheelTalonFXConfig(TalonFXConfiguration configuration);
+    default void applyWheelTalonFXConfig(TalonFXConfiguration configuration) {}
 
-    void setArmControl(ControlRequest request);
+    default void setArmControl(ControlRequest request) {}
 
-    void setWheelControl(ControlRequest request);
+    default void setWheelControl(ControlRequest request) {}
 
-    void setWheelPositionMeters(double newValue);
+    default void setWheelPositionMeters(double newValue) {}
 
-    void setArmPositionRotations(double newValue);
+    default void setArmPositionRotations(double newValue) {}
 
-    void close();
+    default void close() {}
 
     default void simulationPeriodic() {}
 }

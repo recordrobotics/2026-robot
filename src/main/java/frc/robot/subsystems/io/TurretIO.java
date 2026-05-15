@@ -24,15 +24,15 @@ public interface TurretIO {
         public LimitSwitchStates limitSwitchStates = LimitSwitchStates.NO_HITS;
     }
 
-    void updateInputs(TurretIOInputs inputs);
+    default void updateInputs(TurretIOInputs inputs) {}
 
-    void applyTalonFXConfig(TalonFXConfiguration configuration);
+    default void applyTalonFXConfig(TalonFXConfiguration configuration) {}
 
-    void setControl(ControlRequest request);
+    default void setControl(ControlRequest request) {}
 
-    void setPositionRotations(double newValue);
+    default void setPositionRotations(double newValue) {}
 
-    void close();
+    default void close() {}
 
     default void simulationPeriodic() {}
 

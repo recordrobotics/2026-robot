@@ -19,15 +19,15 @@ public interface ClimberIO extends AutoCloseable {
         public Current currentDraw = Amps.zero();
     }
 
-    void updateInputs(ClimberIOInputs inputs);
+    default void updateInputs(ClimberIOInputs inputs) {}
 
-    void applyTalonFXConfig(TalonFXConfiguration configuration);
+    default void applyTalonFXConfig(TalonFXConfiguration configuration) {}
 
-    void setPosition(double newValue);
+    default void setPosition(double newValue) {}
 
-    void setControl(ControlRequest request);
+    default void setControl(ControlRequest request) {}
 
-    void close();
+    default void close() {}
 
     default void simulationPeriodic() {}
 }

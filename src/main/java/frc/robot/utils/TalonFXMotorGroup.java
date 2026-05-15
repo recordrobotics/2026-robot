@@ -1,5 +1,7 @@
 package frc.robot.utils;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.Follower;
@@ -7,13 +9,18 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.TalonFXSimState;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.robot.Constants;
 import frc.robot.utils.wrappers.SafeAlert;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TalonFXMotorGroup implements AutoCloseable {
 
@@ -24,12 +31,28 @@ public class TalonFXMotorGroup implements AutoCloseable {
         private final TalonFX device;
         private final Follower followerRequest;
 
+        private final StatusSignal<Angle> positionSignal;
+        private final StatusSignal<AngularVelocity> velocitySignal;
+        private final StatusSignal<Voltage> voltageSignal;
+        private final StatusSignal<Current> currentSignal;
+
         private boolean lastConnected = false;
 
         private MotorData(MotorConfig config, TalonFX device, Follower followerRequest) {
             this.config = config;
             this.device = device;
             this.followerRequest = followerRequest;
+
+            this.device.optimizeBusUtilization();
+
+            positionSignal = this.device.getPosition();
+            velocitySignal = this.device.getVelocity();
+            voltageSignal = this.device.getMotorVoltage();
+            currentSignal = this.device.getSupplyCurrent();
+        }
+
+        public Set<BaseStatusSignal> getStatusSignals() {
+            return Set.of(positionSignal, velocitySignal, voltageSignal, currentSignal);
         }
     }
 
@@ -39,6 +62,8 @@ public class TalonFXMotorGroup implements AutoCloseable {
     private ControlRequest lastControlRequest;
     private boolean lostAllMotors = false;
     private double lastPositionSet = 0;
+
+    private BaseStatusSignal[] allStatusSignalsCache = null;
 
     private final SafeAlert errorAlert = new SafeAlert("", AlertType.kError);
     private final SafeAlert lostAllMotorPositionsAlert = new SafeAlert("", AlertType.kWarning);
@@ -149,28 +174,28 @@ public class TalonFXMotorGroup implements AutoCloseable {
     public double[] getPositions() {
         return Arrays.stream(motors)
                 .filter(m -> (m.lastConnected || lostAllMotors) && m.device.isConnected())
-                .mapToDouble(m -> m.device.getPosition().getValueAsDouble())
+                .mapToDouble(m -> m.positionSignal.getValueAsDouble())
                 .toArray();
     }
 
     public double[] getVelocities() {
         return Arrays.stream(motors)
                 .filter(m -> (m.lastConnected || lostAllMotors) && m.device.isConnected())
-                .mapToDouble(m -> m.device.getVelocity().getValueAsDouble())
+                .mapToDouble(m -> m.velocitySignal.getValueAsDouble())
                 .toArray();
     }
 
     public Current[] getCurrents() {
         return Arrays.stream(motors)
                 .filter(m -> (m.lastConnected || lostAllMotors) && m.device.isConnected())
-                .map(m -> m.device.getSupplyCurrent().getValue())
+                .map(m -> m.currentSignal.getValue())
                 .toArray(Current[]::new);
     }
 
     public double[] getVoltages() {
         return Arrays.stream(motors)
                 .filter(m -> (m.lastConnected || lostAllMotors) && m.device.isConnected())
-                .mapToDouble(m -> m.device.getMotorVoltage().getValueAsDouble())
+                .mapToDouble(m -> m.voltageSignal.getValueAsDouble())
                 .toArray();
     }
 
@@ -247,6 +272,24 @@ public class TalonFXMotorGroup implements AutoCloseable {
 
     public TalonFX getMotor(int index) {
         return motors[index].device;
+    }
+
+    public BaseStatusSignal[] getAllStatusSignals() {
+        return getAllStatusSignals(false);
+    }
+
+    public BaseStatusSignal[] getAllStatusSignals(boolean refresh) {
+        if (refresh || allStatusSignalsCache == null) {
+            Set<BaseStatusSignal> set = new HashSet<>();
+
+            for (int i = 0; i < motors.length; i++) {
+                set.addAll(motors[i].getStatusSignals());
+            }
+
+            allStatusSignalsCache = set.toArray(BaseStatusSignal[]::new);
+        }
+
+        return allStatusSignalsCache;
     }
 
     @Override

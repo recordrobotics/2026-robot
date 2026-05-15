@@ -28,15 +28,15 @@ public interface ImuIO {
         public LinearAcceleration worldLinearAccelY = MetersPerSecondPerSecond.zero();
     }
 
-    void updateInputs(ImuIOInputs inputs);
+    default void updateInputs(ImuIOInputs inputs) {}
 
-    void applyPigeon2Config(Pigeon2Configuration config);
+    default void applyPigeon2Config(Pigeon2Configuration config) {}
 
-    void reset();
+    default void reset() {}
 
-    void resetDisplacement();
+    default void resetDisplacement() {}
 
-    void close();
+    default void close() {}
 
     default void simulationPeriodic() {}
 }

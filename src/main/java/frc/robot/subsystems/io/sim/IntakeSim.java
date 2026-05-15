@@ -2,10 +2,6 @@ package frc.robot.subsystems.io.sim;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
 import com.ctre.phoenix6.sim.TalonFXSimState.MotorType;
@@ -14,7 +10,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotController;
@@ -23,14 +18,11 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.RobotMap;
 import frc.robot.subsystems.RobotModel.FuelManager;
-import frc.robot.subsystems.io.IntakeIO;
+import frc.robot.subsystems.io.real.IntakeReal;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.IntakeSimulationUtils;
 import frc.robot.utils.SimpleMath;
-import frc.robot.utils.TalonFXMotorGroup;
-import frc.robot.utils.TalonFXOrchestra;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +42,7 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.littletonrobotics.junction.Logger;
 
-public class IntakeSim implements IntakeIO {
+public class IntakeSim extends IntakeReal {
 
     private static final double FUEL_VOLTAGE_MULTIPLIER_A = 16.73759;
     private static final double FUEL_VOLTAGE_MULTIPLIER_B = 4.1844;
@@ -63,9 +55,6 @@ public class IntakeSim implements IntakeIO {
     private static final double EJECT_BPS = 4.5;
 
     private final double periodicDt;
-
-    private final TalonFXMotorGroup armGroup;
-    private final TalonFX wheel;
 
     private final DCMotor armMotor = DCMotor.getKrakenX44(2);
     private final DCMotor wheelMotor = DCMotor.getKrakenX44(1);
@@ -102,14 +91,6 @@ public class IntakeSim implements IntakeIO {
     public IntakeSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
 
-        armGroup = new TalonFXMotorGroup(
-                "Intake Arm",
-                new TalonFXMotorGroup.MotorConfig(
-                        RobotMap.Intake.ARM_LEFT_ID, "Left", InvertedValue.CounterClockwise_Positive),
-                new TalonFXMotorGroup.MotorConfig(
-                        RobotMap.Intake.ARM_RIGHT_ID, "Right", InvertedValue.Clockwise_Positive));
-        wheel = new TalonFX(RobotMap.Intake.WHEEL_ID);
-
         armGroup.getSimState(0).Orientation =
                 ChassisReference.CounterClockwise_Positive; // Left of intake, right of robot // Arm up is positive
         armGroup.getSimState(1).Orientation =
@@ -120,10 +101,6 @@ public class IntakeSim implements IntakeIO {
 
         wheel.getSimState().Orientation = ChassisReference.Clockwise_Positive; // Positive is intake, negative is eject
         wheel.getSimState().setMotorType(MotorType.KrakenX44);
-
-        RobotContainer.orchestra.add(wheel, TalonFXOrchestra.Tracks.INTAKE_WHEEL);
-        RobotContainer.orchestra.add(armGroup.getMotor(0), TalonFXOrchestra.Tracks.INTAKE_ARM_LEFT);
-        RobotContainer.orchestra.add(armGroup.getMotor(1), TalonFXOrchestra.Tracks.INTAKE_ARM_RIGHT);
 
         Rectangle intakeRect = IntakeSimulationUtils.getIntakeRectangle(
                 drivetrainSim, WIDTH.in(Meters), LENGTH_EXTENDED.in(Meters), IntakeSimulation.IntakeSide.BACK);
@@ -165,31 +142,11 @@ public class IntakeSim implements IntakeIO {
 
         RobotContainer.pdp.registerSimDevice(9, () -> armGroup.getSimState(0).getSupplyCurrentMeasure());
         RobotContainer.pdp.registerSimDevice(10, () -> armGroup.getSimState(1).getSupplyCurrentMeasure());
-        RobotContainer.pdp.registerSimDevice(18, () -> wheel.getSupplyCurrent().getValue());
+        RobotContainer.pdp.registerSimDevice(18, () -> wheel.getSimState().getSupplyCurrentMeasure());
     }
 
     public IntakeSimulation getIntakeSimulation() {
         return intakeSimulation;
-    }
-
-    @Override
-    public void applyArmTalonFXConfig(TalonFXConfiguration configuration) {
-        armGroup.applyConfig(configuration);
-    }
-
-    @Override
-    public void applyWheelTalonFXConfig(TalonFXConfiguration configuration) {
-        wheel.getConfigurator().apply(configuration);
-    }
-
-    @Override
-    public void setArmControl(ControlRequest request) {
-        armGroup.setControl(request);
-    }
-
-    @Override
-    public void setWheelControl(ControlRequest request) {
-        wheel.setControl(request);
     }
 
     @Override
@@ -204,39 +161,7 @@ public class IntakeSim implements IntakeIO {
         // have correct offset)
         updateArmRotor();
 
-        // Update internal raw position offset
-        armGroup.setPosition(newValue);
-    }
-
-    @Override
-    public void setWheelPositionMeters(double newValue) {
-        wheel.setPosition(newValue);
-    }
-
-    @Override
-    public void updateInputs(IntakeIOInputs inputs) {
-        armGroup.periodic();
-
-        inputs.armHasPosition = !armGroup.hasLostPosition();
-        inputs.armPositionRotations = armGroup.getAveragePosition();
-        inputs.armVelocityRotationsPerSecond =
-                SimpleMath.average(armGroup.getVelocities()).orElse(0);
-        inputs.armVoltage = SimpleMath.average(armGroup.getVoltages()).orElse(0);
-        inputs.armCurrentDraw = Arrays.stream(armGroup.getSimStates())
-                .map(TalonFXSimState::getSupplyCurrentMeasure)
-                .reduce(Amps.zero(), Current::plus);
-
-        inputs.wheelConnected = wheel.isConnected();
-        inputs.wheelPositionMeters = wheel.getPosition().getValueAsDouble();
-        inputs.wheelVelocityMps = wheel.getVelocity().getValueAsDouble();
-        inputs.wheelVoltage = wheel.getMotorVoltage().getValueAsDouble();
-        inputs.wheelCurrentDraw = wheel.getSimState().getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public void close() {
-        wheel.close();
-        armGroup.close();
+        super.setArmPositionRotations(newValue);
     }
 
     @Override

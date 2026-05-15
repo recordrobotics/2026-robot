@@ -1,8 +1,5 @@
 package frc.robot.subsystems.io.sim;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.ControlRequest;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.sim.ChassisReference;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -12,17 +9,13 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.RobotMap;
-import frc.robot.subsystems.io.ClimberIO;
+import frc.robot.subsystems.io.real.ClimberReal;
 import frc.robot.utils.SimpleMath;
-import frc.robot.utils.TalonFXOrchestra;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 
-public class ClimberSim implements ClimberIO {
+public class ClimberSim extends ClimberReal {
 
     private final double periodicDt;
-
-    private final TalonFX motorClimber;
 
     private AbstractDriveTrainSimulation drivetrainSim;
 
@@ -56,22 +49,9 @@ public class ClimberSim implements ClimberIO {
         this.periodicDt = periodicDt;
         this.drivetrainSim = drivetrainSim;
 
-        motorClimber = new TalonFX(RobotMap.Climber.MOTOR_ID);
-        RobotContainer.orchestra.add(motorClimber, TalonFXOrchestra.Tracks.CLIMBER);
+        motor.getSimState().Orientation = ChassisReference.Clockwise_Positive; // correct
 
-        motorClimber.getSimState().Orientation = ChassisReference.Clockwise_Positive; // correct
-
-        RobotContainer.pdp.registerSimDevice(12, motorClimber.getSimState()::getSupplyCurrentMeasure);
-    }
-
-    @Override
-    public void applyTalonFXConfig(TalonFXConfiguration configuration) {
-        motorClimber.getConfigurator().apply(configuration);
-    }
-
-    @Override
-    public void setControl(ControlRequest request) {
-        motorClimber.setControl(request);
+        RobotContainer.pdp.registerSimDevice(12, motor.getSimState()::getSupplyCurrentMeasure);
     }
 
     @Override
@@ -83,22 +63,7 @@ public class ClimberSim implements ClimberIO {
         // have correct offset)
         updateRotor();
 
-        // Update internal raw position offset
-        motorClimber.setPosition(newValue);
-    }
-
-    @Override
-    public void updateInputs(ClimberIOInputs inputs) {
-        inputs.connected = motorClimber.isConnected();
-        inputs.positionMeters = motorClimber.getPosition().getValueAsDouble();
-        inputs.velocityMps = motorClimber.getVelocity().getValueAsDouble();
-        inputs.voltage = motorClimber.getMotorVoltage().getValueAsDouble();
-        inputs.currentDraw = motorClimber.getSimState().getSupplyCurrentMeasure();
-    }
-
-    @Override
-    public void close() {
-        motorClimber.close();
+        super.setPosition(newValue);
     }
 
     public static Pose3d getSimulatedClimberPose(Pose2d robotPose, double climberHeightMeters) {
@@ -118,11 +83,9 @@ public class ClimberSim implements ClimberIO {
     }
 
     private void updateRotor() {
-        motorClimber
-                .getSimState()
+        motor.getSimState()
                 .setRawRotorPosition(currentPhysicsSim.getPositionMeters() / Constants.Climber.METERS_PER_ROTATION);
-        motorClimber
-                .getSimState()
+        motor.getSimState()
                 .setRotorVelocity(
                         currentPhysicsSim.getVelocityMetersPerSecond() / Constants.Climber.METERS_PER_ROTATION);
     }
@@ -149,9 +112,9 @@ public class ClimberSim implements ClimberIO {
                     physicsSimSupportingRobot.getVelocityMetersPerSecond());
         }
 
-        motorClimber.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
+        motor.getSimState().setSupplyVoltage(RobotController.getBatteryVoltage());
 
-        double motorVoltage = motorClimber.getSimState().getMotorVoltage();
+        double motorVoltage = motor.getSimState().getMotorVoltage();
 
         currentPhysicsSim.setInputVoltage(motorVoltage);
         currentPhysicsSim.update(periodicDt);

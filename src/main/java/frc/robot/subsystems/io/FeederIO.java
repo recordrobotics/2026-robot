@@ -22,13 +22,13 @@ public interface FeederIO {
         public boolean topBeamBroken = false;
     }
 
-    void updateInputs(FeederIOInputs inputs);
+    default void updateInputs(FeederIOInputs inputs) {}
 
-    void applyTalonFXConfig(TalonFXConfiguration config);
+    default void applyTalonFXConfig(TalonFXConfiguration config) {}
 
-    void setControl(ControlRequest request);
+    default void setControl(ControlRequest request) {}
 
-    void close();
+    default void close() {}
 
     default void simulationPeriodic() {}
 }

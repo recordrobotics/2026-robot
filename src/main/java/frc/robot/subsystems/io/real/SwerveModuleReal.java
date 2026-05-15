@@ -1,24 +1,79 @@
 package frc.robot.subsystems.io.real;
 
+import static edu.wpi.first.units.Units.Hertz;
+
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MagnetHealthValue;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.io.SwerveModuleIO;
 import frc.robot.utils.ModuleConstants;
 
 public class SwerveModuleReal implements SwerveModuleIO {
 
-    private final TalonFX driveMotor;
-    private final TalonFX turningMotor;
-    private final CANcoder absoluteTurningMotorEncoder;
+    protected final TalonFX driveMotor;
+    protected final TalonFX turningMotor;
+    protected final CANcoder absoluteTurningMotorEncoder;
+
+    private final StatusSignal<Angle> drivePositionSignal;
+    private final StatusSignal<AngularVelocity> driveVelocitySignal;
+    private final StatusSignal<AngularAcceleration> driveAccelerationSignal;
+    private final StatusSignal<Voltage> driveVoltageSignal;
+    private final StatusSignal<Current> driveCurrentSignal;
+
+    private final StatusSignal<Angle> turnPositionSignal;
+    private final StatusSignal<AngularVelocity> turnVelocitySignal;
+    private final StatusSignal<Voltage> turnVoltageSignal;
+    private final StatusSignal<Current> turnCurrentSignal;
+
+    private final StatusSignal<Angle> encoderPositionSignal;
+    private final StatusSignal<MagnetHealthValue> encoderMagnetHealthSignal;
 
     public SwerveModuleReal(ModuleConstants m, int driveTrack, int turnTrack) {
         driveMotor = new TalonFX(m.driveMotorChannel());
         turningMotor = new TalonFX(m.turningMotorChannel());
         absoluteTurningMotorEncoder = new CANcoder(m.absoluteTurningMotorEncoderChannel());
+
+        ParentDevice.optimizeBusUtilizationForAll(driveMotor, turningMotor, absoluteTurningMotorEncoder);
+
+        drivePositionSignal = driveMotor.getPosition();
+        driveVelocitySignal = driveMotor.getVelocity();
+        driveAccelerationSignal = driveMotor.getAcceleration();
+        driveVoltageSignal = driveMotor.getMotorVoltage();
+        driveCurrentSignal = driveMotor.getSupplyCurrent();
+
+        turnPositionSignal = turningMotor.getPosition();
+        turnVelocitySignal = turningMotor.getVelocity();
+        turnVoltageSignal = turningMotor.getMotorVoltage();
+        turnCurrentSignal = turningMotor.getSupplyCurrent();
+
+        encoderPositionSignal = absoluteTurningMotorEncoder.getAbsolutePosition();
+        encoderMagnetHealthSignal = absoluteTurningMotorEncoder.getMagnetHealth();
+
+        BaseStatusSignal.setUpdateFrequencyForAll(
+                Hertz.of(50),
+                drivePositionSignal,
+                driveVelocitySignal,
+                driveAccelerationSignal,
+                driveVoltageSignal,
+                driveCurrentSignal,
+                turnPositionSignal,
+                turnVelocitySignal,
+                turnVoltageSignal,
+                turnCurrentSignal,
+                encoderPositionSignal,
+                encoderMagnetHealthSignal);
 
         RobotContainer.orchestra.add(driveMotor, driveTrack);
         RobotContainer.orchestra.add(turningMotor, turnTrack);
@@ -61,24 +116,35 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
     @Override
     public void updateInputs(SwerveModuleIOInputs inputs) {
+        BaseStatusSignal.refreshAll(
+                drivePositionSignal,
+                driveVelocitySignal,
+                driveAccelerationSignal,
+                driveVoltageSignal,
+                driveCurrentSignal,
+                turnPositionSignal,
+                turnVelocitySignal,
+                turnVoltageSignal,
+                turnCurrentSignal,
+                encoderPositionSignal,
+                encoderMagnetHealthSignal);
+
         inputs.driveMotorConnected = driveMotor.isConnected();
-        inputs.driveMotorPositionMeters = driveMotor.getPosition().getValueAsDouble();
-        inputs.driveMotorVelocityMps = driveMotor.getVelocity().getValueAsDouble();
-        inputs.driveMotorAccelerationMps2 = driveMotor.getAcceleration().getValueAsDouble();
-        inputs.driveMotorVoltage = driveMotor.getMotorVoltage().getValueAsDouble();
-        inputs.driveMotorCurrentDraw = driveMotor.getSupplyCurrent().getValue();
+        inputs.driveMotorPositionMeters = drivePositionSignal.getValueAsDouble();
+        inputs.driveMotorVelocityMps = driveVelocitySignal.getValueAsDouble();
+        inputs.driveMotorAccelerationMps2 = driveAccelerationSignal.getValueAsDouble();
+        inputs.driveMotorVoltage = driveVoltageSignal.getValueAsDouble();
+        inputs.driveMotorCurrentDraw = driveCurrentSignal.getValue();
 
         inputs.turnMotorConnected = turningMotor.isConnected();
-        inputs.turnMotorPositionRotations = turningMotor.getPosition().getValueAsDouble();
-        inputs.turnMotorVelocityRps = turningMotor.getVelocity().getValueAsDouble();
-        inputs.turnMotorVoltage = turningMotor.getMotorVoltage().getValueAsDouble();
-        inputs.turnMotorCurrentDraw = turningMotor.getSupplyCurrent().getValue();
+        inputs.turnMotorPositionRotations = turnPositionSignal.getValueAsDouble();
+        inputs.turnMotorVelocityRps = turnVelocitySignal.getValueAsDouble();
+        inputs.turnMotorVoltage = turnVoltageSignal.getValueAsDouble();
+        inputs.turnMotorCurrentDraw = turnCurrentSignal.getValue();
 
         inputs.encoderConnected = absoluteTurningMotorEncoder.isConnected();
-        inputs.encoderPositionRotations =
-                absoluteTurningMotorEncoder.getAbsolutePosition().getValueAsDouble();
-        inputs.encoderMagnetHealth =
-                absoluteTurningMotorEncoder.getMagnetHealth().getValue();
+        inputs.encoderPositionRotations = encoderPositionSignal.getValueAsDouble();
+        inputs.encoderMagnetHealth = encoderMagnetHealthSignal.getValue();
     }
 
     @Override

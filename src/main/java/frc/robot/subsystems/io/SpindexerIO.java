@@ -19,13 +19,13 @@ public interface SpindexerIO {
         public Current currentDraw = Amps.zero();
     }
 
-    void updateInputs(SpindexerIOInputs inputs);
+    default void updateInputs(SpindexerIOInputs inputs) {}
 
-    void applyTalonFXConfig(TalonFXConfiguration config);
+    default void applyTalonFXConfig(TalonFXConfiguration config) {}
 
-    void setControl(ControlRequest request);
+    default void setControl(ControlRequest request) {}
 
-    void close();
+    default void close() {}
 
     default void simulationPeriodic() {}
 }

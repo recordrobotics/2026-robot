@@ -567,6 +567,7 @@ public final class Constants {
         public static final double KA = 0.25;
         public static final double KVP = 0.2;
         public static double FF_MUL = 0.72;
+        public static double LOOKAHEAD_TIME = 0.1;
 
         public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(40);
         public static final Current SUPPLY_LOWER_CURRENT_LIMIT = Amps.of(40);
@@ -592,9 +593,12 @@ public final class Constants {
         public static final double BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CW = 0.453125;
         public static final double BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CCW = 0.437012;
 
-        public static final double TURRET_SPRING_START_POS = 0.20;
-        public static final double TURRET_SPRING_START_NEG = -0.11;
-        public static double TURRET_SPRING_VOLTS = 1.11;
+        public static final double TURRET_SPRING_HIGH_START_POS = 0.20;
+        public static final double TURRET_SPRING_HIGH_START_NEG = -0.11;
+        public static final double TURRET_SPRING_LOW_START_POS = 0.283;
+        public static final double TURRET_SPRING_LOW_START_NEG = -0.205;
+        public static double TURRET_SPRING_HIGH_VOLTS = 1.11;
+        public static double TURRET_SPRING_LOW_VOLTS = 1.11;
 
         public static final double STARTING_POSITION_RADIANS = Units.degreesToRadians(90.0);
 

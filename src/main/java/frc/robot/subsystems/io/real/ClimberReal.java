@@ -1,8 +1,16 @@
 package frc.robot.subsystems.io.real;
 
+import static edu.wpi.first.units.Units.Hertz;
+
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ClimberIO;
@@ -10,10 +18,25 @@ import frc.robot.utils.TalonFXOrchestra;
 
 public class ClimberReal implements ClimberIO {
 
-    private final TalonFX motor;
+    protected final TalonFX motor;
+
+    private final StatusSignal<Angle> positionSignal;
+    private final StatusSignal<AngularVelocity> velocitySignal;
+    private final StatusSignal<Voltage> voltageSignal;
+    private final StatusSignal<Current> currentSignal;
 
     public ClimberReal() {
         motor = new TalonFX(RobotMap.Climber.MOTOR_ID);
+        motor.optimizeBusUtilization();
+
+        positionSignal = motor.getPosition();
+        velocitySignal = motor.getVelocity();
+        voltageSignal = motor.getMotorVoltage();
+        currentSignal = motor.getSupplyCurrent();
+
+        BaseStatusSignal.setUpdateFrequencyForAll(
+                Hertz.of(50), positionSignal, velocitySignal, voltageSignal, currentSignal);
+
         RobotContainer.orchestra.add(motor, TalonFXOrchestra.Tracks.CLIMBER);
     }
 
@@ -34,11 +57,13 @@ public class ClimberReal implements ClimberIO {
 
     @Override
     public void updateInputs(ClimberIOInputs inputs) {
+        BaseStatusSignal.refreshAll(positionSignal, velocitySignal, voltageSignal, currentSignal);
+
         inputs.connected = motor.isConnected();
-        inputs.positionMeters = motor.getPosition().getValueAsDouble();
-        inputs.velocityMps = motor.getVelocity().getValueAsDouble();
-        inputs.voltage = motor.getMotorVoltage().getValueAsDouble();
-        inputs.currentDraw = motor.getSupplyCurrent().getValue();
+        inputs.positionMeters = positionSignal.getValueAsDouble();
+        inputs.velocityMps = velocitySignal.getValueAsDouble();
+        inputs.voltage = voltageSignal.getValueAsDouble();
+        inputs.currentDraw = currentSignal.getValue();
     }
 
     @Override

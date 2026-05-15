@@ -1,8 +1,16 @@
 package frc.robot.subsystems.io.real;
 
+import static edu.wpi.first.units.Units.Hertz;
+
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
@@ -11,14 +19,41 @@ import frc.robot.utils.TalonFXOrchestra;
 
 public class TurretReal implements TurretIO {
 
-    private final TalonFX turret;
+    protected final TalonFX turret;
 
-    private final DigitalInput frontLeftLimitSwitch = new DigitalInput(RobotMap.Turret.FRONT_LEFT_LIMIT_SWITCH_ID);
-    private final DigitalInput backLeftLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_LEFT_LIMIT_SWITCH_ID);
-    private final DigitalInput backRightLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_RIGHT_LIMIT_SWITCH_ID);
+    protected final DigitalInput frontLeftLimitSwitch = new DigitalInput(RobotMap.Turret.FRONT_LEFT_LIMIT_SWITCH_ID);
+    protected final DigitalInput backLeftLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_LEFT_LIMIT_SWITCH_ID);
+    protected final DigitalInput backRightLimitSwitch = new DigitalInput(RobotMap.Turret.BACK_RIGHT_LIMIT_SWITCH_ID);
+
+    private final StatusSignal<Angle> positionSignal;
+    private final StatusSignal<AngularVelocity> velocitySignal;
+    private final StatusSignal<Voltage> voltageSignal;
+    private final StatusSignal<Current> currentSignal;
+
+    private final StatusSignal<Boolean> forwardSoftLimitSignal;
+    private final StatusSignal<Boolean> reverseSoftLimitSignal;
 
     public TurretReal() {
         turret = new TalonFX(RobotMap.Turret.MOTOR_ID);
+        turret.optimizeBusUtilization();
+
+        positionSignal = turret.getPosition();
+        velocitySignal = turret.getVelocity();
+        voltageSignal = turret.getMotorVoltage();
+        currentSignal = turret.getSupplyCurrent();
+
+        forwardSoftLimitSignal = turret.getFault_ForwardSoftLimit();
+        reverseSoftLimitSignal = turret.getFault_ReverseSoftLimit();
+
+        BaseStatusSignal.setUpdateFrequencyForAll(
+                Hertz.of(50),
+                positionSignal,
+                velocitySignal,
+                voltageSignal,
+                currentSignal,
+                forwardSoftLimitSignal,
+                reverseSoftLimitSignal);
+
         RobotContainer.orchestra.add(turret, TalonFXOrchestra.Tracks.TURRET);
     }
 
@@ -40,15 +75,13 @@ public class TurretReal implements TurretIO {
     @Override
     public void updateInputs(TurretIOInputs inputs) {
         inputs.connected = turret.isConnected();
-        inputs.positionRotations = turret.getPosition().getValueAsDouble();
-        inputs.velocityRotationsPerSecond = turret.getVelocity().getValueAsDouble();
-        inputs.voltage = turret.getMotorVoltage().getValueAsDouble();
-        inputs.currentDraw = turret.getSupplyCurrent().getValue();
+        inputs.positionRotations = positionSignal.getValueAsDouble();
+        inputs.velocityRotationsPerSecond = velocitySignal.getValueAsDouble();
+        inputs.voltage = voltageSignal.getValueAsDouble();
+        inputs.currentDraw = currentSignal.getValue();
 
-        inputs.forwardSoftLimitHit =
-                turret.getFault_ForwardSoftLimit().getValue().booleanValue();
-        inputs.reverseSoftLimitHit =
-                turret.getFault_ReverseSoftLimit().getValue().booleanValue();
+        inputs.forwardSoftLimitHit = forwardSoftLimitSignal.getValue().booleanValue();
+        inputs.reverseSoftLimitHit = reverseSoftLimitSignal.getValue().booleanValue();
 
         inputs.limitSwitchStates = new LimitSwitchStates(
                 !frontLeftLimitSwitch.get(), !backLeftLimitSwitch.get(), !backRightLimitSwitch.get());

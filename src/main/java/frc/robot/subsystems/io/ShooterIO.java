@@ -24,21 +24,21 @@ public interface ShooterIO {
         public Current hoodCurrentDraw = Amps.zero();
     }
 
-    void updateInputs(ShooterIOInputs inputs);
+    default void updateInputs(ShooterIOInputs inputs) {}
 
-    void applyFlywheelTalonFXConfig(TalonFXConfiguration configuration);
+    default void applyFlywheelTalonFXConfig(TalonFXConfiguration configuration) {}
 
-    void applyHoodTalonFXConfig(TalonFXConfiguration configuration);
+    default void applyHoodTalonFXConfig(TalonFXConfiguration configuration) {}
 
-    void setFlywheelControl(ControlRequest request);
+    default void setFlywheelControl(ControlRequest request) {}
 
-    void setHoodControl(ControlRequest request);
+    default void setHoodControl(ControlRequest request) {}
 
-    void setHoodPositionRotations(double newValue);
+    default void setHoodPositionRotations(double newValue) {}
 
-    void setFlywheelPositionMeters(double newValue);
+    default void setFlywheelPositionMeters(double newValue) {}
 
-    void close();
+    default void close() {}
 
     default void simulationPeriodic() {}
 }

@@ -32,23 +32,23 @@ public interface SwerveModuleIO extends AutoCloseable {
         public MagnetHealthValue encoderMagnetHealth = MagnetHealthValue.Magnet_Invalid;
     }
 
-    void updateInputs(SwerveModuleIOInputs inputs);
+    default void updateInputs(SwerveModuleIOInputs inputs) {}
 
-    void applyDriveTalonFXConfig(TalonFXConfiguration configuration);
+    default void applyDriveTalonFXConfig(TalonFXConfiguration configuration) {}
 
-    void applyTurnTalonFXConfig(TalonFXConfiguration configuration);
+    default void applyTurnTalonFXConfig(TalonFXConfiguration configuration) {}
 
-    void applyTurningEncoderConfig(CANcoderConfiguration configuration);
+    default void applyTurningEncoderConfig(CANcoderConfiguration configuration) {}
 
-    void setTurnControl(ControlRequest request);
+    default void setTurnControl(ControlRequest request) {}
 
-    void setDriveControl(ControlRequest request);
+    default void setDriveControl(ControlRequest request) {}
 
-    void setDriveMechanismPosition(double newValue);
+    default void setDriveMechanismPosition(double newValue) {}
 
-    void setTurnMechanismPosition(double newValue);
+    default void setTurnMechanismPosition(double newValue) {}
 
-    void close();
+    default void close() {}
 
     default void simulationPeriodic() {}
 }
