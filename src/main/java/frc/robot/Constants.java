@@ -442,7 +442,7 @@ public final class Constants {
         public static final double MAX_MODULE_SPEED = 4.5; // TODO: measure
 
         // Offset rotation origin for testing turret feedforward
-        public static final Translation2d TURRET_OFFSET = Translation2d.kZero; // new Translation2d(0.127, 0.127);
+        public static final Translation2d TURRET_OFFSET = new Translation2d(0.127, 0.127);
 
         public static final RobotConfig PP_DEFAULT_CONFIG = new RobotConfig(
                 Constants.Frame.ROBOT_MASS_KG,
