@@ -401,9 +401,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
         poseFilter.resetPosition(lastRawNavAngle, RobotContainer.drivetrain.getModulePositions(), pose);
         independentPoseEstimator.reset(pose);
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
-            RobotContainer.drivetrain
-                    .getSwerveDriveSimulation()
-                    .setSimulationWorldPose(RobotContainer.getStartingLocation().getPose());
+            RobotContainer.drivetrain.getSwerveDriveSimulation().setSimulationWorldPose(pose);
         }
     }
 
