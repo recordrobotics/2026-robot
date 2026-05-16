@@ -376,7 +376,7 @@ public final class RobotContainer {
 
         // Reset pose trigger
         new Trigger(() -> getControl().isPoseResetTriggered())
-                .onTrue(Commands.runOnce(poseSensorFusion::alignRotationWithDriverStation));
+                .onTrue(Commands.runOnce(poseSensorFusion::alignRotationWithDriverStation).ignoringDisable(Constants.RobotState.getMode() == Mode.SIM));
         new Trigger(resetLocationButton)
                 .onTrue(Commands.runOnce(() -> {
                             poseSensorFusion.setToPose(getStartingLocation().getPose());
