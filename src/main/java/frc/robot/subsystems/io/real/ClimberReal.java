@@ -36,6 +36,8 @@ public class ClimberReal implements ClimberIO {
 
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), positionSignal);
 
+        RobotContainer.allStatusSignalsToRefresh.addAll(positionSignal, velocitySignal, voltageSignal, currentSignal);
+
         RobotContainer.orchestra.add(motor, TalonFXOrchestra.Tracks.CLIMBER);
     }
 
@@ -56,9 +58,9 @@ public class ClimberReal implements ClimberIO {
 
     @Override
     public void updateInputs(ClimberIOInputs inputs) {
-        BaseStatusSignal.refreshAll(positionSignal, velocitySignal, voltageSignal, currentSignal);
-
-        inputs.connected = motor.isConnected();
+        inputs.connected = positionSignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.positionMeters = positionSignal.getValueAsDouble();
         inputs.velocityMps = velocitySignal.getValueAsDouble();
         inputs.voltage = voltageSignal.getValueAsDouble();

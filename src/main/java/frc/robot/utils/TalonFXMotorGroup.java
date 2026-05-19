@@ -53,12 +53,20 @@ public class TalonFXMotorGroup implements AutoCloseable {
             currentSignal = this.device.getSupplyCurrent();
         }
 
+        public boolean isOK() {
+            return prioritizePosition
+                    ? positionSignal.getStatus().isOK()
+                    : velocitySignal.getStatus().isOK();
+        }
+
         public Set<BaseStatusSignal> getStatusSignals() {
             return Set.of(positionSignal, velocitySignal, voltageSignal, currentSignal);
         }
 
         public Set<BaseStatusSignal> getHighRefreshRateStatusSignals() {
-            return Set.of(prioritizePosition ? positionSignal : velocitySignal);
+            return Set.of(
+                    prioritizePosition ? positionSignal : velocitySignal,
+                    voltageSignal /* followers require either dutycycle, voltage, or current signal to follow */);
         }
     }
 
@@ -130,7 +138,7 @@ public class TalonFXMotorGroup implements AutoCloseable {
     }
 
     public void checkLeaderDisconnect() {
-        if (!motors[leaderIndex].device.isConnected()) {
+        if (!motors[leaderIndex].isOK()) {
             motors[leaderIndex].lastConnected = false;
 
             leaderIndex = findLeader();
@@ -152,7 +160,7 @@ public class TalonFXMotorGroup implements AutoCloseable {
 
     public void checkFollowerReconnect() {
         for (int i = 0; i < motors.length; i++) {
-            if (i != leaderIndex && !motors[i].lastConnected && motors[i].device.isConnected()) {
+            if (i != leaderIndex && !motors[i].lastConnected && motors[i].isOK()) {
                 motors[i].device.setPosition(getAveragePosition());
                 motors[i].lastConnected = true;
                 updateFollower(motors[i]);
@@ -162,7 +170,7 @@ public class TalonFXMotorGroup implements AutoCloseable {
 
     public final int findLeader() {
         for (int i = 0; i < motors.length; i++) {
-            if (motors[i].device.isConnected()) {
+            if (motors[i].isOK()) {
                 return i;
             }
         }
@@ -177,34 +185,34 @@ public class TalonFXMotorGroup implements AutoCloseable {
 
     public final void updateLastConnected() {
         for (int i = 0; i < motors.length; i++) {
-            motors[i].lastConnected = motors[i].device.isConnected();
+            motors[i].lastConnected = motors[i].isOK();
         }
     }
 
     public double[] getPositions() {
         return Arrays.stream(motors)
-                .filter(m -> (m.lastConnected || lostAllMotors) && m.device.isConnected())
+                .filter(m -> (m.lastConnected || lostAllMotors) && m.isOK())
                 .mapToDouble(m -> m.positionSignal.getValueAsDouble())
                 .toArray();
     }
 
     public double[] getVelocities() {
         return Arrays.stream(motors)
-                .filter(m -> (m.lastConnected || lostAllMotors) && m.device.isConnected())
+                .filter(m -> (m.lastConnected || lostAllMotors) && m.isOK())
                 .mapToDouble(m -> m.velocitySignal.getValueAsDouble())
                 .toArray();
     }
 
     public Current[] getCurrents() {
         return Arrays.stream(motors)
-                .filter(m -> (m.lastConnected || lostAllMotors) && m.device.isConnected())
+                .filter(m -> (m.lastConnected || lostAllMotors) && m.isOK())
                 .map(m -> m.currentSignal.getValue())
                 .toArray(Current[]::new);
     }
 
     public double[] getVoltages() {
         return Arrays.stream(motors)
-                .filter(m -> (m.lastConnected || lostAllMotors) && m.device.isConnected())
+                .filter(m -> (m.lastConnected || lostAllMotors) && m.isOK())
                 .mapToDouble(m -> m.voltageSignal.getValueAsDouble())
                 .toArray();
     }
@@ -226,7 +234,7 @@ public class TalonFXMotorGroup implements AutoCloseable {
         } else {
             List<String> disconnectedMotors = new ArrayList<>();
             for (int i = 0; i < motors.length; i++) {
-                if (!motors[i].device.isConnected()) {
+                if (!motors[i].isOK()) {
                     disconnectedMotors.add(motors[i].config.name);
                 }
             }

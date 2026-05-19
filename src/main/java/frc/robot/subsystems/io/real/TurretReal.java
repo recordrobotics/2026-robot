@@ -48,6 +48,14 @@ public class TurretReal implements TurretIO {
         BaseStatusSignal.setUpdateFrequencyForAll(
                 Hertz.of(50), positionSignal, velocitySignal, forwardSoftLimitSignal, reverseSoftLimitSignal);
 
+        RobotContainer.allStatusSignalsToRefresh.addAll(
+                positionSignal,
+                velocitySignal,
+                voltageSignal,
+                currentSignal,
+                forwardSoftLimitSignal,
+                reverseSoftLimitSignal);
+
         RobotContainer.orchestra.add(turret, TalonFXOrchestra.Tracks.TURRET);
     }
 
@@ -68,15 +76,9 @@ public class TurretReal implements TurretIO {
 
     @Override
     public void updateInputs(TurretIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
-                positionSignal,
-                velocitySignal,
-                voltageSignal,
-                currentSignal,
-                forwardSoftLimitSignal,
-                reverseSoftLimitSignal);
-
-        inputs.connected = turret.isConnected();
+        inputs.connected = positionSignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.positionRotations = positionSignal.getValueAsDouble();
         inputs.velocityRotationsPerSecond = velocitySignal.getValueAsDouble();
         inputs.voltage = voltageSignal.getValueAsDouble();

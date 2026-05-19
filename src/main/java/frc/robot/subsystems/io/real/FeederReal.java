@@ -39,6 +39,8 @@ public class FeederReal implements FeederIO {
 
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), velocitySignal);
 
+        RobotContainer.allStatusSignalsToRefresh.addAll(positionSignal, velocitySignal, voltageSignal, currentSignal);
+
         RobotContainer.orchestra.add(feeder, TalonFXOrchestra.Tracks.FEEDER);
     }
 
@@ -54,9 +56,9 @@ public class FeederReal implements FeederIO {
 
     @Override
     public void updateInputs(FeederIOInputs inputs) {
-        BaseStatusSignal.refreshAll(positionSignal, velocitySignal, voltageSignal, currentSignal);
-
-        inputs.connected = feeder.isConnected();
+        inputs.connected = velocitySignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.positionRotations = positionSignal.getValueAsDouble();
         inputs.velocityRotationsPerSecond = velocitySignal.getValueAsDouble();
         inputs.voltage = voltageSignal.getValueAsDouble();

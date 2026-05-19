@@ -70,6 +70,19 @@ public class SwerveModuleReal implements SwerveModuleIO {
                 turnVelocitySignal,
                 encoderPositionSignal);
 
+        RobotContainer.allStatusSignalsToRefresh.addAll(
+                drivePositionSignal,
+                driveVelocitySignal,
+                driveAccelerationSignal,
+                driveVoltageSignal,
+                driveCurrentSignal,
+                turnPositionSignal,
+                turnVelocitySignal,
+                turnVoltageSignal,
+                turnCurrentSignal,
+                encoderPositionSignal,
+                encoderMagnetHealthSignal);
+
         RobotContainer.orchestra.add(driveMotor, driveTrack);
         RobotContainer.orchestra.add(turningMotor, turnTrack);
     }
@@ -111,33 +124,26 @@ public class SwerveModuleReal implements SwerveModuleIO {
 
     @Override
     public void updateInputs(SwerveModuleIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
-                drivePositionSignal,
-                driveVelocitySignal,
-                driveAccelerationSignal,
-                driveVoltageSignal,
-                driveCurrentSignal,
-                turnPositionSignal,
-                turnVelocitySignal,
-                turnVoltageSignal,
-                turnCurrentSignal,
-                encoderPositionSignal,
-                encoderMagnetHealthSignal);
-
-        inputs.driveMotorConnected = driveMotor.isConnected();
+        inputs.driveMotorConnected = driveVelocitySignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.driveMotorPositionMeters = drivePositionSignal.getValueAsDouble();
         inputs.driveMotorVelocityMps = driveVelocitySignal.getValueAsDouble();
         inputs.driveMotorAccelerationMps2 = driveAccelerationSignal.getValueAsDouble();
         inputs.driveMotorVoltage = driveVoltageSignal.getValueAsDouble();
         inputs.driveMotorCurrentDraw = driveCurrentSignal.getValue();
 
-        inputs.turnMotorConnected = turningMotor.isConnected();
+        inputs.turnMotorConnected = turnPositionSignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.turnMotorPositionRotations = turnPositionSignal.getValueAsDouble();
         inputs.turnMotorVelocityRps = turnVelocitySignal.getValueAsDouble();
         inputs.turnMotorVoltage = turnVoltageSignal.getValueAsDouble();
         inputs.turnMotorCurrentDraw = turnCurrentSignal.getValue();
 
-        inputs.encoderConnected = absoluteTurningMotorEncoder.isConnected();
+        inputs.encoderConnected = encoderPositionSignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.encoderPositionRotations = encoderPositionSignal.getValueAsDouble();
         inputs.encoderMagnetHealth = encoderMagnetHealthSignal.getValue();
     }

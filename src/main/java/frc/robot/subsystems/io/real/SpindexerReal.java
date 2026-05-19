@@ -36,6 +36,8 @@ public class SpindexerReal implements SpindexerIO {
 
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), velocitySignal);
 
+        RobotContainer.allStatusSignalsToRefresh.addAll(positionSignal, velocitySignal, voltageSignal, currentSignal);
+
         RobotContainer.orchestra.add(spindexer, TalonFXOrchestra.Tracks.SPINDEXER);
     }
 
@@ -51,9 +53,9 @@ public class SpindexerReal implements SpindexerIO {
 
     @Override
     public void updateInputs(SpindexerIOInputs inputs) {
-        BaseStatusSignal.refreshAll(positionSignal, velocitySignal, voltageSignal, currentSignal);
-
-        inputs.connected = spindexer.isConnected();
+        inputs.connected = velocitySignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.positionRotations = positionSignal.getValueAsDouble();
         inputs.velocityRotationsPerSecond = velocitySignal.getValueAsDouble();
         inputs.voltage = voltageSignal.getValueAsDouble();

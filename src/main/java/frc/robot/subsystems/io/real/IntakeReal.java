@@ -50,6 +50,10 @@ public class IntakeReal implements IntakeIO {
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), wheelVelocitySignal);
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), armGroup.getAllHighRefreshRateStatusSignals());
 
+        RobotContainer.allStatusSignalsToRefresh.addAll(
+                wheelPositionSignal, wheelVelocitySignal, wheelVoltageSignal, wheelCurrentSignal);
+        RobotContainer.allStatusSignalsToRefresh.addAll(armGroup.getAllStatusSignals());
+
         RobotContainer.orchestra.add(wheel, TalonFXOrchestra.Tracks.INTAKE_WHEEL);
         RobotContainer.orchestra.add(armGroup.getMotor(0), TalonFXOrchestra.Tracks.INTAKE_ARM_LEFT);
         RobotContainer.orchestra.add(armGroup.getMotor(1), TalonFXOrchestra.Tracks.INTAKE_ARM_RIGHT);
@@ -87,9 +91,6 @@ public class IntakeReal implements IntakeIO {
 
     @Override
     public void updateInputs(IntakeIOInputs inputs) {
-        BaseStatusSignal.refreshAll(wheelPositionSignal, wheelVelocitySignal, wheelVoltageSignal, wheelCurrentSignal);
-        BaseStatusSignal.refreshAll(armGroup.getAllStatusSignals());
-
         armGroup.periodic();
 
         inputs.armHasPosition = !armGroup.hasLostPosition();
@@ -99,7 +100,9 @@ public class IntakeReal implements IntakeIO {
         inputs.armVoltage = SimpleMath.average(armGroup.getVoltages()).orElse(0);
         inputs.armCurrentDraw = Arrays.stream(armGroup.getCurrents()).reduce(Amps.zero(), Current::plus);
 
-        inputs.wheelConnected = wheel.isConnected();
+        inputs.wheelConnected = wheelVelocitySignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.wheelPositionMeters = wheelPositionSignal.getValueAsDouble();
         inputs.wheelVelocityMps = wheelVelocitySignal.getValueAsDouble();
         inputs.wheelVoltage = wheelVoltageSignal.getValueAsDouble();

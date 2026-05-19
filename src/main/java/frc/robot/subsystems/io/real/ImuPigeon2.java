@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
+import frc.robot.RobotContainer;
 import frc.robot.RobotMap;
 import frc.robot.subsystems.io.ImuIO;
 
@@ -47,6 +48,16 @@ public class ImuPigeon2 implements ImuIO {
                 angularVelocityXSignal,
                 angularVelocityYSignal,
                 angularVelocityZSignal);
+
+        RobotContainer.allStatusSignalsToRefresh.addAll(
+                yawSignal,
+                pitchSignal,
+                rollSignal,
+                angularVelocityXSignal,
+                angularVelocityYSignal,
+                angularVelocityZSignal,
+                accelerationXSignal,
+                accelerationYSignal);
     }
 
     @Override
@@ -61,17 +72,9 @@ public class ImuPigeon2 implements ImuIO {
 
     @Override
     public void updateInputs(ImuIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
-                yawSignal,
-                pitchSignal,
-                rollSignal,
-                angularVelocityXSignal,
-                angularVelocityYSignal,
-                angularVelocityZSignal,
-                accelerationXSignal,
-                accelerationYSignal);
-
-        inputs.connected = pigeon.isConnected();
+        inputs.connected = yawSignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.yaw = new Rotation2d(yawSignal.getValue());
         inputs.pitch = new Rotation2d(pitchSignal.getValue());
         inputs.roll = new Rotation2d(rollSignal.getValue());

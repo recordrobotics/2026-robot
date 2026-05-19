@@ -50,6 +50,10 @@ public class ShooterReal implements ShooterIO {
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), hoodPositionSignal);
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), flywheelGroup.getAllHighRefreshRateStatusSignals());
 
+        RobotContainer.allStatusSignalsToRefresh.addAll(
+                hoodPositionSignal, hoodVelocitySignal, hoodVoltageSignal, hoodCurrentSignal);
+        RobotContainer.allStatusSignalsToRefresh.addAll(flywheelGroup.getAllStatusSignals());
+
         RobotContainer.orchestra.add(hood, TalonFXOrchestra.Tracks.HOOD);
         RobotContainer.orchestra.add(flywheelGroup.getMotor(0), TalonFXOrchestra.Tracks.FLYWHEEL_LEFT);
         RobotContainer.orchestra.add(flywheelGroup.getMotor(1), TalonFXOrchestra.Tracks.FLYWHEEL_RIGHT);
@@ -87,9 +91,6 @@ public class ShooterReal implements ShooterIO {
 
     @Override
     public void updateInputs(ShooterIOInputs inputs) {
-        BaseStatusSignal.refreshAll(hoodPositionSignal, hoodVelocitySignal, hoodVoltageSignal, hoodCurrentSignal);
-        BaseStatusSignal.refreshAll(flywheelGroup.getAllStatusSignals());
-
         flywheelGroup.periodic();
         if (flywheelGroup.hasLostPosition()) { // position doesn't matter
             flywheelGroup.setPosition(0);
@@ -101,7 +102,9 @@ public class ShooterReal implements ShooterIO {
         inputs.flywheelVoltage = SimpleMath.average(flywheelGroup.getVoltages()).orElse(0);
         inputs.flywheelCurrentDraw = Arrays.stream(flywheelGroup.getCurrents()).reduce(Amps.zero(), Current::plus);
 
-        inputs.hoodConnected = hood.isConnected();
+        inputs.hoodConnected = hoodPositionSignal
+                .getStatus()
+                .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
         inputs.hoodPositionRotations = hoodPositionSignal.getValueAsDouble();
         inputs.hoodVelocityRotationsPerSecond = hoodVelocitySignal.getValueAsDouble();
         inputs.hoodVoltage = hoodVoltageSignal.getValueAsDouble();

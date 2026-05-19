@@ -40,6 +40,7 @@ import frc.robot.utils.CommandUtils;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.DriverStationUtils.MatchTimeData;
+import frc.robot.utils.ExtendedStatusSignalCollection;
 import frc.robot.utils.ModuleConstants.InvalidConfigException;
 import frc.robot.utils.PositionedSubsystem;
 import frc.robot.utils.PoweredSubsystem;
@@ -88,6 +89,8 @@ public final class RobotContainer {
         FORCE,
         FIXED
     }
+
+    public static final ExtendedStatusSignalCollection allStatusSignalsToRefresh = new ExtendedStatusSignalCollection();
 
     public static Drivetrain drivetrain;
     public static PoseSensorFusion poseSensorFusion;
@@ -411,6 +414,7 @@ public final class RobotContainer {
     }
 
     public static void robotPeriodic() {
+        allStatusSignalsToRefresh.refreshAll();
         PositionedSubsystem.PositionedSubsystemManager.getInstance().update();
     }
 
