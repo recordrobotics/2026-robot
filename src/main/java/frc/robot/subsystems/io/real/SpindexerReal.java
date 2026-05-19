@@ -34,8 +34,7 @@ public class SpindexerReal implements SpindexerIO {
         voltageSignal = spindexer.getMotorVoltage();
         currentSignal = spindexer.getSupplyCurrent();
 
-        BaseStatusSignal.setUpdateFrequencyForAll(
-                Hertz.of(50), positionSignal, velocitySignal, voltageSignal, currentSignal);
+        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), velocitySignal);
 
         RobotContainer.orchestra.add(spindexer, TalonFXOrchestra.Tracks.SPINDEXER);
     }

@@ -34,6 +34,7 @@ public class ShooterReal implements ShooterIO {
     public ShooterReal() {
         flywheelGroup = new TalonFXMotorGroup(
                 "Shooter",
+                false,
                 new TalonFXMotorGroup.MotorConfig(
                         RobotMap.Shooter.FLYWHEEL_LEFT_ID, "Left", InvertedValue.CounterClockwise_Positive),
                 new TalonFXMotorGroup.MotorConfig(
@@ -46,9 +47,8 @@ public class ShooterReal implements ShooterIO {
         hoodVoltageSignal = hood.getMotorVoltage();
         hoodCurrentSignal = hood.getSupplyCurrent();
 
-        BaseStatusSignal.setUpdateFrequencyForAll(
-                Hertz.of(50), hoodPositionSignal, hoodVelocitySignal, hoodCurrentSignal, hoodVoltageSignal);
-        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), flywheelGroup.getAllStatusSignals());
+        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), hoodPositionSignal);
+        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), flywheelGroup.getAllHighRefreshRateStatusSignals());
 
         RobotContainer.orchestra.add(hood, TalonFXOrchestra.Tracks.HOOD);
         RobotContainer.orchestra.add(flywheelGroup.getMotor(0), TalonFXOrchestra.Tracks.FLYWHEEL_LEFT);

@@ -36,6 +36,7 @@ public class IntakeReal implements IntakeIO {
         wheel.optimizeBusUtilization();
         armGroup = new TalonFXMotorGroup(
                 "Intake Arm",
+                true,
                 new TalonFXMotorGroup.MotorConfig(
                         RobotMap.Intake.ARM_LEFT_ID, "Left", InvertedValue.CounterClockwise_Positive),
                 new TalonFXMotorGroup.MotorConfig(
@@ -46,9 +47,8 @@ public class IntakeReal implements IntakeIO {
         wheelCurrentSignal = wheel.getSupplyCurrent();
         wheelVoltageSignal = wheel.getMotorVoltage();
 
-        BaseStatusSignal.setUpdateFrequencyForAll(
-                Hertz.of(50), wheelPositionSignal, wheelVelocitySignal, wheelCurrentSignal, wheelVoltageSignal);
-        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), armGroup.getAllStatusSignals());
+        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), wheelVelocitySignal);
+        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), armGroup.getAllHighRefreshRateStatusSignals());
 
         RobotContainer.orchestra.add(wheel, TalonFXOrchestra.Tracks.INTAKE_WHEEL);
         RobotContainer.orchestra.add(armGroup.getMotor(0), TalonFXOrchestra.Tracks.INTAKE_ARM_LEFT);

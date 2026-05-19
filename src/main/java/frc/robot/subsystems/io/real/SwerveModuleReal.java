@@ -66,14 +66,9 @@ public class SwerveModuleReal implements SwerveModuleIO {
                 drivePositionSignal,
                 driveVelocitySignal,
                 driveAccelerationSignal,
-                driveVoltageSignal,
-                driveCurrentSignal,
                 turnPositionSignal,
                 turnVelocitySignal,
-                turnVoltageSignal,
-                turnCurrentSignal,
-                encoderPositionSignal,
-                encoderMagnetHealthSignal);
+                encoderPositionSignal);
 
         RobotContainer.orchestra.add(driveMotor, driveTrack);
         RobotContainer.orchestra.add(turningMotor, turnTrack);

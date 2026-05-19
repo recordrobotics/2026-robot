@@ -35,13 +35,15 @@ public class TalonFXMotorGroup implements AutoCloseable {
         private final StatusSignal<AngularVelocity> velocitySignal;
         private final StatusSignal<Voltage> voltageSignal;
         private final StatusSignal<Current> currentSignal;
+        private final boolean prioritizePosition;
 
         private boolean lastConnected = false;
 
-        private MotorData(MotorConfig config, TalonFX device, Follower followerRequest) {
+        private MotorData(MotorConfig config, TalonFX device, Follower followerRequest, boolean prioritizePosition) {
             this.config = config;
             this.device = device;
             this.followerRequest = followerRequest;
+            this.prioritizePosition = prioritizePosition;
 
             this.device.optimizeBusUtilization();
 
@@ -54,6 +56,10 @@ public class TalonFXMotorGroup implements AutoCloseable {
         public Set<BaseStatusSignal> getStatusSignals() {
             return Set.of(positionSignal, velocitySignal, voltageSignal, currentSignal);
         }
+
+        public Set<BaseStatusSignal> getHighRefreshRateStatusSignals() {
+            return Set.of(prioritizePosition ? positionSignal : velocitySignal);
+        }
     }
 
     private final String groupName;
@@ -64,11 +70,12 @@ public class TalonFXMotorGroup implements AutoCloseable {
     private double lastPositionSet = 0;
 
     private BaseStatusSignal[] allStatusSignalsCache = null;
+    private BaseStatusSignal[] allHighRefreshRateStatusSignalsCache = null;
 
     private final SafeAlert errorAlert = new SafeAlert("", AlertType.kError);
     private final SafeAlert lostAllMotorPositionsAlert = new SafeAlert("", AlertType.kWarning);
 
-    public TalonFXMotorGroup(String groupName, MotorConfig... motors) {
+    public TalonFXMotorGroup(String groupName, boolean prioritizePosition, MotorConfig... motors) {
         this.groupName = groupName;
 
         lostAllMotorPositionsAlert.setText(groupName + " lost all motor positions!");
@@ -80,7 +87,10 @@ public class TalonFXMotorGroup implements AutoCloseable {
         this.motors = new MotorData[motors.length];
         for (int i = 0; i < motors.length; i++) {
             this.motors[i] = new MotorData(
-                    motors[i], new TalonFX(motors[i].deviceId()), new Follower(-1, MotorAlignmentValue.Aligned));
+                    motors[i],
+                    new TalonFX(motors[i].deviceId()),
+                    new Follower(-1, MotorAlignmentValue.Aligned),
+                    prioritizePosition);
         }
 
         updateLastConnected();
@@ -290,6 +300,24 @@ public class TalonFXMotorGroup implements AutoCloseable {
         }
 
         return allStatusSignalsCache;
+    }
+
+    public BaseStatusSignal[] getAllHighRefreshRateStatusSignals() {
+        return getAllHighRefreshRateStatusSignals(false);
+    }
+
+    public BaseStatusSignal[] getAllHighRefreshRateStatusSignals(boolean refresh) {
+        if (refresh || allHighRefreshRateStatusSignalsCache == null) {
+            Set<BaseStatusSignal> set = new HashSet<>();
+
+            for (int i = 0; i < motors.length; i++) {
+                set.addAll(motors[i].getHighRefreshRateStatusSignals());
+            }
+
+            allHighRefreshRateStatusSignalsCache = set.toArray(BaseStatusSignal[]::new);
+        }
+
+        return allHighRefreshRateStatusSignalsCache;
     }
 
     @Override

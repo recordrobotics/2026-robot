@@ -34,8 +34,7 @@ public class ClimberReal implements ClimberIO {
         voltageSignal = motor.getMotorVoltage();
         currentSignal = motor.getSupplyCurrent();
 
-        BaseStatusSignal.setUpdateFrequencyForAll(
-                Hertz.of(50), positionSignal, velocitySignal, voltageSignal, currentSignal);
+        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), positionSignal);
 
         RobotContainer.orchestra.add(motor, TalonFXOrchestra.Tracks.CLIMBER);
     }

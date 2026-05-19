@@ -46,9 +46,7 @@ public class ImuPigeon2 implements ImuIO {
                 rollSignal,
                 angularVelocityXSignal,
                 angularVelocityYSignal,
-                angularVelocityZSignal,
-                accelerationXSignal,
-                accelerationYSignal);
+                angularVelocityZSignal);
     }
 
     @Override

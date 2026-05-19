@@ -37,8 +37,7 @@ public class FeederReal implements FeederIO {
         voltageSignal = feeder.getMotorVoltage();
         currentSignal = feeder.getSupplyCurrent();
 
-        BaseStatusSignal.setUpdateFrequencyForAll(
-                Hertz.of(50), positionSignal, velocitySignal, voltageSignal, currentSignal);
+        BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), velocitySignal);
 
         RobotContainer.orchestra.add(feeder, TalonFXOrchestra.Tracks.FEEDER);
     }

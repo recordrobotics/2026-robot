@@ -46,13 +46,7 @@ public class TurretReal implements TurretIO {
         reverseSoftLimitSignal = turret.getFault_ReverseSoftLimit();
 
         BaseStatusSignal.setUpdateFrequencyForAll(
-                Hertz.of(50),
-                positionSignal,
-                velocitySignal,
-                voltageSignal,
-                currentSignal,
-                forwardSoftLimitSignal,
-                reverseSoftLimitSignal);
+                Hertz.of(50), positionSignal, velocitySignal, forwardSoftLimitSignal, reverseSoftLimitSignal);
 
         RobotContainer.orchestra.add(turret, TalonFXOrchestra.Tracks.TURRET);
     }
@@ -74,6 +68,14 @@ public class TurretReal implements TurretIO {
 
     @Override
     public void updateInputs(TurretIOInputs inputs) {
+        BaseStatusSignal.refreshAll(
+                positionSignal,
+                velocitySignal,
+                voltageSignal,
+                currentSignal,
+                forwardSoftLimitSignal,
+                reverseSoftLimitSignal);
+
         inputs.connected = turret.isConnected();
         inputs.positionRotations = positionSignal.getValueAsDouble();
         inputs.velocityRotationsPerSecond = velocitySignal.getValueAsDouble();
