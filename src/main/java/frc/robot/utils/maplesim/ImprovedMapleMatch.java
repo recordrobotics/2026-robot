@@ -1,10 +1,18 @@
 package frc.robot.utils.maplesim;
 
+import com.pathplanner.lib.util.FlippingUtil;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.utils.SimpleMath;
 import java.util.Random;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.gamepieces.GamePieceOnFieldSimulation;
+import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 
 public class ImprovedMapleMatch {
 
@@ -34,6 +42,8 @@ public class ImprovedMapleMatch {
     private double shiftEndTime = 0;
     private boolean nextShiftRedActive = false;
     private boolean nextShiftBlueActive = false;
+
+    private double nextThrowInTimestamp = Timer.getTimestamp();
 
     public ImprovedMapleMatch() {
         sendActiveState();
@@ -76,6 +86,62 @@ public class ImprovedMapleMatch {
             oldBlueFuel = blueFuel;
         }
 
+        // Make sure balls get rolled back
+        // Check if ball is OOB
+        GamePieceOnFieldSimulation[] fuelPoses =
+                SimulatedArena.getInstance().gamePiecesOnField().toArray(GamePieceOnFieldSimulation[]::new);
+
+        if (Timer.getTimestamp() - nextThrowInTimestamp > 0) {
+            GamePieceOnFieldSimulation fuel = fuelPoses[new Random().nextInt(0, fuelPoses.length - 1)];
+            if (!SimpleMath.isInField(fuel.getPoseOnField())) {
+
+                // x is up and down
+                // y is left and right
+
+                Translation2d currentPos = fuel.getPose3d().getTranslation().toTranslation2d();
+
+                double randomAdd = Math.random() * 2.5;
+
+                double newX = currentPos.getX();
+                double newY = currentPos.getY();
+
+                double newXVelocity = 0.0;
+                double newYVelocity = 0.0;
+
+                // top and bottom checks
+                if (currentPos.getX() < FlippingUtil.fieldSizeX) {
+                    newX = 0.25;
+                    newXVelocity = 3.0 + randomAdd;
+                } else if (currentPos.getX() > FlippingUtil.fieldSizeX) {
+                    newX = FlippingUtil.fieldSizeX - 0.25;
+                    newXVelocity = -3.0 - randomAdd;
+                }
+
+                // left and right checks
+                if (currentPos.getY() < FlippingUtil.fieldSizeY) {
+                    newY = 0.25;
+                    newYVelocity = 3.0 + randomAdd;
+                } else if (currentPos.getY() > FlippingUtil.fieldSizeY) {
+                    newY = FlippingUtil.fieldSizeY - 0.25;
+                    newYVelocity = -3.0 - randomAdd;
+                }
+
+                SimulatedArena.getInstance().removeGamePiece(fuel); // delete ball
+
+                SimulatedArena.getInstance() // spawn ball
+                        .addGamePieceProjectile(new GamePieceProjectile(
+                                        RebuiltFuelOnField.REBUILT_FUEL_INFO,
+                                        new Translation2d(newX, newY), // start pos (x, y)
+                                        new Translation2d( // start velocity
+                                                newXVelocity, newYVelocity),
+                                        2 + Math.random() * 1.5, // initial height
+                                        0 + Math.random(), // vertical speed
+                                        new Rotation3d(0, 0, 0)) // rotation
+                                .enableBecomesGamePieceOnFieldAfterTouchGround());
+
+                nextThrowInTimestamp = Timer.getTimestamp() + Math.random() * 1.5 + 0.5;
+            }
+        }
         sendActiveState();
         sendScore();
     }
