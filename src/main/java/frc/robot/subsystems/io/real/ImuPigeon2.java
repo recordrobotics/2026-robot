@@ -75,9 +75,9 @@ public class ImuPigeon2 implements ImuIO {
         inputs.connected = yawSignal
                 .getStatus()
                 .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
-        inputs.yaw = new Rotation2d(yawSignal.getValue());
-        inputs.pitch = new Rotation2d(pitchSignal.getValue());
-        inputs.roll = new Rotation2d(rollSignal.getValue());
+        inputs.yaw = new Rotation2d(BaseStatusSignal.getLatencyCompensatedValue(yawSignal, angularVelocityZSignal));
+        inputs.pitch = new Rotation2d(BaseStatusSignal.getLatencyCompensatedValue(pitchSignal, angularVelocityYSignal));
+        inputs.roll = new Rotation2d(BaseStatusSignal.getLatencyCompensatedValue(rollSignal, angularVelocityXSignal));
         inputs.yawRate = angularVelocityZSignal.getValue();
         inputs.pitchRate = angularVelocityYSignal.getValue();
         inputs.rollRate = angularVelocityXSignal.getValue();

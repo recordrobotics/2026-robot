@@ -127,7 +127,9 @@ public class SwerveModuleReal implements SwerveModuleIO {
         inputs.driveMotorConnected = driveVelocitySignal
                 .getStatus()
                 .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
-        inputs.driveMotorPositionMeters = drivePositionSignal.getValueAsDouble();
+        inputs.driveMotorPositionMeters = BaseStatusSignal.getLatencyCompensatedValue(
+                        drivePositionSignal, driveVelocitySignal)
+                .magnitude();
         inputs.driveMotorVelocityMps = driveVelocitySignal.getValueAsDouble();
         inputs.driveMotorAccelerationMps2 = driveAccelerationSignal.getValueAsDouble();
         inputs.driveMotorVoltage = driveVoltageSignal.getValueAsDouble();
@@ -136,7 +138,9 @@ public class SwerveModuleReal implements SwerveModuleIO {
         inputs.turnMotorConnected = turnPositionSignal
                 .getStatus()
                 .isOK(); /* check signal status instead of calling isConnected() to reduce bus wait time */
-        inputs.turnMotorPositionRotations = turnPositionSignal.getValueAsDouble();
+        inputs.turnMotorPositionRotations = BaseStatusSignal.getLatencyCompensatedValue(
+                        turnPositionSignal, turnVelocitySignal)
+                .magnitude();
         inputs.turnMotorVelocityRps = turnVelocitySignal.getValueAsDouble();
         inputs.turnMotorVoltage = turnVoltageSignal.getValueAsDouble();
         inputs.turnMotorCurrentDraw = turnCurrentSignal.getValue();
