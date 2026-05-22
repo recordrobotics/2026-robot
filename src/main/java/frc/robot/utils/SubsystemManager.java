@@ -18,6 +18,9 @@ import java.util.concurrent.Future;
 
 @SuppressWarnings("java:S6548") // We want this to be a singleton
 public class SubsystemManager extends SubsystemBase {
+
+    private static final boolean USE_MULTITHREADING = false;
+
     /** The Singleton Instance. */
     private static SubsystemManager instance;
 
@@ -65,25 +68,39 @@ public class SubsystemManager extends SubsystemBase {
     @Override
     public void periodic() {
         watchdog.reset();
-        futures.clear();
+
+        if (USE_MULTITHREADING) {
+            futures.clear();
+        }
 
         // Run the periodic method of all registered subsystems.
         for (ManagedSubsystemBase subsystem : subsystems.keySet()) {
-            futures.add(executor.submit(subsystem::periodicManaged));
+            if (USE_MULTITHREADING) {
+                futures.add(executor.submit(subsystem::periodicManaged));
+            } else {
+                subsystem.periodicManaged();
+            }
             if (RobotBase.isSimulation()) {
-                futures.add(executor.submit(subsystem::simulationPeriodicManaged));
+                if (USE_MULTITHREADING) {
+                    futures.add(executor.submit(subsystem::simulationPeriodicManaged));
+                } else {
+                    subsystem.simulationPeriodicManaged();
+                }
             }
         }
 
-        for (Future<?> future : futures) {
-            try {
-                future.get();
-            } catch (ExecutionException | CancellationException e) {
-                ConsoleLogger.logError("SubsystemManager periodic error", Objects.requireNonNullElse(e.getCause(), e));
-            } catch (InterruptedException e) {
-                ConsoleLogger.logError(
-                        "SubsystemManager periodic interrupted", Objects.requireNonNullElse(e.getCause(), e));
-                Thread.currentThread().interrupt();
+        if (USE_MULTITHREADING) {
+            for (Future<?> future : futures) {
+                try {
+                    future.get();
+                } catch (ExecutionException | CancellationException e) {
+                    ConsoleLogger.logError(
+                            "SubsystemManager periodic error", Objects.requireNonNullElse(e.getCause(), e));
+                } catch (InterruptedException e) {
+                    ConsoleLogger.logError(
+                            "SubsystemManager periodic interrupted", Objects.requireNonNullElse(e.getCause(), e));
+                    Thread.currentThread().interrupt();
+                }
             }
         }
 
