@@ -4,6 +4,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
@@ -172,11 +173,14 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
                         .getRadians());
 
         photonEstimator.addHeadingData(
-                timestamp, heading.plus(getLastRobotToMechanism().getRotation()));
-        photonEstimator.setRobotToCameraTransform(convertRobotToCamera(
-                getDynamicPositionMode() == DynamicPositionMode.ROBOT_TO_CAMERA
+                timestamp,
+                heading.plus(getLastRobotToMechanism().getRotation())
+                        .toRotation2d() /* until photonvision supports 3d robot heading data, show verbosely that it is ignored within the internal API */);
+        photonEstimator.setRobotToCameraTransform(convertRobotToCamera((getDynamicPositionMode()
+                                == DynamicPositionMode.ROBOT_TO_CAMERA
                         ? getRobotToCamera()
-                        : getMechanismToCamera()));
+                        : getMechanismToCamera())
+                .plus(new Transform3d(Translation3d.kZero, new Rotation3d(heading.getX(), heading.getY(), 0)))));
 
         if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
             RobotContainer.visionSim.adjustCamera(cameraSim, convertRobotToCamera(getRobotToCamera()));
