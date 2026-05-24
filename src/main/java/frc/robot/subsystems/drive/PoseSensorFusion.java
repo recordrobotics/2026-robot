@@ -126,11 +126,11 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
                             PhysicalCamera.LIMELIGHT_3G,
                             Constants.Vision.ROBOT_TO_CAMERA_RIGHT_FRONT)
                     .setForceUnconstrained(true),
-            Cameras.createLimelightPoseEstimationCamera(
-                            Constants.Vision.HOPPER_BACK_NAME,
-                            PhysicalCamera.LIMELIGHT_2,
-                            Constants.Vision.ROBOT_TO_CAMERA_HOPPER_BACK)
-                    .setForceUnconstrained(true),
+            // Cameras.createLimelightPoseEstimationCamera(
+            //                 Constants.Vision.HOPPER_BACK_NAME,
+            //                 PhysicalCamera.LIMELIGHT_2,
+            //                 Constants.Vision.ROBOT_TO_CAMERA_HOPPER_BACK)
+            //         .setForceUnconstrained(true),
             Cameras.createPhotonVisionPoseEstimationCamera(
                             Constants.Vision.LEFT_BACK_NAME,
                             PhysicalCamera.SVPRO_GLOBAL_SHUTTER,

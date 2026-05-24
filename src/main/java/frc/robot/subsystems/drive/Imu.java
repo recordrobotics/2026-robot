@@ -39,7 +39,11 @@ public final class Imu extends ManagedSubsystemBase {
     public Imu(ImuIO io) {
         this.io = io;
 
-        io.applyPigeon2Config(new Pigeon2Configuration().withMountPose(new MountPoseConfigs().withMountPoseYaw(0)));
+        io.applyPigeon2Config(new Pigeon2Configuration()
+                .withMountPose(new MountPoseConfigs()
+                        .withMountPoseYaw(178.94017028808594)
+                        .withMountPosePitch(0.4177381694316864)
+                        .withMountPoseRoll(178.8354034423828)));
 
         io.reset();
         io.resetDisplacement(); // Technically not necessary but whatever

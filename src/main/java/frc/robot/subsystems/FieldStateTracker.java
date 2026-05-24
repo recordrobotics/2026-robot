@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.google.common.collect.ImmutableSortedMap;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -11,13 +10,10 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
-import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
-import frc.robot.utils.camera.Cameras;
 import frc.robot.utils.camera.GenericCamera;
-import frc.robot.utils.camera.PhysicalCamera;
 import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionCamera;
 import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionClass;
 import java.util.ArrayList;
@@ -55,25 +51,26 @@ public class FieldStateTracker extends ManagedSubsystemBase {
             /*
              * Intake Left
              */
-            Cameras.createPhotonVisionObjectDetectionCamera(
-                    Constants.Vision.INTAKE_LEFT_NAME,
-                    PhysicalCamera.ARDUCAM_160_FOV,
-                    Constants.Vision.ROBOT_TO_CAMERA_INTAKE_LEFT,
-                    ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
-                            .put(1, ObjectDetectionClass.BUMPER)
-                            .put(2, ObjectDetectionClass.FUEL)
-                            .build()),
+            // Cameras.createPhotonVisionObjectDetectionCamera(
+            //         Constants.Vision.INTAKE_LEFT_NAME,
+            //         PhysicalCamera.ARDUCAM_160_FOV,
+            //         Constants.Vision.ROBOT_TO_CAMERA_INTAKE_LEFT,
+            //         ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
+            //                 .put(1, ObjectDetectionClass.BUMPER)
+            //                 .put(2, ObjectDetectionClass.FUEL)
+            //                 .build()),
             /*
              * Intake Right
              */
-            Cameras.createPhotonVisionObjectDetectionCamera(
-                    Constants.Vision.INTAKE_RIGHT_NAME,
-                    PhysicalCamera.ARDUCAM_160_FOV,
-                    Constants.Vision.ROBOT_TO_CAMERA_INTAKE_RIGHT,
-                    ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
-                            .put(1, ObjectDetectionClass.BUMPER)
-                            .put(2, ObjectDetectionClass.FUEL)
-                            .build()));
+            // Cameras.createPhotonVisionObjectDetectionCamera(
+            //         Constants.Vision.INTAKE_RIGHT_NAME,
+            //         PhysicalCamera.ARDUCAM_160_FOV,
+            //         Constants.Vision.ROBOT_TO_CAMERA_INTAKE_RIGHT,
+            //         ImmutableSortedMap.<Integer, ObjectDetectionClass>naturalOrder()
+            //                 .put(1, ObjectDetectionClass.BUMPER)
+            //                 .put(2, ObjectDetectionClass.FUEL)
+            //                 .build())
+            );
 
     /**
      * The deferred pose estimations to be added at the end of the calculation phase
