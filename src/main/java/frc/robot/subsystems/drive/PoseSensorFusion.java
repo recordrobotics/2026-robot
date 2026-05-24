@@ -7,6 +7,8 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
@@ -382,9 +384,19 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
      * Gets the estimated position of the robot on the field at the current time
      * @return the estimated position of the robot on the field
      */
-    @AutoLogLevel(key = "Odometry/Robot", level = Level.REAL)
     public Pose2d getEstimatedPosition() {
         return poseFilter.getEstimatedPosition();
+    }
+
+    @AutoLogLevel(key = "Odometry/Robot", level = Level.REAL)
+    public Pose3d getEstimatedPosition3d() {
+        Pose2d pose2d = getEstimatedPosition();
+        return new Pose3d(
+                new Translation3d(pose2d.getTranslation()),
+                new Rotation3d(
+                        RobotContainer.poseSensorFusion.imu.getRoll().getRadians(),
+                        RobotContainer.poseSensorFusion.imu.getPitch().getRadians(),
+                        pose2d.getRotation().getRadians()));
     }
 
     /**

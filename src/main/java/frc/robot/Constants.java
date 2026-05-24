@@ -270,7 +270,7 @@ public final class Constants {
         public static final VisionSimulationMode VISION_SIMULATION_MODE = VisionSimulationMode.PHOTON_SIM_ACCURATE;
 
         public static final PhotonVisionSimPerformanceMode PHOTON_VISION_SIM_PERFORMANCE_MODE =
-                PhotonVisionSimPerformanceMode.FAST;
+                PhotonVisionSimPerformanceMode.WIREFRAME;
 
         public static final ObjectDetectionSimulationMode OBJECT_DETECTION_SIMULATION_MODE =
                 ObjectDetectionSimulationMode.MAPLE_SIM;

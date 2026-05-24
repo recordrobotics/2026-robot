@@ -339,7 +339,10 @@ public final class Drivetrain extends ManagedSubsystemBase {
 
         lastSimPose3d = new Pose3d(
                 lastSimPose3d.getTranslation(),
-                lastSimPose3d.getRotation().rotateBy(new Rotation3d(Math.PI / 4, Math.PI / 4, 0)));
+                new Rotation3d(
+                        Units.degreesToRadians(5),
+                        Units.degreesToRadians(5),
+                        lastSimPose3d.getRotation().getZ()));
     }
 
     public void sysIdOnlyDriveMotorsSpin(Voltage volts) {

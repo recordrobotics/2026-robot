@@ -175,7 +175,7 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
         photonEstimator.addHeadingData(
                 timestamp,
                 heading.plus(getLastRobotToMechanism().getRotation())
-                        .toRotation2d() /* until photonvision supports 3d robot heading data, show verbosely that it is ignored within the internal API */);
+                        .toRotation2d() /* photonvision ignores roll and pitch but does it matter??? im confused test on actual robot */);
         photonEstimator.setRobotToCameraTransform(convertRobotToCamera((getDynamicPositionMode()
                                 == DynamicPositionMode.ROBOT_TO_CAMERA
                         ? getRobotToCamera()
