@@ -19,6 +19,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -340,8 +341,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
         lastSimPose3d = new Pose3d(
                 lastSimPose3d.getTranslation(),
                 new Rotation3d(
-                        Units.degreesToRadians(5),
-                        Units.degreesToRadians(5),
+                        Units.degreesToRadians(180 * Math.sin(Timer.getTimestamp() * (5.0 / 360.0))),
+                        Units.degreesToRadians(180 * Math.sin(Timer.getTimestamp() * (5.0 / 360.0))),
                         lastSimPose3d.getRotation().getZ()));
     }
 
