@@ -8,6 +8,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -335,6 +336,10 @@ public final class Drivetrain extends ManagedSubsystemBase {
         if (robotBumpSim.isOnRamp()) {
             swerveDriveSimulation.setSimulationWorldPose(robotBumpSim.getSimWorldPose(simPose));
         }
+
+        lastSimPose3d = new Pose3d(
+                lastSimPose3d.getTranslation(),
+                lastSimPose3d.getRotation().rotateBy(new Rotation3d(Math.PI / 4, Math.PI / 4, 0)));
     }
 
     public void sysIdOnlyDriveMotorsSpin(Voltage volts) {
