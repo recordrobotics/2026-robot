@@ -13,12 +13,6 @@
         {
           "type": "named",
           "data": {
-            "name": "Hopper"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Mixer"
           }
         }
