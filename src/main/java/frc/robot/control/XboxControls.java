@@ -190,7 +190,7 @@ public class XboxControls implements AbstractControl {
 
     @Override
     public boolean isReverseIntakePressed() {
-        return false;
+        return xbox.getPOV() == 180; // D-pad down
     }
 
     @Override
@@ -215,6 +215,11 @@ public class XboxControls implements AbstractControl {
 
     public boolean isFastSpeedPressed() {
         return xbox.getRightBumperButton();
+    }
+
+    @Override
+    public boolean isDefenseModePressed() {
+        return xbox.getPOV() == 0; // D-pad up
     }
 
     @Override

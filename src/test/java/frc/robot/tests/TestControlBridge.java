@@ -295,4 +295,9 @@ public class TestControlBridge implements AbstractControl {
     public boolean isSlowSpeedPressed() {
         return false; // TODO
     }
+
+    @Override
+    public boolean isDefenseModePressed() {
+        return false; // TODO
+    }
 }

@@ -180,6 +180,11 @@ public class JoystickControls implements AbstractControl {
     }
 
     @Override
+    public boolean isDefenseModePressed() {
+        return joystick.getRawButton(11);
+    }
+
+    @Override
     public String toDisplayName() {
         return "Joystick";
     }

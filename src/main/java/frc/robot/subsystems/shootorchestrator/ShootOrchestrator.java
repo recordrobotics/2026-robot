@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.Feeder.FeederState;
+import frc.robot.subsystems.Intake.IntakeState;
 import frc.robot.subsystems.Shooter.ShooterState;
 import frc.robot.subsystems.Spindexer.SpindexerState;
 import frc.robot.subsystems.Turret.TurretState;
@@ -237,7 +238,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 : 0;
         lastShotYaw = OptionalDouble.of(shotYaw);
 
-        if (RobotContainer.intake.isNearStartPosition()) {
+        if (RobotContainer.intake.isNearStartPosition()
+                || RobotContainer.intake.getTargetState() == IntakeState.STARTING) {
             double turretPos = Units.rotationsToRadians(RobotContainer.turret.getPositionRotations());
             return new TurretState(Math.copySign(Constants.Turret.STARTING_POSITION_RADIANS, turretPos), 0, 0);
         } else if (useFixedShooting) {
@@ -325,7 +327,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 && RobotContainer.turret.atGoal(
                         overridden ? Units.degreesToRadians(12) : calculateAllowableTurretError())
                 && shooterOnTarget
-                && !RobotContainer.intake.isNearStartPosition()
+                && !(RobotContainer.intake.isNearStartPosition()
+                        || RobotContainer.intake.getTargetState() == IntakeState.STARTING)
                 && RobotContainer.turret.getPositionStatus() == PositionStatus.KNOWN
                 && RobotContainer.shooter.getPositionStatus() == PositionStatus.KNOWN;
     }

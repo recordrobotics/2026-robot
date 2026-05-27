@@ -227,6 +227,13 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         }
     }
 
+    @AutoLogLevel
+    public boolean isStowed() {
+        return Math.abs(Math.abs(Units.rotationsToRadians(getPositionRotations()))
+                        - Math.abs(Constants.Turret.STARTING_POSITION_RADIANS))
+                < Units.degreesToRadians(9);
+    }
+
     public void checkMagnet() {
         LimitSwitchStates limitSwitchStates = inputs.limitSwitchStates;
         boolean isCcw = inputs.voltage < 0.1;

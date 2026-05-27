@@ -267,6 +267,11 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             }
         }
 
+        // want to go to starting config but not there yet, wait for turret to stow
+        if (targetState == IntakeState.STARTING && !isNearStartPosition() && RobotContainer.turret.isStowed()) {
+            setState(targetState); // refresh state
+        }
+
         setWheelControl();
     }
 
@@ -275,7 +280,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
 
         armTargetRotations = switch (state) {
             case INTAKE, EJECT, OUT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
-            case STARTING -> Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
+            case STARTING ->
+                (RobotContainer.turret != null && !isNearStartPosition() && !RobotContainer.turret.isStowed())
+                        ? armTargetRotations
+                        : Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
             case RETRACTED -> Units.radiansToRotations(Constants.Intake.ARM_RETRACTED_POSITION_RADIANS);
         };
         wheelTargetState = switch (state) {

@@ -186,7 +186,7 @@ public class SwitchControls implements AbstractControl {
 
     @Override
     public boolean isReverseIntakePressed() {
-        return false;
+        return xbox.getPOV() == 180; // D-pad down
     }
 
     @Override
@@ -211,6 +211,11 @@ public class SwitchControls implements AbstractControl {
 
     public boolean isFastSpeedPressed() {
         return xbox.getRawButton(6);
+    }
+
+    @Override
+    public boolean isDefenseModePressed() {
+        return xbox.getPOV() == 0; // D-pad up
     }
 
     @Override

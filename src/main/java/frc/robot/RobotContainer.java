@@ -340,7 +340,11 @@ public final class RobotContainer {
         new Trigger(() -> getControl().isReverseIntakePressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.EJECT), intake))
-                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake));
+                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
+
+        new Trigger(() -> getControl().isDefenseModePressed()
+                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
+                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.STARTING), intake));
 
         new Trigger(() -> getControl().isClimbPressed()).onTrue(new InstantCommand(() -> {
             if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {
