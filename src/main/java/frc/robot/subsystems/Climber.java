@@ -47,7 +47,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     private static final Time SYSID_TIMEOUT = Seconds.of(1.2);
 
     private static final double RESET_VOLTAGE = -2.0;
-    private static final double RESET_VELOCITY_THRESHOLD = 0.001;
+    private static final double RESET_VELOCITY_THRESHOLD = 0.003;
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
     private final ClimberIO io;
@@ -151,6 +151,9 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
             }
         } else {
             lastMovementTime = Timer.getTimestamp();
+            if (positionStatus == PositionStatus.UNKNOWN) {
+                setControl();
+            }
         }
 
         // want to extend shotblocker but not there yet, wait for intake to retract

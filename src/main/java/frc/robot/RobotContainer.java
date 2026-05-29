@@ -444,6 +444,7 @@ public final class RobotContainer {
                         .ignoringDisable(Constants.RobotState.getMode() == Mode.SIM));
         new Trigger(resetLocationButton)
                 .onTrue(Commands.runOnce(() -> {
+                            resetLocationButton.set(false);
                             poseSensorFusion.setToPose(getStartingLocation().getPose());
                             if (Constants.RobotState.getMode() == Mode.SIM) {
                                 // reset voltage
@@ -452,9 +453,14 @@ public final class RobotContainer {
                         })
                         .ignoringDisable(true));
         new Trigger(encoderResetButton)
-                .onTrue(Commands.runOnce(RobotContainer::resetEncoders).ignoringDisable(true));
+                .onTrue(Commands.runOnce(() -> {
+                            encoderResetButton.set(false);
+                            resetEncoders();
+                        })
+                        .ignoringDisable(true));
 
-        new Trigger(shootTuningButton).onTrue(new ShootTuning());
+        new Trigger(shootTuningButton)
+                .onTrue(Commands.runOnce(() -> shootTuningButton.set(false)).andThen(new ShootTuning()));
     }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -488,6 +494,7 @@ public final class RobotContainer {
 
     public static void resetEncoders() {
         PositionedSubsystem.PositionedSubsystemManager.getInstance().resetAll();
+        model.intakeModel.resetHopperExtension();
 
         noEncoderResetAlert.set(false);
         Elastic.sendNotification(
