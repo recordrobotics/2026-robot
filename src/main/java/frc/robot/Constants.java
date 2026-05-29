@@ -534,7 +534,7 @@ public final class Constants {
 
         public static final double ARM_DOWN_POSITION_RADIANS = Units.degreesToRadians(0.0); // should always be 0
         public static final double ARM_RETRACTED_POSITION_RADIANS = Units.degreesToRadians(81.0);
-        public static final double ARM_MAX_POSITION_RADIANS = Units.degreesToRadians(137.0);
+        public static final double ARM_MAX_POSITION_RADIANS = Units.degreesToRadians(122.0);
         public static final double ARM_STARTING_POSITION_RADIANS =
                 SysIdManager.getProvider() instanceof frc.robot.subsystems.Intake.SysIdArm
                         ? ARM_DOWN_POSITION_RADIANS

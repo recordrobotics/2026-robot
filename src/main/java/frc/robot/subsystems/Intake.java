@@ -110,10 +110,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     public Intake(IntakeIO io) {
         this.io = io;
 
-        TalonFXConfiguration configLeader = new TalonFXConfiguration();
+        TalonFXConfiguration configArm = new TalonFXConfiguration();
 
         // set slot 0 gains
-        Slot0Configs slot0ConfigsLeader = configLeader.Slot0;
+        Slot0Configs slot0ConfigsLeader = configArm.Slot0;
         slot0ConfigsLeader.kS = Constants.Intake.ARM_KS;
         slot0ConfigsLeader.kV = Constants.Intake.ARM_KV;
         slot0ConfigsLeader.kA = Constants.Intake.ARM_KA;
@@ -123,28 +123,28 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         slot0ConfigsLeader.GravityType = GravityTypeValue.Arm_Cosine;
         slot0ConfigsLeader.GravityArmPositionOffset = Constants.Intake.ARM_GRAVITY_POSITION_OFFSET_ROTATIONS;
 
-        configLeader.MotionMagic.MotionMagicExpo_kV = Constants.Intake.ARM_MMEXPO_KV;
-        configLeader.MotionMagic.MotionMagicExpo_kA = Constants.Intake.ARM_MMEXPO_KA;
+        configArm.MotionMagic.MotionMagicExpo_kV = Constants.Intake.ARM_MMEXPO_KV;
+        configArm.MotionMagic.MotionMagicExpo_kA = Constants.Intake.ARM_MMEXPO_KA;
 
-        configLeader.CurrentLimits.SupplyCurrentLimit = Constants.Intake.ARM_SUPPLY_CURRENT_LIMIT.in(Amps);
-        configLeader.CurrentLimits.StatorCurrentLimit = Constants.Intake.ARM_STATOR_CURRENT_LIMIT.in(Amps);
-        configLeader.CurrentLimits.SupplyCurrentLimitEnable = true;
-        configLeader.CurrentLimits.StatorCurrentLimitEnable = true;
-        configLeader.CurrentLimits.SupplyCurrentLowerLimit = Constants.Intake.ARM_SUPPLY_LOWER_CURRENT_LIMIT.in(Amps);
-        configLeader.CurrentLimits.SupplyCurrentLowerTime =
+        configArm.CurrentLimits.SupplyCurrentLimit = Constants.Intake.ARM_SUPPLY_CURRENT_LIMIT.in(Amps);
+        configArm.CurrentLimits.StatorCurrentLimit = Constants.Intake.ARM_STATOR_CURRENT_LIMIT.in(Amps);
+        configArm.CurrentLimits.SupplyCurrentLimitEnable = true;
+        configArm.CurrentLimits.StatorCurrentLimitEnable = true;
+        configArm.CurrentLimits.SupplyCurrentLowerLimit = Constants.Intake.ARM_SUPPLY_LOWER_CURRENT_LIMIT.in(Amps);
+        configArm.CurrentLimits.SupplyCurrentLowerTime =
                 Constants.Intake.ARM_SUPPLY_LOWER_CURRENT_LIMIT_TIME.in(Seconds);
 
-        configLeader.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        configArm.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
                 Units.radiansToRotations(Constants.Intake.ARM_MAX_POSITION_RADIANS);
-        configLeader.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+        configArm.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
                 Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
-        configLeader.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        configLeader.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+        configArm.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        configArm.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-        configLeader.Feedback.SensorToMechanismRatio = Constants.Intake.ARM_GEAR_RATIO;
-        configLeader.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        configArm.Feedback.SensorToMechanismRatio = Constants.Intake.ARM_GEAR_RATIO;
+        configArm.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        io.applyArmTalonFXConfig(configLeader.withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
+        io.applyArmTalonFXConfig(configArm.withAudio(new AudioConfigs().withAllowMusicDurDisable(true)));
 
         TalonFXConfiguration configWheel = new TalonFXConfiguration();
 
