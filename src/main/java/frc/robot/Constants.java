@@ -788,6 +788,8 @@ public final class Constants {
         public static final double CLIMBER_BASE_HEIGHT_METERS = 0.502432;
 
         public static final double CLIMBER_SAFE_SHOTBLOCKER_HEIGHT = Units.inchesToMeters(6.0);
+        public static final double CLIMBER_SHOTBLOCKER_EXTEND_START_HEIGHT = Units.inchesToMeters(6.3);
+        public static final double CLIMBER_SHOTBLOCKER_EXTEND_END_HEIGHT = Units.inchesToMeters(7.5);
 
         private Climber() {}
     }
