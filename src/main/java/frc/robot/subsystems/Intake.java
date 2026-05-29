@@ -61,6 +61,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     private static final double RESET_VELOCITY_THRESHOLD = 0.06;
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
 
+    // Don't use reset delta if we moved less than 40 degrees, assume ARM_STARTING_POSITION_RADIANS instead
+    private static final double ENCODERS_RESET_DELTA_THRESHOLD = Units.degreesToRotations(40);
+
     private static final LoggedNetworkBoolean disableWheelToggle =
             new LoggedNetworkBoolean("Intake/DisableWheel", false);
 
@@ -90,6 +93,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     private boolean overrideKnown = false;
 
     private double lastNotNegativePositionTime = 0;
+
+    private double encodersResetDelta = 0;
 
     private final SafeAlert wheelDisconnectedAlert = new SafeAlert("Intake roller disconnected!", AlertType.kError);
 
@@ -221,6 +226,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
 
         if (!inputs.armHasPosition) {
             positionStatus = PositionStatus.UNKNOWN;
+            encodersResetDelta = 0;
         }
 
         if (overrideKnown) {
@@ -240,6 +246,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
                         positionStatus = PositionStatus.KNOWN;
                         runExtendHoming = false;
                         hasStartedMovingDown = false;
+                        encodersResetDelta = inputs.armPositionRotations
+                                - Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
                         io.setArmPositionRotations(
                                 Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS));
                         setArmControl();
@@ -273,6 +281,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         }
 
         setWheelControl();
+
+        Logger.recordOutput("Intake/EncoderResetDelta", encodersResetDelta);
     }
 
     public void setState(IntakeState state) {
@@ -284,7 +294,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             case STARTING ->
                 (RobotContainer.turret != null && !isNearStartPosition() && !RobotContainer.turret.isStowed())
                         ? armTargetRotations
-                        : Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
+                        : getArmStartPosition();
             case RETRACTED -> Units.radiansToRotations(Constants.Intake.ARM_RETRACTED_POSITION_RADIANS);
         };
         wheelTargetState = switch (state) {
@@ -377,9 +387,16 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     }
 
     public boolean isNearStartPosition() {
-        return inputs.armPositionRotations
-                >= Units.radiansToRotations(
-                        Constants.Intake.ARM_STARTING_POSITION_RADIANS - Units.degreesToRadians(42));
+        return inputs.armPositionRotations >= getArmStartPosition() - Units.degreesToRotations(42);
+    }
+
+    private double getArmStartPosition() {
+        if (overrideKnown || Math.abs(encodersResetDelta) < ENCODERS_RESET_DELTA_THRESHOLD) {
+            return Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
+        } else {
+            return Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS)
+                    - encodersResetDelta; // hardstop is at down position, delta is relative to that
+        }
     }
 
     private boolean armAtGoal() {
@@ -407,6 +424,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         positionStatus = PositionStatus.UNKNOWN;
         hasStartedMovingDown = false;
         runExtendHoming = false;
+        encodersResetDelta = 0;
         io.setArmPositionRotations(Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS));
     }
 
