@@ -391,7 +391,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         boolean armNearGoal = SimpleMath.isWithinTolerance(
                 inputs.armPositionRotations, armTargetRotations, ARM_POSITION_TOLERANCE_WHEEL_START);
 
-        if (armNearGoal || Math.abs(wheelTargetVelocityMps) < Math.abs(actualWheelTargetVelocityMps)) {
+        if (armTargetRotations >= inputs.armPositionRotations /* update wheels immediately if raising intake */
+                || armNearGoal
+                || Math.abs(wheelTargetVelocityMps) < Math.abs(actualWheelTargetVelocityMps)) {
             actualWheelTargetVelocityMps = wheelTargetVelocityMps;
 
             if (!isForceDisabled()) {
