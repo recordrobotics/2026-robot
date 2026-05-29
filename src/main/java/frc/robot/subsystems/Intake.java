@@ -286,6 +286,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             setState(targetState); // refresh state
         }
 
+        if (targetState == IntakeState.STARTING) {
+            setArmControl(); // refresh arm control
+        }
+
         setWheelControl();
 
         Logger.recordOutput("Intake/EncoderResetDelta", encodersResetDelta);
@@ -296,7 +300,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
                 && !(
                 /* not near start and turret isn't stowed (need to stow turret first) */
                 !isNearStartPosition() && RobotContainer.turret != null && !RobotContainer.turret.isStowed())) {
-            armTargetRotations = getArmStartPosition();
+            armTargetRotations = Units.radiansToRotations(Constants.Intake.ARM_UP_POSITION_RADIANS);
         } else if (!(RobotContainer.climber != null
                 && RobotContainer.climber.isShotblockerExtended())) { // guard against shotblocker extension
             switch (state) {
@@ -352,15 +356,18 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         if (runExtendHoming && positionStatus == PositionStatus.UNKNOWN) {
             io.setArmControl(armVoltageRequest.withOutput(RESET_VOLTAGE).withIgnoreSoftwareLimits(true));
         } else {
+            double feedforward = 0;
+            if ((targetState == IntakeState.INTAKE || targetState == IntakeState.OUT) && !isNearStartPosition()) {
+                feedforward = Constants.Intake.ARM_DOWN_FF;
+            } else if (targetState == IntakeState.STARTING
+                    && inputs.armPositionRotations < Units.degreesToRotations(130)) {
+                feedforward = Constants.Intake.ARM_UP_FF;
+            }
             io.setArmControl(armRequest
                     .withPosition(armTargetRotations)
                     .withLimitForwardMotion((targetState == IntakeState.INTAKE || targetState == IntakeState.OUT)
                             && !isNearStartPosition())
-                    .withFeedForward(
-                            (targetState == IntakeState.INTAKE || targetState == IntakeState.OUT)
-                                            && !isNearStartPosition()
-                                    ? Constants.Intake.ARM_DOWN_FF
-                                    : 0)); // follower will follow this
+                    .withFeedForward(feedforward)); // follower will follow this
         }
     }
 

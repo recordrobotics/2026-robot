@@ -534,14 +534,16 @@ public final class Constants {
 
         public static final double ARM_DOWN_POSITION_RADIANS = Units.degreesToRadians(0.0); // should always be 0
         public static final double ARM_RETRACTED_POSITION_RADIANS = Units.degreesToRadians(81.0);
-        public static final double ARM_MAX_POSITION_RADIANS = Units.degreesToRadians(122.0);
+        public static final double ARM_MAX_POSITION_RADIANS = Units.degreesToRadians(137.0);
         public static final double ARM_STARTING_POSITION_RADIANS =
                 SysIdManager.getProvider() instanceof frc.robot.subsystems.Intake.SysIdArm
                         ? ARM_DOWN_POSITION_RADIANS
                         : ARM_MAX_POSITION_RADIANS;
+        public static final double ARM_UP_POSITION_RADIANS = ARM_MAX_POSITION_RADIANS;
         public static final double ARM_EJECT_POSITION_RADIANS =
                 Units.degreesToRadians(13.4); // A bit up to stop balls wedging against the ground
         public static final double ARM_DOWN_FF = -0.5;
+        public static final double ARM_UP_FF = 10;
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS = 4.76036363636;
         public static final double WHEEL_JAMMED_VELOCITY_MPS = 4.76036363636;
