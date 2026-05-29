@@ -156,7 +156,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         // want to extend shotblocker but not there yet, wait for intake to retract
         if (targetHeight == ClimberHeight.UP
                 && !isShotblockerExtended()
-                && RobotContainer.intake.isNearStartPosition()) {
+                && RobotContainer.intake.isWithinFramePerimeter()) {
             setState(targetHeight); // refresh state
         }
     }
@@ -171,7 +171,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
 
         // guard against intake extension
         if (height != ClimberHeight.UP
-                || !(RobotContainer.intake != null && !RobotContainer.intake.isNearStartPosition())) {
+                || !(RobotContainer.intake != null && !RobotContainer.intake.isWithinFramePerimeter())) {
             setpoint = height.getHeight();
         } else { // raise climber just before shotblocker extension to save time
             setpoint = Constants.Climber.CLIMBER_SAFE_SHOTBLOCKER_HEIGHT;

@@ -413,6 +413,10 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         return inputs.armPositionRotations >= getArmStartPosition() - Units.degreesToRotations(42);
     }
 
+    public boolean isWithinFramePerimeter() {
+        return inputs.armPositionRotations >= getArmStartPosition() - Units.degreesToRotations(10);
+    }
+
     private double getArmStartPosition() {
         if (overrideKnown || Math.abs(encodersResetDelta) < ENCODERS_RESET_DELTA_THRESHOLD) {
             return Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
