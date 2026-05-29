@@ -539,7 +539,8 @@ public final class Constants {
                 SysIdManager.getProvider() instanceof frc.robot.subsystems.Intake.SysIdArm
                         ? ARM_DOWN_POSITION_RADIANS
                         : ARM_MAX_POSITION_RADIANS;
-        public static final double ARM_EJECT_POSITION_RADIANS = Units.degreesToRadians(13.4); // A bit up to stop balls wedging against the ground
+        public static final double ARM_EJECT_POSITION_RADIANS =
+                Units.degreesToRadians(13.4); // A bit up to stop balls wedging against the ground
         public static final double ARM_DOWN_FF = -0.5;
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS = 4.76036363636;
@@ -581,8 +582,7 @@ public final class Constants {
 
         public static final double ROTATION_LIMIT_INSET_ROTATIONS = 0.002;
         public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.7126 - ROTATION_LIMIT_INSET_ROTATIONS;
-        public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS =
-                -0.614 + ROTATION_LIMIT_INSET_ROTATIONS;
+        public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS = -0.614 + ROTATION_LIMIT_INSET_ROTATIONS;
 
         public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW = -0.044678;
         public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CCW = -0.060547;
