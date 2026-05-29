@@ -539,7 +539,7 @@ public final class Constants {
                 SysIdManager.getProvider() instanceof frc.robot.subsystems.Intake.SysIdArm
                         ? ARM_DOWN_POSITION_RADIANS
                         : ARM_MAX_POSITION_RADIANS;
-
+        public static final double ARM_EJECT_POSITION_RADIANS = Units.degreesToRadians(13.4); // A bit up to stop balls wedging against the ground
         public static final double ARM_DOWN_FF = -0.5;
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS = 4.76036363636;
@@ -580,9 +580,9 @@ public final class Constants {
         public static final double GEAR_RATIO = 15.5428571429;
 
         public static final double ROTATION_LIMIT_INSET_ROTATIONS = 0.002;
-        public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.569 - ROTATION_LIMIT_INSET_ROTATIONS;
+        public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.7126 - ROTATION_LIMIT_INSET_ROTATIONS;
         public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS =
-                -0.514 + ROTATION_LIMIT_INSET_ROTATIONS; // slightly not symmetric
+                -0.614 + ROTATION_LIMIT_INSET_ROTATIONS;
 
         public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW = -0.044678;
         public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CCW = -0.060547;
@@ -593,10 +593,10 @@ public final class Constants {
         public static final double BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CW = 0.453125;
         public static final double BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CCW = 0.437012;
 
-        public static final double TURRET_SPRING_HIGH_START_POS = 0.20;
-        public static final double TURRET_SPRING_HIGH_START_NEG = -0.11;
-        public static final double TURRET_SPRING_LOW_START_POS = 0.283;
-        public static final double TURRET_SPRING_LOW_START_NEG = -0.205;
+        public static final double TURRET_SPRING_HIGH_START_POS = 0.343;
+        public static final double TURRET_SPRING_HIGH_START_NEG = -0.297;
+        public static final double TURRET_SPRING_LOW_START_POS = 0.343;
+        public static final double TURRET_SPRING_LOW_START_NEG = -0.297;
         public static double TURRET_SPRING_HIGH_VOLTS = 1.11;
         public static double TURRET_SPRING_LOW_VOLTS = 1.11;
 

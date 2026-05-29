@@ -279,7 +279,8 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         targetState = state;
 
         armTargetRotations = switch (state) {
-            case INTAKE, EJECT, OUT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
+            case INTAKE, OUT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
+            case EJECT -> Units.radiansToRotations(Constants.Intake.ARM_EJECT_POSITION_RADIANS);
             case STARTING ->
                 (RobotContainer.turret != null && !isNearStartPosition() && !RobotContainer.turret.isStowed())
                         ? armTargetRotations

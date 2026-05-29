@@ -5,7 +5,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 @SuppressWarnings("java:S109") /* whole class is a magic number */
 public class HubRegressionCalculator implements ShotCalculator {
 
-    private static final double FLYWHEEL_TO_FUEL_RATIO = 0.38981;
+    private static final double FLYWHEEL_TO_FUEL_RATIO = 0.372;
 
     public static final LoggedNetworkNumber flywheelRatio =
             new LoggedNetworkNumber("FLYWHEEL_RATIO", FLYWHEEL_TO_FUEL_RATIO);
