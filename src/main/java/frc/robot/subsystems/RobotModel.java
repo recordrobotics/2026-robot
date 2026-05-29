@@ -4,12 +4,12 @@ import static edu.wpi.first.units.Units.*;
 
 import com.google.common.primitives.ImmutableIntArray;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -20,7 +20,6 @@ import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
-import frc.robot.utils.ProjectileSimulationUtils;
 import frc.robot.utils.field.FieldIntersection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1094,22 +1093,29 @@ public final class RobotModel extends ManagedSubsystemBase {
         public void toProjectile(
                 FuelObject fuel, AbstractDriveTrainSimulation drivetrainSim, Translation3d velocityOverride) {
             remove(fuel);
-            Pose2d robotPose = drivetrainSim.getSimulatedDriveTrainPose();
+            Pose3d robotPose = RobotContainer.model.getRobot();
 
-            Pose3d fuelFieldPose =
-                    new Pose3d(robotPose).plus(new Transform3d(fuel.pose.getTranslation(), fuel.pose.getRotation()));
+            Pose3d fuelFieldPose = robotPose.plus(new Transform3d(fuel.pose.getTranslation(), fuel.pose.getRotation()));
 
-            Translation3d velocity = velocityOverride != null ? velocityOverride : fuel.velocity.getTranslation();
+            Translation3d robotRelativeVelocity =
+                    velocityOverride != null ? velocityOverride : fuel.velocity.getTranslation();
+
+            ChassisSpeeds chassisSpeeds = drivetrainSim.getDriveTrainSimulatedChassisSpeedsFieldRelative();
+            final Translation3d chassisTranslationalVelocity =
+                    new Translation3d(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond, 0);
+            final Translation3d shooterVelocityDueToChassisRotation =
+                    fuel.pose.getTranslation().rotateBy(new Rotation3d(0, 0, chassisSpeeds.omegaRadiansPerSecond));
+            final Translation3d shooterVelocity =
+                    chassisTranslationalVelocity.plus(shooterVelocityDueToChassisRotation);
+
+            final Translation3d velocity =
+                    shooterVelocity.plus(robotRelativeVelocity.rotateBy(robotPose.getRotation()));
 
             SimulatedArena.getInstance()
                     .addGamePieceProjectile(new GamePieceProjectile(
                                     RebuiltFuelOnField.REBUILT_FUEL_INFO,
                                     fuelFieldPose.getTranslation().toTranslation2d(),
-                                    ProjectileSimulationUtils.calculateInitialProjectileVelocityMPS(
-                                            fuel.pose.toPose2d().getTranslation(),
-                                            drivetrainSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                                            robotPose.getRotation(),
-                                            velocity.toTranslation2d()),
+                                    velocity.toTranslation2d(),
                                     fuelFieldPose.getZ(),
                                     velocity.getZ(),
                                     fuelFieldPose.getRotation())
