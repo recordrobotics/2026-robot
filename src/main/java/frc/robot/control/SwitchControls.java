@@ -139,6 +139,10 @@ public class SwitchControls implements AbstractControl {
             angle += Math.PI;
         }
 
+        if (RobotContainer.climber != null && RobotContainer.climber.isShotblockerExtended()) {
+            angle -= Math.PI;
+        }
+
         double magnitude = Math.hypot(x, y);
         if (magnitude
                 < (xbox.getRawButton(12)
