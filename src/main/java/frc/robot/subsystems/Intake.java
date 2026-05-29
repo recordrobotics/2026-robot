@@ -323,13 +323,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         } else {
             io.setArmControl(armRequest
                     .withPosition(armTargetRotations)
-                    .withLimitForwardMotion(targetState == IntakeState.EJECT
-                            || targetState == IntakeState.INTAKE
-                            || targetState == IntakeState.OUT)
+                    .withLimitForwardMotion(targetState == IntakeState.INTAKE || targetState == IntakeState.OUT)
                     .withFeedForward(
-                            targetState == IntakeState.INTAKE
-                                            || targetState == IntakeState.EJECT
-                                            || targetState == IntakeState.OUT
+                            targetState == IntakeState.INTAKE || targetState == IntakeState.OUT
                                     ? Constants.Intake.ARM_DOWN_FF
                                     : 0)); // follower will follow this
         }
