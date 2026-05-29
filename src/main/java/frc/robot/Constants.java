@@ -787,6 +787,8 @@ public final class Constants {
                 new Rotation2d()); // TODO this is centered on climber, should be centered on hook, make correct
         public static final double CLIMBER_BASE_HEIGHT_METERS = 0.502432;
 
+        public static final double CLIMBER_SAFE_SHOTBLOCKER_HEIGHT = Units.inchesToMeters(6.0);
+
         private Climber() {}
     }
 

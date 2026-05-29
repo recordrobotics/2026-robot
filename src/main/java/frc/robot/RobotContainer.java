@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.FieldStartingLocation;
 import frc.robot.Constants.RobotState.Mode;
@@ -324,45 +323,98 @@ public final class RobotContainer {
     private static void configureTriggers() {
         new Trigger(() -> getControl().isIntakeInvertPressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
-                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED), intake))
-                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake));
+                .onTrue(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.RETRACTED);
+                            climber.setState(Constants.ClimberHeight.DOWN);
+                        },
+                        intake,
+                        climber))
+                .onFalse(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.INTAKE);
+                            climber.setState(Constants.ClimberHeight.DOWN);
+                        },
+                        intake,
+                        climber));
 
         new Trigger(() -> getControl().isIntakePressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
-                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.INTAKE), intake))
-                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
+                .onTrue(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.INTAKE);
+                            climber.setState(Constants.ClimberHeight.DOWN);
+                        },
+                        intake,
+                        climber))
+                .onFalse(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.OUT);
+                            climber.setState(Constants.ClimberHeight.DOWN);
+                        },
+                        intake,
+                        climber));
 
         new Trigger(() -> getControl().isIntakeUpPressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
-                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.RETRACTED), intake))
-                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
+                .onTrue(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.RETRACTED);
+                            climber.setState(Constants.ClimberHeight.DOWN);
+                        },
+                        intake,
+                        climber))
+                .onFalse(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.OUT);
+                            climber.setState(Constants.ClimberHeight.DOWN);
+                        },
+                        intake,
+                        climber));
 
         new Trigger(() -> getControl().isReverseIntakePressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
-                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.EJECT), intake))
-                .onFalse(new InstantCommand(() -> intake.setState(Intake.IntakeState.OUT), intake));
+                .onTrue(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.EJECT);
+                            climber.setState(Constants.ClimberHeight.DOWN);
+                        },
+                        intake,
+                        climber))
+                .onFalse(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.OUT);
+                            climber.setState(Constants.ClimberHeight.DOWN);
+                        },
+                        intake,
+                        climber));
 
         new Trigger(() -> getControl().isDefenseModePressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
-                .onTrue(new InstantCommand(() -> intake.setState(Intake.IntakeState.STARTING), intake));
+                .onTrue(Commands.runOnce(() -> intake.setState(Intake.IntakeState.STARTING), intake));
 
-        new Trigger(() -> getControl().isClimbPressed()).onTrue(new InstantCommand(() -> {
-            if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {
-                climber.setState(Constants.ClimberHeight.UP);
-            } else {
-                climber.setState(Constants.ClimberHeight.DOWN);
-            }
-        }));
+        new Trigger(() -> getControl().isClimbPressed())
+                .onTrue(Commands.runOnce(
+                        () -> {
+                            if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {
+                                climber.setState(Constants.ClimberHeight.UP);
+                                intake.setState(Intake.IntakeState.STARTING);
+                            } else {
+                                climber.setState(Constants.ClimberHeight.DOWN);
+                            }
+                        },
+                        climber,
+                        intake));
 
         new Trigger(RobotContainer::shouldBeShooting)
-                .onTrue(new InstantCommand(
+                .onTrue(Commands.runOnce(
                                 () -> {
                                     shootOrchestrator.setEnableShooting(true);
                                     shootOrchestrator.setFixedMode(shootModeChooser.get() == ShootMode.FIXED);
                                 },
                                 shooter)
                         .ignoringDisable(true))
-                .onFalse(new InstantCommand(
+                .onFalse(Commands.runOnce(
                                 () -> {
                                     shootOrchestrator.setEnableShooting(false);
                                     shootOrchestrator.setFixedMode(shootModeChooser.get() == ShootMode.FIXED);

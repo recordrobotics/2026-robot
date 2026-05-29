@@ -56,6 +56,7 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     private final MotionMagicExpoVoltage climberRequest;
     private final VoltageOut voltageRequest;
 
+    private ClimberHeight targetHeight = ClimberHeight.DOWN;
     private double setpoint;
 
     private final SysIdRoutine sysIdRoutine;
@@ -151,6 +152,13 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         } else {
             lastMovementTime = Timer.getTimestamp();
         }
+
+        // want to extend shotblocker but not there yet, wait for intake to retract
+        if (targetHeight == ClimberHeight.UP
+                && !isShotblockerExtended()
+                && RobotContainer.intake.isNearStartPosition()) {
+            setState(targetHeight); // refresh state
+        }
     }
 
     @Override
@@ -159,7 +167,15 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
     }
 
     public void setState(ClimberHeight height) {
-        setpoint = height.getHeight();
+        targetHeight = height;
+
+        // guard against intake extension
+        if (height != ClimberHeight.UP
+                || !(RobotContainer.intake != null && !RobotContainer.intake.isNearStartPosition())) {
+            setpoint = height.getHeight();
+        } else { // raise climber just before shotblocker extension to save time
+            setpoint = Constants.Climber.CLIMBER_SAFE_SHOTBLOCKER_HEIGHT;
+        }
 
         if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysId)) {
             setControl();
@@ -190,6 +206,10 @@ public final class Climber extends KillableSubsystem implements PoweredSubsystem
         ClimberHeight[] heights = ClimberHeight.values();
         Arrays.sort(heights, (a, b) -> Double.compare(a.getDifference(currentHeight), b.getDifference(currentHeight)));
         return heights[0];
+    }
+
+    public boolean isShotblockerExtended() {
+        return inputs.positionMeters > Constants.Climber.CLIMBER_SAFE_SHOTBLOCKER_HEIGHT;
     }
 
     public boolean atGoal() {

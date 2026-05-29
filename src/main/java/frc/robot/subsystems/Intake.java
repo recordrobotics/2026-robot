@@ -275,8 +275,14 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             }
         }
 
+        if (
         // want to go to starting config but not there yet, wait for turret to stow
-        if (targetState == IntakeState.STARTING && !isNearStartPosition() && RobotContainer.turret.isStowed()) {
+        (targetState == IntakeState.STARTING && !isNearStartPosition() && RobotContainer.turret.isStowed())
+                ||
+                // want to extend but not there yet, wait for shotblocker to go down
+                (targetState != IntakeState.STARTING
+                        && isNearStartPosition()
+                        && !RobotContainer.climber.isShotblockerExtended())) {
             setState(targetState); // refresh state
         }
 
@@ -285,18 +291,33 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         Logger.recordOutput("Intake/EncoderResetDelta", encodersResetDelta);
     }
 
+    private void setArmTarget(IntakeState state) {
+        if (state == IntakeState.STARTING
+                && !(
+                /* not near start and turret isn't stowed (need to stow turret first) */
+                !isNearStartPosition() && RobotContainer.turret != null && !RobotContainer.turret.isStowed())) {
+            armTargetRotations = getArmStartPosition();
+        } else if (!(RobotContainer.climber != null
+                && RobotContainer.climber.isShotblockerExtended())) { // guard against shotblocker extension
+            switch (state) {
+                case INTAKE, OUT:
+                    armTargetRotations = Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
+                    break;
+                case EJECT:
+                    armTargetRotations = Units.radiansToRotations(Constants.Intake.ARM_EJECT_POSITION_RADIANS);
+                    break;
+                case RETRACTED:
+                    armTargetRotations = Units.radiansToRotations(Constants.Intake.ARM_RETRACTED_POSITION_RADIANS);
+                    break;
+            }
+        }
+    }
+
     public void setState(IntakeState state) {
         targetState = state;
 
-        armTargetRotations = switch (state) {
-            case INTAKE, OUT -> Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS);
-            case EJECT -> Units.radiansToRotations(Constants.Intake.ARM_EJECT_POSITION_RADIANS);
-            case STARTING ->
-                (RobotContainer.turret != null && !isNearStartPosition() && !RobotContainer.turret.isStowed())
-                        ? armTargetRotations
-                        : getArmStartPosition();
-            case RETRACTED -> Units.radiansToRotations(Constants.Intake.ARM_RETRACTED_POSITION_RADIANS);
-        };
+        setArmTarget(state);
+
         wheelTargetState = switch (state) {
             case INTAKE, RETRACTED -> WheelMode.INTAKE;
             case EJECT -> WheelMode.EJECT;
@@ -333,9 +354,11 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
         } else {
             io.setArmControl(armRequest
                     .withPosition(armTargetRotations)
-                    .withLimitForwardMotion(targetState == IntakeState.INTAKE || targetState == IntakeState.OUT)
+                    .withLimitForwardMotion((targetState == IntakeState.INTAKE || targetState == IntakeState.OUT)
+                            && !isNearStartPosition())
                     .withFeedForward(
-                            targetState == IntakeState.INTAKE || targetState == IntakeState.OUT
+                            (targetState == IntakeState.INTAKE || targetState == IntakeState.OUT)
+                                            && !isNearStartPosition()
                                     ? Constants.Intake.ARM_DOWN_FF
                                     : 0)); // follower will follow this
         }
