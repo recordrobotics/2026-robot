@@ -341,8 +341,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
         lastSimPose3d = new Pose3d(
                 lastSimPose3d.getTranslation(),
                 new Rotation3d(
-                        Units.degreesToRadians(180 * Math.sin(Timer.getTimestamp() * (5.0 / 360.0))),
-                        Units.degreesToRadians(180 * Math.sin(Timer.getTimestamp() * (5.0 / 360.0))),
+                        Units.degreesToRadians(20 * Math.cos(Timer.getTimestamp() / 2.5)),
+                        Units.degreesToRadians(20 * Math.sin(Timer.getTimestamp() / 2.5)),
                         lastSimPose3d.getRotation().getZ()));
     }
 

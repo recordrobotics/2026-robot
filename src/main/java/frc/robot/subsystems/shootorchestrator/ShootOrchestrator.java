@@ -227,16 +227,18 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     }
 
     private TurretState calculateTurretState(
-            Vector<N3> shotVector,
-            Pose3d robotPose,
+            Vector<N3> fieldShotVector,
+            Vector<N3> robotRelativeShotVector,
             ChassisSpeeds robotRelativeSpeeds,
             ChassisSpeeds robotRelativeAcceleration) {
-        double shotYaw = Math.atan2(shotVector.get(1), shotVector.get(0));
+        double shotYaw = Math.atan2(robotRelativeShotVector.get(1), robotRelativeShotVector.get(0));
 
+        // Keep yaw derivative in field coordinates due to the bad way its computed instead of using actual derivative
+        double fieldShotYaw = Math.atan2(fieldShotVector.get(1), fieldShotVector.get(0));
         double shotYawVelocity = lastShotYaw.isPresent()
-                ? MathUtil.inputModulus(shotYaw - lastShotYaw.getAsDouble(), -Math.PI, Math.PI) / 0.02
+                ? MathUtil.inputModulus(fieldShotYaw - lastShotYaw.getAsDouble(), -Math.PI, Math.PI) / 0.02
                 : 0;
-        lastShotYaw = OptionalDouble.of(shotYaw);
+        lastShotYaw = OptionalDouble.of(fieldShotYaw);
 
         if (RobotContainer.intake.isNearStartPosition()
                 || RobotContainer.intake.getTargetState() == IntakeState.STARTING) {
@@ -246,7 +248,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             return new TurretState(FIXED_TURRET_ANGLE_RADIANS, 0, 0);
         } else {
             return new TurretState(
-                    shotYaw - robotPose.getRotation().getZ(),
+                    shotYaw,
                     shotYawVelocity - robotRelativeSpeeds.omegaRadiansPerSecond,
                     -robotRelativeAcceleration.omegaRadiansPerSecond);
         }
@@ -256,7 +258,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         return shootAngle - Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS + shootAngleOffset.get();
     }
 
-    private ShooterState calculateShooterState(ShotTarget target, Vector<N3> shotVector, boolean isInTrench) {
+    private ShooterState calculateShooterState(
+            ShotTarget target, Vector<N3> robotRelativeShotVector, boolean isInTrench) {
         if (shootingEnabled) {
             if (shootOverride.get()) {
                 double hoodAngle = shooterOverride.isPresent()
@@ -269,8 +272,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                                 : shootVelocityDashboardOverride.get(),
                         shooterFeedforward);
             } else {
-                double hoodAngle = shootAngleToHoodAngle(
-                        Math.atan2(shotVector.get(2), Math.hypot(shotVector.get(0), shotVector.get(1))));
+                double hoodAngle = shootAngleToHoodAngle(Math.atan2(
+                        robotRelativeShotVector.get(2),
+                        Math.hypot(robotRelativeShotVector.get(0), robotRelativeShotVector.get(1))));
 
                 if (useFixedShooting) {
                     hoodAngle = FIXED_HOOD_ANGLE_RADIANS;
@@ -279,7 +283,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 return new ShooterState(
                         isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngle,
                         target.shotCalculator.fuelToFlywheelVelocity(
-                                useFixedShooting ? FIXED_FUEL_VELOCITY : shotVector.norm()),
+                                useFixedShooting ? FIXED_FUEL_VELOCITY : robotRelativeShotVector.norm()),
                         shooterFeedforward);
             }
         } else {
@@ -361,7 +365,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         if (target.isPresent()) {
             ShotTarget shotTarget = target.get();
 
-            Pose3d robotPose = new Pose3d(RobotContainer.poseSensorFusion.getEstimatedPosition());
+            Pose3d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition3d();
             Translation3d fuelReleaseOffset = RobotContainer.model.fuelManager.getShooterFuelReleasePosition();
             ChassisSpeeds robotRelativeSpeeds = RobotContainer.drivetrain.getChassisSpeeds();
             ChassisSpeeds robotRelativeAcceleration = RobotContainer.drivetrain.getChassisAcceleration();
@@ -369,15 +373,18 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             ShotCalculationResult shotResult =
                     calculateShot(shotTarget, robotPose, robotRelativeSpeeds, fuelReleaseOffset);
 
+            Vector<N3> robotRelativeShotVector =
+                    new Vector<>(robotPose.getRotation().unaryMinus().toMatrix().times(shotResult.shotVector));
+
             RobotContainer.turret.setTarget(calculateTurretState(
-                    shotResult.shotVector(), robotPose, robotRelativeSpeeds, robotRelativeAcceleration));
+                    shotResult.shotVector, robotRelativeShotVector, robotRelativeSpeeds, robotRelativeAcceleration));
 
             boolean isInTrench = calculateIsHoodInTrench(
                     robotPose, robotRelativeSpeeds, RobotContainer.model.fuelManager.getShooterHoodPosition());
             Logger.recordOutput("ShootOrchestrator/IsInTrench", isInTrench);
 
             RobotContainer.shooter.setTargetState(
-                    calculateShooterState(shotTarget, shotResult.shotVector(), isInTrench));
+                    calculateShooterState(shotTarget, robotRelativeShotVector, isInTrench));
 
             boolean onTarget = isOnTarget(shotTarget, shotResult.shotCalculation(), isInTrench);
             Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
