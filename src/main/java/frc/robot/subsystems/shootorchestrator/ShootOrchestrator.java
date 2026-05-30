@@ -288,14 +288,14 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     }
 
     private ShooterState calculateShooterState(
-            ShotTarget target, Vector<N3> robotRelativeShotVector, boolean isInTrench) {
+            ShotTarget target, Vector<N3> robotRelativeShotVector, boolean isBlocked) {
         if (shootingEnabled) {
             if (shootOverride.get()) {
                 double hoodAngle = shooterOverride.isPresent()
                         ? shooterOverride.get().hoodAngleRadians()
                         : hoodAngleDashboardOverride.get();
                 return new ShooterState(
-                        isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngle,
+                        isBlocked ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngle,
                         shooterOverride.isPresent()
                                 ? shooterOverride.get().flywheelVelocityMps()
                                 : shootVelocityDashboardOverride.get(),
@@ -310,7 +310,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 }
 
                 return new ShooterState(
-                        isInTrench ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngle,
+                        isBlocked ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngle,
                         target.shotCalculator.fuelToFlywheelVelocity(
                                 useFixedShooting ? FIXED_FUEL_VELOCITY : robotRelativeShotVector.norm()),
                         shooterFeedforward);
@@ -320,29 +320,29 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
-    private boolean calculateIsHoodInTrench(
+    private boolean calculateIsHoodBlocked(
             Pose3d robotPose, ChassisSpeeds robotRelativeSpeeds, Translation3d hoodPosition) {
         double timeUntilHoodDown =
                 RobotContainer.shooter.getTimeUntilHoodAt(Constants.Shooter.HOOD_MAX_POSITION_RADIANS)
                         + 0.1 /* latency compensation */;
 
-        Pose2d robotPoseTrench =
+        Pose2d robotPoseWhenDown =
                 SimpleMath.integrateChassisSpeeds(robotPose.toPose2d(), robotRelativeSpeeds, timeUntilHoodDown);
-        Translation3d hoodPoseTrench = new Pose3d(robotPoseTrench)
+        Translation3d hoodPoseWhenDown = new Pose3d(robotPoseWhenDown)
                 .transformBy(new Transform3d(hoodPosition, Rotation3d.kZero))
                 .getTranslation();
         Translation3d hoodPoseCurrent = robotPose
                 .transformBy(new Transform3d(hoodPosition, Rotation3d.kZero))
                 .getTranslation();
 
-        return FieldUtils.isInTrench(hoodPoseCurrent.toTranslation2d(), hoodPoseTrench.toTranslation2d());
+        return FieldUtils.isBlocked(hoodPoseCurrent.toTranslation2d(), hoodPoseWhenDown.toTranslation2d());
     }
 
     private double calculateAllowableTurretError() {
         return Units.degreesToRadians(12); // TODO: add actual trig calc based on distance to target and radius
     }
 
-    private boolean isOnTarget(ShotTarget target, ShotCalculation shotCalculation, boolean isInTrench) {
+    private boolean isOnTarget(ShotTarget target, ShotCalculation shotCalculation, boolean isBlocked) {
         boolean overridden = shootOverride.get();
 
         boolean shooterOnTarget;
@@ -356,7 +356,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                     target.shotCalculator.fuelToFlywheelVelocity(shotCalculation.allowableVelocityMagnitudeMaxMps()));
         }
 
-        return !isInTrench
+        return !isBlocked
                 && RobotContainer.turret.atGoal(
                         overridden ? Units.degreesToRadians(12) : calculateAllowableTurretError())
                 && shooterOnTarget
@@ -412,14 +412,14 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             RobotContainer.turret.setTarget(calculateTurretState(
                     shotResult.shotVector, robotRelativeShotVector, robotRelativeSpeeds, robotRelativeAcceleration));
 
-            boolean isInTrench = calculateIsHoodInTrench(
+            boolean isBlocked = calculateIsHoodBlocked(
                     robotPose, robotRelativeSpeeds, RobotContainer.model.fuelManager.getShooterHoodPosition());
-            Logger.recordOutput("ShootOrchestrator/IsInTrench", isInTrench);
+            Logger.recordOutput("ShootOrchestrator/IsBlocked", isBlocked);
 
             RobotContainer.shooter.setTargetState(
-                    calculateShooterState(shotTarget, robotRelativeShotVector, isInTrench));
+                    calculateShooterState(shotTarget, robotRelativeShotVector, isBlocked));
 
-            boolean onTarget = isOnTarget(shotTarget, shotResult.shotCalculation(), isInTrench);
+            boolean onTarget = isOnTarget(shotTarget, shotResult.shotCalculation(), isBlocked);
             Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
 
             updateFeeders(onTarget);

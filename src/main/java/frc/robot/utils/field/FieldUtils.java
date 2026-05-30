@@ -2,6 +2,7 @@ package frc.robot.utils.field;
 
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.RobotContainer;
 import frc.robot.utils.DriverStationUtils;
@@ -21,6 +22,13 @@ public final class FieldUtils {
     private static final Translation2d RED_TRENCH_DEPOT_SIDE = new Translation2d(
             FlippingUtil.fieldSizeX - BLUE_TRENCH_DEPOT_SIDE.getX(),
             FlippingUtil.fieldSizeY - BLUE_TRENCH_DEPOT_SIDE.getY());
+
+    private static final Translation2d BLUE_TOWER_CENTER =
+            new Translation2d(Units.inchesToMeters(40.0 / 2.0), FlippingUtil.fieldSizeY - Units.inchesToMeters(11.46));
+    private static final Translation2d RED_TOWER_CENTER = new Translation2d(
+            FlippingUtil.fieldSizeX - BLUE_TOWER_CENTER.getX(), FlippingUtil.fieldSizeY - BLUE_TOWER_CENTER.getY());
+    private static final double TOWER_X_SIZE = Units.inchesToMeters(40.0);
+    private static final double TOWER_Y_SIZE = Units.inchesToMeters(35.25);
 
     private FieldUtils() {}
 
@@ -87,11 +95,25 @@ public final class FieldUtils {
         return tMax >= 0.0 && tMin <= 1.0;
     }
 
-    public static boolean isInTrench(Translation2d start, Translation2d end) {
+    public static boolean isInTower(Translation2d start, Translation2d end, Translation2d towerCenter) {
+        double minX = towerCenter.getX() - TOWER_X_SIZE / 2.0;
+        double maxX = towerCenter.getX() + TOWER_X_SIZE / 2.0;
+        double minY = towerCenter.getY() - TOWER_Y_SIZE / 2.0;
+        double maxY = towerCenter.getY() + TOWER_Y_SIZE / 2.0;
+
+        boolean startInside =
+                start.getX() >= minX && start.getX() <= maxX && start.getY() >= minY && start.getY() <= maxY;
+        boolean endInside = end.getX() >= minX && end.getX() <= maxX && end.getY() >= minY && end.getY() <= maxY;
+        return startInside || endInside;
+    }
+
+    public static boolean isBlocked(Translation2d start, Translation2d end) {
         return isInTrench(start, end, BLUE_TRENCH_HP_SIDE)
                 || isInTrench(start, end, BLUE_TRENCH_DEPOT_SIDE)
                 || isInTrench(start, end, RED_TRENCH_HP_SIDE)
-                || isInTrench(start, end, RED_TRENCH_DEPOT_SIDE);
+                || isInTrench(start, end, RED_TRENCH_DEPOT_SIDE)
+                || isInTower(start, end, BLUE_TOWER_CENTER)
+                || isInTower(start, end, RED_TOWER_CENTER);
     }
 
     public static boolean isInAllianceZone(Translation2d translation) {
