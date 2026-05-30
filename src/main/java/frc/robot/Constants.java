@@ -540,6 +540,7 @@ public final class Constants {
                 Units.degreesToRadians(13.4); // A bit up to stop balls wedging against the ground
         public static final double ARM_DOWN_FF = -0.5;
         public static final double ARM_UP_FF = 10;
+        public static final double ARM_UP_HOLD_FF = 6.7;
 
         public static final double WHEEL_INTAKE_VELOCITY_MPS = 4.76036363636;
         public static final double WHEEL_JAMMED_VELOCITY_MPS = 4.76036363636;
@@ -824,7 +825,7 @@ public final class Constants {
         public static Mode getMode() {
             if (RobotBase.isReal()) return Mode.REAL;
             if (runningAsUnitTest) return Mode.TEST;
-            return Mode.SIM;
+            return Mode.SIM; // change to REPLAY when replaying
         }
 
         private static AutoLogLevel.Level getAutoLogLevel() {

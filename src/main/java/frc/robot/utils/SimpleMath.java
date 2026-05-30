@@ -322,4 +322,49 @@ public final class SimpleMath {
             return a < b;
         }
     }
+
+    public static Pose3d rotateAroundWithRadius(
+            Pose3d pose, Translation3d rotationOrigin, Translation3d axis, double radius, double angleRadians) {
+
+        // Normalize axis
+        Translation3d axisUnit = axis.div(axis.getNorm());
+
+        // Vector from origin to pose
+        Translation3d relative = pose.getTranslation().minus(rotationOrigin);
+
+        // Project onto axis (parallel component)
+        double parallelMag = relative.getX() * axisUnit.getX()
+                + relative.getY() * axisUnit.getY()
+                + relative.getZ() * axisUnit.getZ();
+        Translation3d parallel = axisUnit.times(parallelMag);
+
+        // Perpendicular component (rotation plane vector)
+        Translation3d perpendicular = relative.minus(parallel);
+
+        // If perpendicular magnitude is zero, seed a direction
+        if (perpendicular.getNorm() < 1e-9) {
+            // Choose arbitrary perpendicular direction
+            perpendicular = new Translation3d(axisUnit.cross(new Translation3d(1, 0, 0)));
+            if (perpendicular.getNorm() < 1e-9) {
+                perpendicular = new Translation3d(axisUnit.cross(new Translation3d(0, 1, 0)));
+            }
+        }
+
+        // Normalize and scale to desired radius
+        Translation3d radial = perpendicular.div(perpendicular.getNorm()).times(radius);
+
+        // Build rotation
+        Rotation3d axisRotation = new Rotation3d(axisUnit.toVector(), angleRadians);
+
+        // Rotate radial component
+        Translation3d rotatedRadial = radial.rotateBy(axisRotation);
+
+        // Final position = origin + parallel + rotatedRadial
+        Translation3d finalTranslation = rotationOrigin.plus(parallel).plus(rotatedRadial);
+
+        // Rotate orientation as well
+        Rotation3d finalRotation = pose.getRotation().rotateBy(axisRotation);
+
+        return new Pose3d(finalTranslation, finalRotation);
+    }
 }

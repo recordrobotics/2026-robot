@@ -399,7 +399,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             ShotTarget shotTarget = target.get();
 
             Pose3d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition3d();
-            Translation3d fuelReleaseOffset = RobotContainer.model.fuelManager.getShooterFuelReleasePosition();
+            Translation3d fuelReleaseOffset = RobotContainer.model.shooterModel.getShooterFuelReleasePosition();
             ChassisSpeeds robotRelativeSpeeds = RobotContainer.drivetrain.getChassisSpeeds();
             ChassisSpeeds robotRelativeAcceleration = RobotContainer.drivetrain.getChassisAcceleration();
 
@@ -413,7 +413,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                     shotResult.shotVector, robotRelativeShotVector, robotRelativeSpeeds, robotRelativeAcceleration));
 
             boolean isBlocked = calculateIsHoodBlocked(
-                    robotPose, robotRelativeSpeeds, RobotContainer.model.fuelManager.getShooterHoodPosition());
+                    robotPose, robotRelativeSpeeds, RobotContainer.model.shooterModel.getShooterHoodPosition());
             Logger.recordOutput("ShootOrchestrator/IsBlocked", isBlocked);
 
             RobotContainer.shooter.setTargetState(

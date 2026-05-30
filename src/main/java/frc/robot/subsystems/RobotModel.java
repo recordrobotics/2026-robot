@@ -20,6 +20,7 @@ import frc.robot.utils.AutoLogLevel;
 import frc.robot.utils.AutoLogLevel.Level;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
+import frc.robot.utils.SimpleMath;
 import frc.robot.utils.field.FieldIntersection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,13 +52,18 @@ public final class RobotModel extends ManagedSubsystemBase {
     public final ShooterModel shooterModel = new ShooterModel();
     public final ClimberModel climberModel = new ClimberModel();
 
-    public final FuelManager fuelManager = new FuelManager();
+    public final FuelManager fuelManager;
 
     @AutoLogLevel(level = Level.REAL)
     public Pose3d[] mechanismPoses =
             new Pose3d[intakeModel.getPoseCount() + shooterModel.getPoseCount() + climberModel.getPoseCount()];
 
     public RobotModel() {
+        if (Constants.RobotState.getMode() == Mode.SIM) {
+            fuelManager = new FuelManager();
+        } else {
+            fuelManager = null;
+        }
         periodicManaged();
     }
 
@@ -191,6 +197,39 @@ public final class RobotModel extends ManagedSubsystemBase {
                     Translation3d.kZero.rotateAround(HOOD_LOCAL_ORIGIN, new Rotation3d(0, -hoodAngleRadians, 0)),
                     new Rotation3d(0, -hoodAngleRadians, 0)));
         }
+
+        public Translation3d getShooterFuelReleasePosition() {
+            Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
+            Translation3d shooterOrigin = new Translation3d(0.210586, 0.239469, 0.455638)
+                    .rotateAround(
+                            shooterBallStart,
+                            new Rotation3d(Rotation2d.fromRotations(RobotContainer.turret.getPositionRotations())));
+            Translation3d axisOfRotation = new Translation3d(0, 1, 0)
+                    .rotateBy(new Rotation3d(Rotation2d.fromRotations(RobotContainer.turret.getPositionRotations())));
+            return SimpleMath.rotateAroundWithRadius(
+                            new Pose3d(shooterBallStart, Rotation3d.kZero),
+                            shooterOrigin,
+                            axisOfRotation,
+                            0.113106,
+                            Math.PI - RobotContainer.shooter.getHoodAngle() - Math.PI / 4)
+                    .getTranslation();
+        }
+
+        public Translation3d getShooterHoodPosition() {
+            Translation3d shooterHoodStart = new Translation3d(0.024704, 0.127000, 0.526709);
+            Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
+            Translation3d shooterOrigin = new Translation3d(0.210586, 0.239469, 0.455638);
+            return shooterHoodStart
+                    .rotateAround(
+                            shooterOrigin,
+                            new Rotation3d(
+                                    0,
+                                    Constants.Shooter.HOOD_MAX_POSITION_RADIANS - RobotContainer.shooter.getHoodAngle(),
+                                    0))
+                    .rotateAround(
+                            shooterBallStart,
+                            new Rotation3d(Rotation2d.fromRotations(RobotContainer.turret.getPositionRotations())));
+        }
     }
 
     public static class ClimberModel implements MechanismModel {
@@ -304,52 +343,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                 this.animationSpeed = speed;
             }
 
-            public static Pose3d rotateAroundWithRadius(
-                    Pose3d pose, Translation3d rotationOrigin, Translation3d axis, double radius, double angleRadians) {
-
-                // Normalize axis
-                Translation3d axisUnit = axis.div(axis.getNorm());
-
-                // Vector from origin to pose
-                Translation3d relative = pose.getTranslation().minus(rotationOrigin);
-
-                // Project onto axis (parallel component)
-                double parallelMag = relative.getX() * axisUnit.getX()
-                        + relative.getY() * axisUnit.getY()
-                        + relative.getZ() * axisUnit.getZ();
-                Translation3d parallel = axisUnit.times(parallelMag);
-
-                // Perpendicular component (rotation plane vector)
-                Translation3d perpendicular = relative.minus(parallel);
-
-                // If perpendicular magnitude is zero, seed a direction
-                if (perpendicular.getNorm() < 1e-9) {
-                    // Choose arbitrary perpendicular direction
-                    perpendicular = new Translation3d(axisUnit.cross(new Translation3d(1, 0, 0)));
-                    if (perpendicular.getNorm() < 1e-9) {
-                        perpendicular = new Translation3d(axisUnit.cross(new Translation3d(0, 1, 0)));
-                    }
-                }
-
-                // Normalize and scale to desired radius
-                Translation3d radial =
-                        perpendicular.div(perpendicular.getNorm()).times(radius);
-
-                // Build rotation
-                Rotation3d axisRotation = new Rotation3d(axisUnit.toVector(), angleRadians);
-
-                // Rotate radial component
-                Translation3d rotatedRadial = radial.rotateBy(axisRotation);
-
-                // Final position = origin + parallel + rotatedRadial
-                Translation3d finalTranslation = rotationOrigin.plus(parallel).plus(rotatedRadial);
-
-                // Rotate orientation as well
-                Rotation3d finalRotation = pose.getRotation().rotateBy(axisRotation);
-
-                return new Pose3d(finalTranslation, finalRotation);
-            }
-
             public void rotateAround(
                     Supplier<Translation3d> rotationCenter,
                     Supplier<Translation3d> rotationAxis,
@@ -359,7 +352,8 @@ public final class RobotModel extends ManagedSubsystemBase {
                     Runnable onComplete) {
                 isRotating = true;
                 currentRotationAngle = 0;
-                rotationStartPose = rotateAroundWithRadius(pose, rotationCenter.get(), rotationAxis.get(), radius, 0);
+                rotationStartPose =
+                        SimpleMath.rotateAroundWithRadius(pose, rotationCenter.get(), rotationAxis.get(), radius, 0);
                 this.rotationRadius = radius;
                 this.rotationCenter = rotationCenter;
                 this.rotationAxis = rotationAxis;
@@ -375,7 +369,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                     double angleToRotate = angularVelocity * dt;
                     currentRotationAngle =
                             MathUtil.clamp(currentRotationAngle + angleToRotate, -targetAngle, targetAngle);
-                    Pose3d newPose = rotateAroundWithRadius(
+                    Pose3d newPose = SimpleMath.rotateAroundWithRadius(
                             rotationStartPose,
                             rotationCenter.get(),
                             rotationAxis.get(),
@@ -518,244 +512,6 @@ public final class RobotModel extends ManagedSubsystemBase {
             }
         }
 
-        private static final FuelNode[] ROBOT_FUEL_NODES = new FuelNode[] {
-            new FuelNode( // 1
-                    new Pose3d(0.042767, -0.162363, 0.360788, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(6, 11, 2),
-                    AnimationType.CURVED),
-            new FuelNode( // 2
-                    new Pose3d(-0.075730, -0.258604, 0.352414, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(7, 3),
-                    AnimationType.CURVED),
-            new FuelNode( // 3
-                    new Pose3d(-0.226887, -0.239875, 0.365525, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(7, 12),
-                    AnimationType.CURVED),
-            new FuelNode( // 4
-                    new Pose3d(-0.134114, 0.260796, 0.349812, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(9, 5),
-                    AnimationType.CURVED),
-            new FuelNode( // 5
-                    new Pose3d(-0.257154, 0.172525, 0.367297, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(9, 8),
-                    AnimationType.CURVED),
-            new FuelNode( // 6
-                    new Pose3d(0.004048, -0.081546, 0.231411, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(7),
-                    AnimationType.ANGULAR),
-            new FuelNode( // 7
-                    new Pose3d(-0.140056, -0.122741, 0.232295, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(8),
-                    AnimationType.ANGULAR),
-            new FuelNode( // 8
-                    new Pose3d(-0.227986, -0.002869, 0.248412, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(9),
-                    AnimationType.ANGULAR),
-            new FuelNode( // 9
-                    new Pose3d(-0.142263, 0.120316, 0.233914, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(10),
-                    AnimationType.ANGULAR),
-            new FuelNode( // 10
-                    new Pose3d(0.008452, 0.129710, 0.230662, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 11
-                    new Pose3d(-0.082750, -0.078407, 0.356944, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(7, 6, 13, 12),
-                    AnimationType.CURVED),
-            new FuelNode( // 12
-                    new Pose3d(-0.234366, -0.088855, 0.369445, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(8, 7, 21, 13),
-                    AnimationType.CURVED),
-            new FuelNode( // 13
-                    new Pose3d(-0.159984, 0.055657, 0.362712, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(9, 8, 5),
-                    AnimationType.CURVED),
-            new FuelNode( // 14
-                    new Pose3d(-0.158976, -0.124385, 0.481838, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(12, 11, 19, 45, 3, 2),
-                    AnimationType.CURVED),
-            new FuelNode( // 15
-                    new Pose3d(0.018942, -0.263321, 0.462280, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(2, 1, 16),
-                    AnimationType.CURVED),
-            new FuelNode( // 16
-                    new Pose3d(-0.016632, -0.125166, 0.494538, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(11, 1, 14),
-                    AnimationType.CURVED),
-            new FuelNode( // 17
-                    new Pose3d(-0.151558, -0.264549, 0.480822, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(3, 2, 14),
-                    AnimationType.CURVED),
-            new FuelNode( // 18
-                    new Pose3d(-0.248525, 0.268963, 0.463804, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(4, 5, 20),
-                    AnimationType.CURVED),
-            new FuelNode( // 19
-                    new Pose3d(-0.143752, 0.021584, 0.495808, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(13, 11, 21, 14),
-                    AnimationType.CURVED),
-            new FuelNode( // 20
-                    new Pose3d(-0.163724, 0.167428, 0.466852, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(4, 13, 5, 19),
-                    AnimationType.CURVED),
-            new FuelNode( // 21
-                    new Pose3d(-0.290578, 0.034287, 0.416560, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(13, 5, 12, 8),
-                    AnimationType.CURVED),
-            new FuelNode( // 22
-                    new Pose3d(-0.512706, -0.209347, 0.201676, Rotation3d.kZero),
-                    ImmutableIntArray.of(29, 30),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 23
-                    new Pose3d(-0.513431, -0.058470, 0.201676, Rotation3d.kZero),
-                    ImmutableIntArray.of(28, 31),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 24
-                    new Pose3d(-0.513799, 0.091721, 0.201676, Rotation3d.kZero),
-                    ImmutableIntArray.of(27, 32),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 25
-                    new Pose3d(-0.513655, 0.241544, 0.201676, Rotation3d.kZero),
-                    ImmutableIntArray.of(26, 33),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 26
-                    new Pose3d(-0.388130, 0.233567, 0.319629, Rotation3d.kZero),
-                    ImmutableIntArray.of(42, 43, 33, 27),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 27
-                    new Pose3d(-0.388274, 0.083744, 0.319629, Rotation3d.kZero),
-                    ImmutableIntArray.of(42, 41, 32, 28, 26),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 28
-                    new Pose3d(-0.387906, -0.066448, 0.319629, Rotation3d.kZero),
-                    ImmutableIntArray.of(41, 38, 29, 27),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 29
-                    new Pose3d(-0.387182, -0.217325, 0.319629, Rotation3d.kZero),
-                    ImmutableIntArray.of(38, 39, 30, 28),
-                    ImmutableIntArray.of(),
-                    AnimationType.CURVED),
-            new FuelNode( // 30
-                    new Pose3d(-0.525299, -0.219116, 0.379476, Rotation3d.kZero),
-                    ImmutableIntArray.of(39, 37, 46, 31),
-                    ImmutableIntArray.of(29, 31),
-                    AnimationType.CURVED),
-            new FuelNode( // 31
-                    new Pose3d(-0.534914, -0.068239, 0.350774, Rotation3d.kZero),
-                    ImmutableIntArray.of(41, 36, 32, 30),
-                    ImmutableIntArray.of(28, 32, 30),
-                    AnimationType.CURVED),
-            new FuelNode( // 32
-                    new Pose3d(-0.535282, 0.081953, 0.350774, Rotation3d.kZero),
-                    ImmutableIntArray.of(42, 41, 35, 33, 31),
-                    ImmutableIntArray.of(27, 33, 31),
-                    AnimationType.CURVED),
-            new FuelNode( // 33
-                    new Pose3d(-0.535138, 0.231776, 0.350774, Rotation3d.kZero),
-                    ImmutableIntArray.of(42, 26, 34, 32),
-                    ImmutableIntArray.of(26, 32),
-                    AnimationType.CURVED),
-            new FuelNode( // 34
-                    new Pose3d(-0.561755, 0.232763, 0.501158, Rotation3d.kZero),
-                    ImmutableIntArray.of(42, 35, 43),
-                    ImmutableIntArray.of(33, 42, 35),
-                    AnimationType.CURVED),
-            new FuelNode( // 35
-                    new Pose3d(-0.561899, 0.082940, 0.501158, Rotation3d.kZero),
-                    ImmutableIntArray.of(47, 42, 41, 36, 34),
-                    ImmutableIntArray.of(32, 42, 41, 47, 36),
-                    AnimationType.CURVED),
-            new FuelNode( // 36
-                    new Pose3d(-0.561531, -0.067252, 0.501158, Rotation3d.kZero),
-                    ImmutableIntArray.of(41, 46, 47, 37, 35),
-                    ImmutableIntArray.of(31, 41, 46, 35, 37),
-                    AnimationType.CURVED),
-            new FuelNode( // 37
-                    new Pose3d(-0.560807, -0.218129, 0.518430, Rotation3d.kZero),
-                    ImmutableIntArray.of(46, 39, 36),
-                    ImmutableIntArray.of(30, 46, 39, 36),
-                    AnimationType.CURVED),
-            new FuelNode( // 38
-                    new Pose3d(-0.345920, -0.156077, 0.425632, Rotation3d.kZero),
-                    ImmutableIntArray.of(40, 45, 46, 41, 39),
-                    ImmutableIntArray.of(28, 12, 41, 3, 29),
-                    AnimationType.CURVED),
-            new FuelNode( // 39
-                    new Pose3d(-0.418108, -0.267618, 0.486036, Rotation3d.kZero),
-                    ImmutableIntArray.of(40, 46, 37, 38),
-                    ImmutableIntArray.of(29, 38, 30, 40, 46, 37),
-                    AnimationType.CURVED),
-            new FuelNode( // 40
-                    new Pose3d(-0.288452, -0.235402, 0.527460, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(3, 38, 17, 14, 39, 45),
-                    AnimationType.CURVED),
-            new FuelNode( // 41
-                    new Pose3d(-0.420639, -0.025777, 0.438912, Rotation3d.kZero),
-                    ImmutableIntArray.of(45, 46, 47, 36, 35),
-                    ImmutableIntArray.of(28, 27, 21, 31, 42, 38),
-                    AnimationType.CURVED),
-            new FuelNode( // 42
-                    new Pose3d(-0.430398, 0.148363, 0.426080, Rotation3d.kZero),
-                    ImmutableIntArray.of(44, 47, 43, 35, 34),
-                    ImmutableIntArray.of(27, 26, 33, 32, 5, 43),
-                    AnimationType.CURVED),
-            new FuelNode( // 43
-                    new Pose3d(-0.385058, 0.267890, 0.505462, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(26, 18, 5, 44, 42),
-                    AnimationType.CURVED),
-            new FuelNode( // 44
-                    new Pose3d(-0.302101, 0.137020, 0.517145, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(5, 21, 42, 18, 20),
-                    AnimationType.CURVED),
-            new FuelNode( // 45
-                    new Pose3d(-0.295824, -0.056221, 0.526255, Rotation3d.kZero),
-                    ImmutableIntArray.of(),
-                    ImmutableIntArray.of(21, 38, 12, 41, 14, 19),
-                    AnimationType.CURVED),
-            new FuelNode( // 46
-                    new Pose3d(-0.437256, -0.139400, 0.517154, Rotation3d.kZero),
-                    ImmutableIntArray.of(45, 40, 39, 37, 36),
-                    ImmutableIntArray.of(38, 41, 30, 39, 40, 36),
-                    AnimationType.CURVED),
-            new FuelNode( // 47
-                    new Pose3d(-0.424376, 0.056077, 0.540793, Rotation3d.kZero),
-                    ImmutableIntArray.of(44, 45, 35, 36),
-                    ImmutableIntArray.of(41, 21, 42, 45, 44, 35),
-                    AnimationType.CURVED)
-        };
-
         private static final int OUTTAKE_NODE = 10;
         private static final int[] INTAKE_NODES = new int[] {22, 23, 24, 25};
         private static final Random RANDOM = new Random();
@@ -763,8 +519,9 @@ public final class RobotModel extends ManagedSubsystemBase {
         private static final double SHOOT_BPS = 5.4;
         private static final double GRAVITY_BPS = 5.4;
 
-        private final ManagedFuelNode[] fuelNodes =
-                Arrays.stream(ROBOT_FUEL_NODES).map(ManagedFuelNode::new).toArray(ManagedFuelNode[]::new);
+        private static FuelNode[] ROBOT_FUEL_NODES;
+
+        private final ManagedFuelNode[] fuelNodes;
 
         private final List<FuelObject> fuelObjects = new ArrayList<>();
         private final List<FuelObject> fuelObjectsToRemove = new ArrayList<>();
@@ -774,7 +531,250 @@ public final class RobotModel extends ManagedSubsystemBase {
         private boolean fuelInFeeder = false;
 
         public FuelManager() {
-            // nothing to do
+            if (Constants.RobotState.getMode() == Mode.SIM) {
+                ROBOT_FUEL_NODES = new FuelNode[] {
+                    new FuelNode( // 1
+                            new Pose3d(0.042767, -0.162363, 0.360788, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(6, 11, 2),
+                            AnimationType.CURVED),
+                    new FuelNode( // 2
+                            new Pose3d(-0.075730, -0.258604, 0.352414, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(7, 3),
+                            AnimationType.CURVED),
+                    new FuelNode( // 3
+                            new Pose3d(-0.226887, -0.239875, 0.365525, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(7, 12),
+                            AnimationType.CURVED),
+                    new FuelNode( // 4
+                            new Pose3d(-0.134114, 0.260796, 0.349812, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(9, 5),
+                            AnimationType.CURVED),
+                    new FuelNode( // 5
+                            new Pose3d(-0.257154, 0.172525, 0.367297, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(9, 8),
+                            AnimationType.CURVED),
+                    new FuelNode( // 6
+                            new Pose3d(0.004048, -0.081546, 0.231411, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(7),
+                            AnimationType.ANGULAR),
+                    new FuelNode( // 7
+                            new Pose3d(-0.140056, -0.122741, 0.232295, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(8),
+                            AnimationType.ANGULAR),
+                    new FuelNode( // 8
+                            new Pose3d(-0.227986, -0.002869, 0.248412, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(9),
+                            AnimationType.ANGULAR),
+                    new FuelNode( // 9
+                            new Pose3d(-0.142263, 0.120316, 0.233914, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(10),
+                            AnimationType.ANGULAR),
+                    new FuelNode( // 10
+                            new Pose3d(0.008452, 0.129710, 0.230662, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 11
+                            new Pose3d(-0.082750, -0.078407, 0.356944, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(7, 6, 13, 12),
+                            AnimationType.CURVED),
+                    new FuelNode( // 12
+                            new Pose3d(-0.234366, -0.088855, 0.369445, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(8, 7, 21, 13),
+                            AnimationType.CURVED),
+                    new FuelNode( // 13
+                            new Pose3d(-0.159984, 0.055657, 0.362712, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(9, 8, 5),
+                            AnimationType.CURVED),
+                    new FuelNode( // 14
+                            new Pose3d(-0.158976, -0.124385, 0.481838, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(12, 11, 19, 45, 3, 2),
+                            AnimationType.CURVED),
+                    new FuelNode( // 15
+                            new Pose3d(0.018942, -0.263321, 0.462280, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(2, 1, 16),
+                            AnimationType.CURVED),
+                    new FuelNode( // 16
+                            new Pose3d(-0.016632, -0.125166, 0.494538, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(11, 1, 14),
+                            AnimationType.CURVED),
+                    new FuelNode( // 17
+                            new Pose3d(-0.151558, -0.264549, 0.480822, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(3, 2, 14),
+                            AnimationType.CURVED),
+                    new FuelNode( // 18
+                            new Pose3d(-0.248525, 0.268963, 0.463804, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(4, 5, 20),
+                            AnimationType.CURVED),
+                    new FuelNode( // 19
+                            new Pose3d(-0.143752, 0.021584, 0.495808, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(13, 11, 21, 14),
+                            AnimationType.CURVED),
+                    new FuelNode( // 20
+                            new Pose3d(-0.163724, 0.167428, 0.466852, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(4, 13, 5, 19),
+                            AnimationType.CURVED),
+                    new FuelNode( // 21
+                            new Pose3d(-0.290578, 0.034287, 0.416560, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(13, 5, 12, 8),
+                            AnimationType.CURVED),
+                    new FuelNode( // 22
+                            new Pose3d(-0.512706, -0.209347, 0.201676, Rotation3d.kZero),
+                            ImmutableIntArray.of(29, 30),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 23
+                            new Pose3d(-0.513431, -0.058470, 0.201676, Rotation3d.kZero),
+                            ImmutableIntArray.of(28, 31),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 24
+                            new Pose3d(-0.513799, 0.091721, 0.201676, Rotation3d.kZero),
+                            ImmutableIntArray.of(27, 32),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 25
+                            new Pose3d(-0.513655, 0.241544, 0.201676, Rotation3d.kZero),
+                            ImmutableIntArray.of(26, 33),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 26
+                            new Pose3d(-0.388130, 0.233567, 0.319629, Rotation3d.kZero),
+                            ImmutableIntArray.of(42, 43, 33, 27),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 27
+                            new Pose3d(-0.388274, 0.083744, 0.319629, Rotation3d.kZero),
+                            ImmutableIntArray.of(42, 41, 32, 28, 26),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 28
+                            new Pose3d(-0.387906, -0.066448, 0.319629, Rotation3d.kZero),
+                            ImmutableIntArray.of(41, 38, 29, 27),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 29
+                            new Pose3d(-0.387182, -0.217325, 0.319629, Rotation3d.kZero),
+                            ImmutableIntArray.of(38, 39, 30, 28),
+                            ImmutableIntArray.of(),
+                            AnimationType.CURVED),
+                    new FuelNode( // 30
+                            new Pose3d(-0.525299, -0.219116, 0.379476, Rotation3d.kZero),
+                            ImmutableIntArray.of(39, 37, 46, 31),
+                            ImmutableIntArray.of(29, 31),
+                            AnimationType.CURVED),
+                    new FuelNode( // 31
+                            new Pose3d(-0.534914, -0.068239, 0.350774, Rotation3d.kZero),
+                            ImmutableIntArray.of(41, 36, 32, 30),
+                            ImmutableIntArray.of(28, 32, 30),
+                            AnimationType.CURVED),
+                    new FuelNode( // 32
+                            new Pose3d(-0.535282, 0.081953, 0.350774, Rotation3d.kZero),
+                            ImmutableIntArray.of(42, 41, 35, 33, 31),
+                            ImmutableIntArray.of(27, 33, 31),
+                            AnimationType.CURVED),
+                    new FuelNode( // 33
+                            new Pose3d(-0.535138, 0.231776, 0.350774, Rotation3d.kZero),
+                            ImmutableIntArray.of(42, 26, 34, 32),
+                            ImmutableIntArray.of(26, 32),
+                            AnimationType.CURVED),
+                    new FuelNode( // 34
+                            new Pose3d(-0.561755, 0.232763, 0.501158, Rotation3d.kZero),
+                            ImmutableIntArray.of(42, 35, 43),
+                            ImmutableIntArray.of(33, 42, 35),
+                            AnimationType.CURVED),
+                    new FuelNode( // 35
+                            new Pose3d(-0.561899, 0.082940, 0.501158, Rotation3d.kZero),
+                            ImmutableIntArray.of(47, 42, 41, 36, 34),
+                            ImmutableIntArray.of(32, 42, 41, 47, 36),
+                            AnimationType.CURVED),
+                    new FuelNode( // 36
+                            new Pose3d(-0.561531, -0.067252, 0.501158, Rotation3d.kZero),
+                            ImmutableIntArray.of(41, 46, 47, 37, 35),
+                            ImmutableIntArray.of(31, 41, 46, 35, 37),
+                            AnimationType.CURVED),
+                    new FuelNode( // 37
+                            new Pose3d(-0.560807, -0.218129, 0.518430, Rotation3d.kZero),
+                            ImmutableIntArray.of(46, 39, 36),
+                            ImmutableIntArray.of(30, 46, 39, 36),
+                            AnimationType.CURVED),
+                    new FuelNode( // 38
+                            new Pose3d(-0.345920, -0.156077, 0.425632, Rotation3d.kZero),
+                            ImmutableIntArray.of(40, 45, 46, 41, 39),
+                            ImmutableIntArray.of(28, 12, 41, 3, 29),
+                            AnimationType.CURVED),
+                    new FuelNode( // 39
+                            new Pose3d(-0.418108, -0.267618, 0.486036, Rotation3d.kZero),
+                            ImmutableIntArray.of(40, 46, 37, 38),
+                            ImmutableIntArray.of(29, 38, 30, 40, 46, 37),
+                            AnimationType.CURVED),
+                    new FuelNode( // 40
+                            new Pose3d(-0.288452, -0.235402, 0.527460, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(3, 38, 17, 14, 39, 45),
+                            AnimationType.CURVED),
+                    new FuelNode( // 41
+                            new Pose3d(-0.420639, -0.025777, 0.438912, Rotation3d.kZero),
+                            ImmutableIntArray.of(45, 46, 47, 36, 35),
+                            ImmutableIntArray.of(28, 27, 21, 31, 42, 38),
+                            AnimationType.CURVED),
+                    new FuelNode( // 42
+                            new Pose3d(-0.430398, 0.148363, 0.426080, Rotation3d.kZero),
+                            ImmutableIntArray.of(44, 47, 43, 35, 34),
+                            ImmutableIntArray.of(27, 26, 33, 32, 5, 43),
+                            AnimationType.CURVED),
+                    new FuelNode( // 43
+                            new Pose3d(-0.385058, 0.267890, 0.505462, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(26, 18, 5, 44, 42),
+                            AnimationType.CURVED),
+                    new FuelNode( // 44
+                            new Pose3d(-0.302101, 0.137020, 0.517145, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(5, 21, 42, 18, 20),
+                            AnimationType.CURVED),
+                    new FuelNode( // 45
+                            new Pose3d(-0.295824, -0.056221, 0.526255, Rotation3d.kZero),
+                            ImmutableIntArray.of(),
+                            ImmutableIntArray.of(21, 38, 12, 41, 14, 19),
+                            AnimationType.CURVED),
+                    new FuelNode( // 46
+                            new Pose3d(-0.437256, -0.139400, 0.517154, Rotation3d.kZero),
+                            ImmutableIntArray.of(45, 40, 39, 37, 36),
+                            ImmutableIntArray.of(38, 41, 30, 39, 40, 36),
+                            AnimationType.CURVED),
+                    new FuelNode( // 47
+                            new Pose3d(-0.424376, 0.056077, 0.540793, Rotation3d.kZero),
+                            ImmutableIntArray.of(44, 45, 35, 36),
+                            ImmutableIntArray.of(41, 21, 42, 45, 44, 35),
+                            AnimationType.CURVED)
+                };
+            } else {
+                ROBOT_FUEL_NODES = new FuelNode[0];
+            }
+
+            fuelNodes =
+                    Arrays.stream(ROBOT_FUEL_NODES).map(ManagedFuelNode::new).toArray(ManagedFuelNode[]::new);
         }
 
         public boolean isShootingFuel() {
@@ -1150,39 +1150,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                     .map(fuelObject -> robotPose.plus(
                             new Transform3d(fuelObject.pose.getTranslation(), fuelObject.pose.getRotation())))
                     .toList());
-        }
-
-        public Translation3d getShooterFuelReleasePosition() {
-            Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
-            Translation3d shooterOrigin = new Translation3d(0.210586, 0.239469, 0.455638)
-                    .rotateAround(
-                            shooterBallStart,
-                            new Rotation3d(Rotation2d.fromRotations(RobotContainer.turret.getPositionRotations())));
-            Translation3d axisOfRotation = new Translation3d(0, 1, 0)
-                    .rotateBy(new Rotation3d(Rotation2d.fromRotations(RobotContainer.turret.getPositionRotations())));
-            return FuelObject.rotateAroundWithRadius(
-                            new Pose3d(shooterBallStart, Rotation3d.kZero),
-                            shooterOrigin,
-                            axisOfRotation,
-                            0.113106,
-                            Math.PI - RobotContainer.shooter.getHoodAngle() - Math.PI / 4)
-                    .getTranslation();
-        }
-
-        public Translation3d getShooterHoodPosition() {
-            Translation3d shooterHoodStart = new Translation3d(0.024704, 0.127000, 0.526709);
-            Translation3d shooterBallStart = new Translation3d(0.127000, 0.127000, 0.358781);
-            Translation3d shooterOrigin = new Translation3d(0.210586, 0.239469, 0.455638);
-            return shooterHoodStart
-                    .rotateAround(
-                            shooterOrigin,
-                            new Rotation3d(
-                                    0,
-                                    Constants.Shooter.HOOD_MAX_POSITION_RADIANS - RobotContainer.shooter.getHoodAngle(),
-                                    0))
-                    .rotateAround(
-                            shooterBallStart,
-                            new Rotation3d(Rotation2d.fromRotations(RobotContainer.turret.getPositionRotations())));
         }
 
         public void update() {
