@@ -8,7 +8,6 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -19,7 +18,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -337,13 +335,6 @@ public final class Drivetrain extends ManagedSubsystemBase {
         if (robotBumpSim.isOnRamp()) {
             swerveDriveSimulation.setSimulationWorldPose(robotBumpSim.getSimWorldPose(simPose));
         }
-
-        lastSimPose3d = new Pose3d(
-                lastSimPose3d.getTranslation(),
-                new Rotation3d(
-                        Units.degreesToRadians(20 * Math.cos(Timer.getTimestamp() / 2.5)),
-                        Units.degreesToRadians(20 * Math.sin(Timer.getTimestamp() / 2.5)),
-                        lastSimPose3d.getRotation().getZ()));
     }
 
     public void sysIdOnlyDriveMotorsSpin(Voltage volts) {
