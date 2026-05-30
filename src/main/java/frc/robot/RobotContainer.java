@@ -320,11 +320,18 @@ public final class RobotContainer {
         }
     }
 
+    private static void returnToOverviewTabIfIntakeStarting() {
+        if (intake.getTargetState() == IntakeState.STARTING && DriverStation.isTeleopEnabled()) {
+            Elastic.selectTab("Overview");
+        }
+    }
+
     private static void configureTriggers() {
         new Trigger(() -> getControl().isIntakeInvertPressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(Commands.runOnce(
                         () -> {
+                            returnToOverviewTabIfIntakeStarting();
                             intake.setState(Intake.IntakeState.RETRACTED);
                             climber.setState(Constants.ClimberHeight.DOWN);
                         },
@@ -332,6 +339,7 @@ public final class RobotContainer {
                         climber))
                 .onFalse(Commands.runOnce(
                         () -> {
+                            returnToOverviewTabIfIntakeStarting();
                             intake.setState(Intake.IntakeState.INTAKE);
                             climber.setState(Constants.ClimberHeight.DOWN);
                         },
@@ -342,6 +350,7 @@ public final class RobotContainer {
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(Commands.runOnce(
                         () -> {
+                            returnToOverviewTabIfIntakeStarting();
                             intake.setState(Intake.IntakeState.INTAKE);
                             climber.setState(Constants.ClimberHeight.DOWN);
                         },
@@ -349,6 +358,7 @@ public final class RobotContainer {
                         climber))
                 .onFalse(Commands.runOnce(
                         () -> {
+                            returnToOverviewTabIfIntakeStarting();
                             intake.setState(Intake.IntakeState.OUT);
                             climber.setState(Constants.ClimberHeight.DOWN);
                         },
@@ -359,6 +369,7 @@ public final class RobotContainer {
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(Commands.runOnce(
                         () -> {
+                            returnToOverviewTabIfIntakeStarting();
                             intake.setState(Intake.IntakeState.RETRACTED);
                             climber.setState(Constants.ClimberHeight.DOWN);
                         },
@@ -366,6 +377,7 @@ public final class RobotContainer {
                         climber))
                 .onFalse(Commands.runOnce(
                         () -> {
+                            returnToOverviewTabIfIntakeStarting();
                             intake.setState(Intake.IntakeState.OUT);
                             climber.setState(Constants.ClimberHeight.DOWN);
                         },
@@ -376,6 +388,7 @@ public final class RobotContainer {
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
                 .onTrue(Commands.runOnce(
                         () -> {
+                            returnToOverviewTabIfIntakeStarting();
                             intake.setState(Intake.IntakeState.EJECT);
                             climber.setState(Constants.ClimberHeight.DOWN);
                         },
@@ -383,6 +396,7 @@ public final class RobotContainer {
                         climber))
                 .onFalse(Commands.runOnce(
                         () -> {
+                            returnToOverviewTabIfIntakeStarting();
                             intake.setState(Intake.IntakeState.OUT);
                             climber.setState(Constants.ClimberHeight.DOWN);
                         },
@@ -391,7 +405,12 @@ public final class RobotContainer {
 
         new Trigger(() -> getControl().isDefenseModePressed()
                         && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
-                .onTrue(Commands.runOnce(() -> intake.setState(Intake.IntakeState.STARTING), intake));
+                .onTrue(Commands.runOnce(
+                        () -> {
+                            intake.setState(Intake.IntakeState.STARTING);
+                            Elastic.selectTab("Defense");
+                        },
+                        intake));
 
         new Trigger(() -> getControl().isClimbPressed())
                 .onTrue(Commands.runOnce(
@@ -399,8 +418,10 @@ public final class RobotContainer {
                             if (climber.getNearestHeight() == Constants.ClimberHeight.DOWN) {
                                 climber.setState(Constants.ClimberHeight.UP);
                                 intake.setState(Intake.IntakeState.STARTING);
+                                Elastic.selectTab("Defense");
                             } else {
                                 climber.setState(Constants.ClimberHeight.DOWN);
+                                Elastic.selectTab("Overview");
                             }
                         },
                         climber,
