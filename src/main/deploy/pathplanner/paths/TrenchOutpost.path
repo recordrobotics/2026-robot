@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.55,
-        "y": 0.713
+        "x": 4.414279600570612,
+        "y": 0.63
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.893363421805725,
-        "y": 0.6331687449069544
+        "x": 3.7576430223763375,
+        "y": 0.5501687449069544
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "OutpostStartTrench"
     },
     {
       "anchor": {
@@ -64,32 +64,64 @@
     },
     {
       "anchor": {
-        "x": 3.4180963855421687,
-        "y": 0.5381325301204822
+        "x": 2.9392724679029953,
+        "y": 0.418644793152639
       },
       "prevControl": {
-        "x": 3.9885106923083047,
-        "y": 0.3654495576959341
+        "x": 3.534222851748594,
+        "y": 0.38363149438137256
       },
       "nextControl": {
-        "x": 2.8723874527344253,
-        "y": 0.7033363819139546
+        "x": 2.6897042734872287,
+        "y": 0.4333320779954579
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.166759036144578,
-        "y": 2.352132530120481
+        "x": 2.745192582025677,
+        "y": 0.63
       },
       "prevControl": {
-        "x": 3.177330690711289,
-        "y": 2.0986841496090523
+        "x": 2.4864194008559193,
+        "y": 0.5780115325782459
+      },
+      "nextControl": {
+        "x": 2.9902950664967274,
+        "y": 0.6792419750428272
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.634236804564908,
+        "y": 0.418644793152639
+      },
+      "prevControl": {
+        "x": 2.5769900142653355,
+        "y": 0.5480313837375184
+      },
+      "nextControl": {
+        "x": 5.870702148065794,
+        "y": 0.3408796772091867
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.282938659058486,
+        "y": 0.713
+      },
+      "prevControl": {
+        "x": 7.766379013222573,
+        "y": 0.6495744507058775
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "BCDotOutpost"
     }
   ],
   "rotationTargets": [
@@ -114,7 +146,21 @@
       "rotationDegrees": 0.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 3.875759621877104,
+      "maxWaypointRelativePos": 5.841998649561017,
+      "constraints": {
+        "maxVelocity": 0.3,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 550.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
@@ -138,6 +184,28 @@
           "name": "IntakeOff"
         }
       }
+    },
+    {
+      "name": "Mixer",
+      "waypointRelativePos": 3.951384199864951,
+      "endWaypointRelativePos": 5.785280216070209,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Mixer"
+        }
+      }
+    },
+    {
+      "name": "IntakeOff",
+      "waypointRelativePos": 5.8,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeOff"
+        }
+      }
     }
   ],
   "globalConstraints": {
@@ -149,7 +217,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 2.0,
     "rotation": 0.0
   },
   "reversed": false,
