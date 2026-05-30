@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.56,
-        "y": 7.418
+        "x": 4.407606741573034,
+        "y": 7.408224719101124
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.259202017771514,
-        "y": 7.400275595964456
+        "x": 5.131168539325842,
+        "y": 7.5305168539325855
       },
       "isLocked": false,
       "linkedName": "DepotTrench"
     },
     {
       "anchor": {
-        "x": 6.587132530120481,
-        "y": 7.1493975903614455
+        "x": 6.6292471910112365,
+        "y": 7.408224719101124
       },
       "prevControl": {
-        "x": 6.00366387986089,
-        "y": 7.346132339489077
+        "x": 5.896089667722858,
+        "y": 7.6083695789147745
       },
       "nextControl": {
-        "x": 7.3976126790792,
-        "y": 6.876118796878062
+        "x": 7.435687694598621,
+        "y": 7.188074319750915
       },
       "isLocked": false,
       "linkedName": null
@@ -52,44 +52,92 @@
         "y": 4.300242510699002
       },
       "prevControl": {
-        "x": 8.576761310416163,
-        "y": 4.073249463892299
+        "x": 8.748977528089888,
+        "y": 3.7598426966292138
       },
       "nextControl": {
-        "x": 6.5278173737760525,
-        "y": 4.5358249633641075
+        "x": 6.758807366947958,
+        "y": 4.673079888846772
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.946014234875446,
-        "y": 7.655468564650059
+        "x": 6.007595505617977,
+        "y": 7.571280898876404
       },
       "prevControl": {
-        "x": 7.433786049488178,
-        "y": 7.614243807079081
+        "x": 7.4953673202307085,
+        "y": 7.530056141305426
       },
       "nextControl": {
-        "x": 4.219435921622435,
-        "y": 7.703310425674756
+        "x": 4.281017192364966,
+        "y": 7.619122759901101
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.0137710843373493,
-        "y": 6.898060240963855
+        "x": 2.9299101123595506,
+        "y": 7.571280898876404
       },
       "prevControl": {
-        "x": 3.8224216867469876,
-        "y": 7.214963855421687
+        "x": 2.9299101123595506,
+        "y": 7.821280898876404
+      },
+      "nextControl": {
+        "x": 2.9299101123595506,
+        "y": 7.321280898876404
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.6407191011235955,
+        "y": 7.571280898876404
+      },
+      "prevControl": {
+        "x": 4.5465748895356874,
+        "y": 7.533919943820224
+      },
+      "nextControl": {
+        "x": 6.734863312711504,
+        "y": 7.608641853932585
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.119696629213483,
+        "y": 5.084674157303371
+      },
+      "prevControl": {
+        "x": 5.888351454123356,
+        "y": 5.179433905944439
+      },
+      "nextControl": {
+        "x": 6.35104180430361,
+        "y": 4.989914408662303
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.27,
+        "y": 7.408
+      },
+      "prevControl": {
+        "x": 7.270664259554984,
+        "y": 7.408
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotTrenchShoot"
+      "linkedName": "BCDotDepot"
     }
   ],
   "rotationTargets": [
@@ -102,12 +150,24 @@
       "rotationDegrees": 90.0
     },
     {
-      "waypointRelativePos": 2.9,
+      "waypointRelativePos": 2.6356846473029067,
       "rotationDegrees": 59.99999999999999
     },
     {
-      "waypointRelativePos": 4.1,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 3.180082987551852,
+      "rotationDegrees": -63.851453336935464
+    },
+    {
+      "waypointRelativePos": 4.122821576763456,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 5.902074688796628,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 6.406639004149371,
+      "rotationDegrees": 76.72951498646204
     }
   ],
   "constraintZones": [
@@ -120,6 +180,19 @@
         "maxAcceleration": 8.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    },
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 4.6451612903225765,
+      "maxWaypointRelativePos": 5.328039702233235,
+      "constraints": {
+        "maxVelocity": 0.2,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 550.0,
         "nominalVoltage": 12.0,
         "unlimited": false
       }
@@ -140,7 +213,51 @@
     },
     {
       "name": "IntakeOff",
-      "waypointRelativePos": 4.183622828784115,
+      "waypointRelativePos": 4.35,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeOff"
+        }
+      }
+    },
+    {
+      "name": "Mixer",
+      "waypointRelativePos": 4.788089330024714,
+      "endWaypointRelativePos": 5.470967741935486,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Mixer"
+        }
+      }
+    },
+    {
+      "name": "IntakeOff",
+      "waypointRelativePos": 5.48,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeOff"
+        }
+      }
+    },
+    {
+      "name": "Intake",
+      "waypointRelativePos": 6.02679900744406,
+      "endWaypointRelativePos": 7.535483870967744,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    },
+    {
+      "name": "IntakeOff",
+      "waypointRelativePos": 7.55,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -159,8 +276,8 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 170.0
+    "velocity": 3.5,
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,
