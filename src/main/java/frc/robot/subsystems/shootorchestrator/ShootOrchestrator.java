@@ -33,6 +33,7 @@ import frc.robot.utils.field.FieldUtils;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -58,10 +59,29 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private static final LoggedNetworkBoolean shootOverride = new LoggedNetworkBoolean("SHOOT_OVERRIDE", false);
     private static final LoggedNetworkNumber shootAngleOffset = new LoggedNetworkNumber("SHOOT_ANGLE_OFFSET", 0);
 
+    private static final LoggedDashboardChooser<FeedForwardSource> feedForwardSourceChooser =
+            new LoggedDashboardChooser<>("FeedForwardSource");
+
     public enum FeedMode {
         AUTO,
         ALWAYS,
         DISABLED
+    }
+
+    public enum FeedForwardSource {
+        NONE("None"),
+        BEAM_BREAKS("Beam Breaks");
+
+        private final String name;
+
+        FeedForwardSource(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     private Optional<ShooterState> shooterOverride = Optional.empty();
@@ -81,6 +101,15 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private double shooterFeedforward = 0;
 
     public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
+
+    public ShootOrchestrator() {
+        feedForwardSourceChooser.addDefaultOption(FeedForwardSource.NONE.toString(), FeedForwardSource.NONE);
+        for (FeedForwardSource source : FeedForwardSource.values()) {
+            if (source != FeedForwardSource.NONE) {
+                feedForwardSourceChooser.addOption(source.toString(), source);
+            }
+        }
+    }
 
     public void setEnableShooting(boolean enable) {
         this.shootingEnabled = enable;
@@ -146,7 +175,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
-    private void feedforwardShooter() {
+    private void feedforwardShooterBeambreaks() {
         double currentTime = Timer.getTimestamp();
 
         if (RobotContainer.feeder.isBottomBeamBroken()) {
@@ -360,7 +389,11 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     @Override
     public void periodicManaged() {
         setAutomatedTarget();
-        feedforwardShooter();
+
+        switch (Optional.ofNullable(feedForwardSourceChooser.get()).orElse(FeedForwardSource.NONE)) {
+            case NONE -> shooterFeedforward = 0;
+            case BEAM_BREAKS -> feedforwardShooterBeambreaks();
+        }
 
         if (target.isPresent()) {
             ShotTarget shotTarget = target.get();
