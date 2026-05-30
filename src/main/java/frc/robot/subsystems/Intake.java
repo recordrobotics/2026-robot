@@ -360,7 +360,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             if ((targetState == IntakeState.INTAKE || targetState == IntakeState.OUT) && !isNearStartPosition()) {
                 feedforward = Constants.Intake.ARM_DOWN_FF;
             } else if (targetState == IntakeState.STARTING
-                    && inputs.armPositionRotations < Units.degreesToRotations(130)) {
+                    && inputs.armPositionRotations < Units.degreesToRotations(120)) {
                 feedforward = Constants.Intake.ARM_UP_FF;
             }
             io.setArmControl(armRequest
