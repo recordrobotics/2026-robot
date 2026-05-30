@@ -12,7 +12,9 @@ import frc.robot.subsystems.io.ImuIO;
 import frc.robot.subsystems.io.ImuIOInputsAutoLogged;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.wrappers.SafeAlert;
+import java.util.OptionalDouble;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public final class Imu extends ManagedSubsystemBase {
 
@@ -34,7 +36,13 @@ public final class Imu extends ManagedSubsystemBase {
     private double jerkX;
     private double jerkY;
 
+    private OptionalDouble lastYaw = OptionalDouble.empty();
+    private boolean pigeonFault = false;
+
     private final SafeAlert disconnectedAlert = new SafeAlert("Imu disconnected!", AlertType.kError);
+    private final SafeAlert faultAlert = new SafeAlert("Imu fault!", AlertType.kError);
+
+    private final LoggedNetworkBoolean stopFaultSwitch = new LoggedNetworkBoolean("Imu/StopFault", false);
 
     public Imu(ImuIO io) {
         this.io = io;
@@ -47,10 +55,16 @@ public final class Imu extends ManagedSubsystemBase {
 
         io.reset();
         io.resetDisplacement(); // Technically not necessary but whatever
+
+        faultAlert.set(false);
     }
 
     public boolean isConnected() {
         return inputs.connected;
+    }
+
+    public boolean isFaulted() {
+        return pigeonFault;
     }
 
     public Rotation2d getYaw() {
@@ -93,7 +107,23 @@ public final class Imu extends ManagedSubsystemBase {
         lastAccelX = accelX;
         lastAccelY = accelY;
 
+        double yaw = inputs.yaw.getDegrees();
+        if (lastYaw.isPresent() && Math.abs(lastYaw.getAsDouble() - yaw) >= 360.0) {
+            pigeonFault = true;
+        }
+        lastYaw = OptionalDouble.of(yaw);
+
+        if (stopFaultSwitch.get()) {
+            stopFault();
+        }
+
+        faultAlert.set(pigeonFault);
+
         disconnectedAlert.set(!inputs.connected);
+    }
+
+    public void stopFault() {
+        pigeonFault = false;
     }
 
     @Override

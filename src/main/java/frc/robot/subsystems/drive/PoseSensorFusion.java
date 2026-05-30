@@ -284,7 +284,7 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
 
         SwerveModulePosition[] positions = RobotContainer.drivetrain.getModulePositions();
 
-        if (imu.isConnected()) {
+        if (imu.isConnected() && !imu.isFaulted()) {
             updateNav = imu.getYaw();
         } else if (updatePositions != null) {
             SwerveModulePosition[] deltas = new SwerveModulePosition[4];

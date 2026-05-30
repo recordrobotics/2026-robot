@@ -222,7 +222,7 @@
     {
       "name": "Pass",
       "waypointRelativePos": 0.8210668467251879,
-      "endWaypointRelativePos": 3.154625253207286,
+      "endWaypointRelativePos": 3.15,
       "command": {
         "type": "named",
         "data": {

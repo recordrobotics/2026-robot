@@ -220,6 +220,17 @@
       }
     },
     {
+      "name": "Pass",
+      "waypointRelativePos": 0.82,
+      "endWaypointRelativePos": 3.15,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Pass"
+        }
+      }
+    },
+    {
       "name": "IntakeOff",
       "waypointRelativePos": 3.4,
       "endWaypointRelativePos": null,
