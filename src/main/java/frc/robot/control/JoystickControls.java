@@ -185,6 +185,11 @@ public class JoystickControls implements AbstractControl {
     }
 
     @Override
+    public boolean isIntakeRelativePressed() {
+        return false;
+    }
+
+    @Override
     public String toDisplayName() {
         return "Joystick";
     }

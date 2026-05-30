@@ -302,19 +302,14 @@ public final class Constants {
         public static final double JOYSTICK_XY_EXPONENT = 2;
         public static final double JOYSTICK_SPIN_EXPONENT = 2;
 
-        // Sensitivies for directional controls (XY) and spin (theta)
-        public static final double XBOX_XY_SENSITIVITY = 1;
-        public static final double XBOX_SPIN_SENSITIVITY = 2;
-        public static final double XBOX_XY_THRESHOLD = 0.1;
-        public static final double XBOX_SPIN_THRESHOLD = 0.1;
-        public static final double XBOX_XY_EXPONENT = 3;
-        public static final double XBOX_SPIN_EXPONENT = 5;
         public static final double SPIN_KP = 4;
         public static final double SPIN_KD = 0.28;
         public static final Constraints SPIN_CONSTRAINTS = new Constraints(
                 Constants.Swerve.MAX_ANGULAR_SPEED_RADIANS, Constants.Swerve.MAX_ANGULAR_ACCELERATION_RADIANS);
         public static final double JOYSTICK_ABSOLUTE_SPIN_THRESHOLD = 0.9;
         public static final double JOYSTICK_ABSOLUTE_SPIN_THRESHOLD_PACMAN = 0.2;
+
+        public static final double RELATIVE_SPIN_MAX_ANGULAR_VELOCITY = Units.degreesToRadians(140);
 
         private Control() {}
     }

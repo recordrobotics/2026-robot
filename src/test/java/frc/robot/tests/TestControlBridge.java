@@ -300,4 +300,9 @@ public class TestControlBridge implements AbstractControl {
     public boolean isDefenseModePressed() {
         return false; // TODO
     }
+
+    @Override
+    public boolean isIntakeRelativePressed() {
+        return false; // TODO
+    }
 }

@@ -29,6 +29,8 @@ public interface AbstractControl {
 
     boolean isUnstuckSpindexerPressed();
 
+    boolean isIntakeRelativePressed();
+
     // Movement
     DrivetrainControl getDrivetrainControl();
 

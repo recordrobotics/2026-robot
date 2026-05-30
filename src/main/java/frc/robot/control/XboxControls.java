@@ -4,6 +4,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
@@ -13,6 +14,7 @@ import frc.robot.RobotContainer;
 import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.modifiers.DrivetrainControl;
+import java.util.OptionalDouble;
 
 @SuppressWarnings({"java:S109"})
 public class XboxControls implements AbstractControl {
@@ -45,30 +47,30 @@ public class XboxControls implements AbstractControl {
 
     @Override
     public void update() {
-        // calculate velocity from the target spin position
-        Pair<Boolean, Rotation2d> targetPair = getSpinRotation2d();
-        boolean hasTarget = targetPair.getFirst();
-        Rotation2d target = targetPair.getSecond();
-        if (!hasTarget) {
-            target = new Rotation2d(spinTarget);
+        if (isIntakeRelativePressed()) {
+            spinOutput = -getRelativeSpin() * Constants.Control.RELATIVE_SPIN_MAX_ANGULAR_VELOCITY;
         } else {
-            spinTarget = target.getRadians();
-            lastSpinTime = Timer.getTimestamp();
-        }
+            // calculate velocity from the target spin position
+            OptionalDouble spin = getSpinRotationRadians();
+            if (spin.isPresent()) {
+                spinTarget = spin.getAsDouble();
+                lastSpinTime = Timer.getTimestamp();
+            }
 
-        if (hasTarget || Timer.getTimestamp() - lastSpinTime < 1.8) {
-            spinOutput = spinController.calculate(
-                    RobotContainer.poseSensorFusion
-                            .getEstimatedPosition()
-                            .getRotation()
-                            .getRadians(),
-                    target.getRadians());
-        } else {
-            spinOutput = 0;
-            spinController.reset(RobotContainer.poseSensorFusion
-                    .getEstimatedPosition()
-                    .getRotation()
-                    .getRadians());
+            if (spin.isPresent() || Timer.getTimestamp() - lastSpinTime < 1.8) {
+                spinOutput = spinController.calculate(
+                        RobotContainer.poseSensorFusion
+                                .getEstimatedPosition()
+                                .getRotation()
+                                .getRadians(),
+                        spinTarget);
+            } else {
+                spinOutput = 0;
+                spinController.reset(RobotContainer.poseSensorFusion
+                        .getEstimatedPosition()
+                        .getRotation()
+                        .getRadians());
+            }
         }
 
         Pair<Double, Double> xy = getXYOriented();
@@ -129,12 +131,30 @@ public class XboxControls implements AbstractControl {
         }
     }
 
-    public Pair<Double, Double> getXYOriented() {
-        Pair<Double, Double> xy = getXYRaw();
-        return AbstractControl.orientXY(new Pair<>(xy.getFirst(), xy.getSecond()));
+    public double getRelativeSpin() {
+        double unsquaredX = SimpleMath.applyThresholdAndSensitivity(
+                xbox.getRightX(), Constants.Control.JOYSTICK_XY_THRESHOLD, Constants.Control.JOYSTICK_XY_SENSITIVITY);
+        return Math.copySign(Math.pow(unsquaredX, Constants.Control.JOYSTICK_XY_EXPONENT), unsquaredX);
     }
 
-    public Pair<Boolean, Rotation2d> getSpinRotation2d() {
+    public Pair<Double, Double> getXYOriented() {
+        Pair<Double, Double> xy = getXYRaw();
+        if (isIntakeRelativePressed()) {
+            Translation2d intakeRelativeTranslation =
+                    new Translation2d(xy.getSecond(), xy.getFirst()); // robot frame is +x front, +y left
+            Translation2d fieldRelativeTranslation = intakeRelativeTranslation.rotateBy(
+                    RobotContainer.poseSensorFusion.getEstimatedPosition().getRotation());
+            return new Pair<>(fieldRelativeTranslation.getX(), fieldRelativeTranslation.getY());
+        } else {
+            return AbstractControl.orientXY(new Pair<>(xy.getFirst(), xy.getSecond()));
+        }
+    }
+
+    public OptionalDouble getSpinRotationRadians() {
+        if (isIntakeRelativePressed()) { // intake relative uses left/right spin
+            return OptionalDouble.empty();
+        }
+
         double x = xbox.getRightStickButton() ? xbox.getLeftX() : xbox.getRightX();
         double y = xbox.getRightStickButton() ? xbox.getLeftY() : xbox.getRightY();
         double angle = -Math.atan2(y, x) + Math.PI / 2;
@@ -152,9 +172,9 @@ public class XboxControls implements AbstractControl {
                 < (xbox.getRightStickButton()
                         ? Constants.Control.JOYSTICK_ABSOLUTE_SPIN_THRESHOLD_PACMAN
                         : Constants.Control.JOYSTICK_ABSOLUTE_SPIN_THRESHOLD)) {
-            return new Pair<>(false, new Rotation2d());
+            return OptionalDouble.empty();
         }
-        return new Pair<>(true, new Rotation2d(angle));
+        return OptionalDouble.of(angle);
     }
 
     @Override
@@ -224,6 +244,11 @@ public class XboxControls implements AbstractControl {
     @Override
     public boolean isDefenseModePressed() {
         return xbox.getPOV() == 0; // D-pad up
+    }
+
+    @Override
+    public boolean isIntakeRelativePressed() {
+        return xbox.getBButton();
     }
 
     @Override
