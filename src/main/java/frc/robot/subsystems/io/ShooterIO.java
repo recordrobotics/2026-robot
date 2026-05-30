@@ -22,6 +22,7 @@ public interface ShooterIO {
         public double hoodVelocityRotationsPerSecond = 0;
         public double hoodVoltage = 0;
         public Current hoodCurrentDraw = Amps.zero();
+        public boolean hoodRotorFault = false;
     }
 
     default void updateInputs(ShooterIOInputs inputs) {}
@@ -37,6 +38,8 @@ public interface ShooterIO {
     default void setHoodPositionRotations(double newValue) {}
 
     default void setFlywheelPositionMeters(double newValue) {}
+
+    default void clearRotorFault() {}
 
     default void close() {}
 

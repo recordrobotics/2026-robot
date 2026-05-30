@@ -74,6 +74,8 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     private double lastMovementTime = 0;
     private boolean overrideKnown = false;
 
+    private boolean handledRotorFault = false;
+
     public Shooter(ShooterIO io) {
         this.io = io;
 
@@ -218,6 +220,13 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
         if (overrideKnown) {
             positionStatus = PositionStatus.KNOWN;
+        }
+
+        if (inputs.hoodRotorFault && !handledRotorFault) {
+            handledRotorFault = true;
+            positionStatus = PositionStatus.UNKNOWN;
+        } else if (!inputs.hoodRotorFault) {
+            handledRotorFault = false;
         }
 
         if (!isForceDisabled()

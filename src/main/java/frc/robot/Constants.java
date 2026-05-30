@@ -99,7 +99,8 @@ public final class Constants {
                 FlippingUtil.fieldSizeY - BLUE_HUB_POSITION.getY(),
                 BLUE_HUB_POSITION.getZ());
 
-        public static final Translation3d BLUE_PASSING_TARGET_HP_SIDE = new Translation3d(2.752, 1.664, 0.0);
+        public static final Translation3d BLUE_PASSING_TARGET_HP_SIDE =
+                new Translation3d(Units.inchesToMeters(40.0), 1.664, 0.0);
         public static final Translation3d BLUE_PASSING_TARGET_DEPOT_SIDE = new Translation3d(
                 BLUE_PASSING_TARGET_HP_SIDE.getX(), FlippingUtil.fieldSizeY - BLUE_PASSING_TARGET_HP_SIDE.getY(), 0.0);
 
@@ -116,9 +117,9 @@ public final class Constants {
     }
 
     public enum FieldStartingLocation {
-        TrenchDepot(new Pose2d(3.560, 7.418, Rotation2d.kZero)),
+        TrenchDepot(new Pose2d(4.408, 7.408, Rotation2d.kZero)),
         Center(new Pose2d(3.418, 4.080, Rotation2d.fromDegrees(34.439))),
-        TrenchOutpost(new Pose2d(3.550, 0.713, Rotation2d.kZero));
+        TrenchOutpost(new Pose2d(4.414, 0.630, Rotation2d.kZero));
 
         private final Pose2d transformRed;
         private final Pose2d transformBlue;
@@ -823,7 +824,7 @@ public final class Constants {
         public static Mode getMode() {
             if (RobotBase.isReal()) return Mode.REAL;
             if (runningAsUnitTest) return Mode.TEST;
-            return RobotBase.isSimulation() ? Mode.SIM : Mode.REPLAY;
+            return Mode.SIM;
         }
 
         private static AutoLogLevel.Level getAutoLogLevel() {

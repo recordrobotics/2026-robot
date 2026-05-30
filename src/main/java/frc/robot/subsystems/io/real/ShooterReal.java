@@ -31,6 +31,9 @@ public class ShooterReal implements ShooterIO {
     private final StatusSignal<Voltage> hoodVoltageSignal;
     private final StatusSignal<Current> hoodCurrentSignal;
 
+    private final StatusSignal<Boolean> hoodRotorFault1Signal;
+    private final StatusSignal<Boolean> hoodRotorFault2Signal;
+
     public ShooterReal() {
         flywheelGroup = new TalonFXMotorGroup(
                 "Shooter",
@@ -46,12 +49,19 @@ public class ShooterReal implements ShooterIO {
         hoodVelocitySignal = hood.getVelocity();
         hoodVoltageSignal = hood.getMotorVoltage();
         hoodCurrentSignal = hood.getSupplyCurrent();
+        hoodRotorFault1Signal = hood.getFault_RotorFault1();
+        hoodRotorFault2Signal = hood.getFault_RotorFault2();
 
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), hoodPositionSignal);
         BaseStatusSignal.setUpdateFrequencyForAll(Hertz.of(50), flywheelGroup.getAllHighRefreshRateStatusSignals());
 
         RobotContainer.allStatusSignalsToRefresh.addAll(
-                hoodPositionSignal, hoodVelocitySignal, hoodVoltageSignal, hoodCurrentSignal);
+                hoodPositionSignal,
+                hoodVelocitySignal,
+                hoodVoltageSignal,
+                hoodCurrentSignal,
+                hoodRotorFault1Signal,
+                hoodRotorFault2Signal);
         RobotContainer.allStatusSignalsToRefresh.addAll(flywheelGroup.getAllStatusSignals());
 
         RobotContainer.orchestra.add(hood, TalonFXOrchestra.Tracks.HOOD);
@@ -109,6 +119,7 @@ public class ShooterReal implements ShooterIO {
         inputs.hoodVelocityRotationsPerSecond = hoodVelocitySignal.getValueAsDouble();
         inputs.hoodVoltage = hoodVoltageSignal.getValueAsDouble();
         inputs.hoodCurrentDraw = hoodCurrentSignal.getValue();
+        inputs.hoodRotorFault = hoodRotorFault1Signal.getValue() || hoodRotorFault2Signal.getValue();
     }
 
     @Override

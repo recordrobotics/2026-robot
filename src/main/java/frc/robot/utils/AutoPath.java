@@ -140,6 +140,11 @@ public final class AutoPath {
                         Commands.runOnce(() -> RobotContainer.intake.setState(IntakeState.OUT), RobotContainer.intake),
                         Commands.waitSeconds(0.5)));
         NamedCommands.registerCommand("BCDot", new BCDot());
+        NamedCommands.registerCommand(
+                "Pass",
+                Commands.startEnd(
+                        () -> RobotContainer.shootOrchestrator.setEnableShooting(true),
+                        () -> RobotContainer.shootOrchestrator.setEnableShooting(false)));
 
         // Configures auto builder
         AutoBuilder.configure(

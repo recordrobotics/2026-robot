@@ -1,15 +1,11 @@
 package frc.robot.utils.field;
 
 import com.pathplanner.lib.util.FlippingUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.RobotContainer;
 import frc.robot.utils.DriverStationUtils;
-import org.littletonrobotics.junction.Logger;
 
 public final class FieldUtils {
 
@@ -112,8 +108,6 @@ public final class FieldUtils {
     }
 
     public static boolean isBlocked(Translation2d start, Translation2d end) {
-        Logger.recordOutput("JFA/B", new Pose3d(new Pose2d(BLUE_TOWER_CENTER, Rotation2d.kZero)));
-        Logger.recordOutput("JFA/A", new Pose3d(new Pose2d(RED_TOWER_CENTER, Rotation2d.kZero)));
         return isInTrench(start, end, BLUE_TRENCH_HP_SIDE)
                 || isInTrench(start, end, BLUE_TRENCH_DEPOT_SIDE)
                 || isInTrench(start, end, RED_TRENCH_HP_SIDE)
