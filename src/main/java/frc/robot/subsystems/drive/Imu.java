@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 
 import com.ctre.phoenix6.configs.MountPoseConfigs;
@@ -72,22 +73,27 @@ public final class Imu extends ManagedSubsystemBase {
     }
 
     public Rotation2d getPitch() {
+        if (pigeonFault) return Rotation2d.kZero;
         return inputs.pitch;
     }
 
     public Rotation2d getRoll() {
+        if (pigeonFault) return Rotation2d.kZero;
         return inputs.roll;
     }
 
     public AngularVelocity getRollRate() {
+        if (pigeonFault) return DegreesPerSecond.of(0);
         return inputs.rollRate;
     }
 
     public AngularVelocity getPitchRate() {
+        if (pigeonFault) return DegreesPerSecond.of(0);
         return inputs.pitchRate;
     }
 
     public AngularVelocity getYawRate() {
+        if (pigeonFault) return DegreesPerSecond.of(0);
         return inputs.yawRate;
     }
 
@@ -114,16 +120,12 @@ public final class Imu extends ManagedSubsystemBase {
         lastYaw = OptionalDouble.of(yaw);
 
         if (stopFaultSwitch.get()) {
-            stopFault();
+            pigeonFault = false;
         }
 
         faultAlert.set(pigeonFault);
 
         disconnectedAlert.set(!inputs.connected);
-    }
-
-    public void stopFault() {
-        pigeonFault = false;
     }
 
     @Override
