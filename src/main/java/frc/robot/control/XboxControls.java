@@ -252,6 +252,11 @@ public class XboxControls implements AbstractControl {
     }
 
     @Override
+    public boolean hasUserInput() {
+        return AbstractControl.hasUserInput(xbox);
+    }
+
+    @Override
     public String toDisplayName() {
         return "Xbox";
     }

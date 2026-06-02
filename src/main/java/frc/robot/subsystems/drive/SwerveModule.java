@@ -236,6 +236,15 @@ public final class SwerveModule {
         Logger.processInputs("Drive/Module " + name, inputs);
     }
 
+    /**
+     * Checks if both the drive and turn motors are connected.
+     * (encoder only matters at the start)
+     * @return true if both motors are connected, false otherwise.
+     */
+    public boolean isConnected() {
+        return inputs.driveMotorConnected && inputs.turnMotorConnected;
+    }
+
     public void periodic() {
         updateInputs();
 
@@ -283,7 +292,7 @@ public final class SwerveModule {
         io.setDriveControl(driveVoltageRequest.withOutput(volts));
     }
 
-    public double getDriveMotorVoltsSysIdOnly() {
+    public double getDriveMotorVoltage() {
         return inputs.driveMotorVoltage;
     }
 
@@ -291,7 +300,7 @@ public final class SwerveModule {
         io.setTurnControl(turnVoltageRequest.withOutput(volts));
     }
 
-    public double getTurnMotorVoltsSysIdOnly() {
+    public double getTurnMotorVoltage() {
         return inputs.turnMotorVoltage;
     }
 

@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,6 +18,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -36,10 +38,14 @@ import frc.robot.utils.SimpleMath;
 import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import frc.robot.utils.TalonFXOrchestra;
+import frc.robot.utils.libraries.Elastic;
+import frc.robot.utils.libraries.Elastic.Notification;
+import frc.robot.utils.libraries.Elastic.NotificationLevel;
 import frc.robot.utils.libraries.bumpsim.RobotBumpSim;
 import frc.robot.utils.modifiers.ControlModifierService;
 import frc.robot.utils.modifiers.ControlModifierService.ControlModifier;
 import frc.robot.utils.modifiers.DrivetrainControl;
+import frc.robot.utils.wrappers.SafeAlert;
 import java.util.Arrays;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
@@ -147,6 +153,11 @@ public final class Drivetrain extends ManagedSubsystemBase {
     private Pose3d lastSimPose3d = new Pose3d();
 
     private boolean useXHold = false;
+
+    private final SafeAlert lostDrivetrainAlert = new SafeAlert("Drivetrain lost!", AlertType.kError);
+    private final Debouncer lostDrivetrainDebouncer = new Debouncer(1.5, Debouncer.DebounceType.kBoth);
+    private boolean prevLostDrivetrain = false;
+    private boolean regainedDrivetrainStickyFault = false;
 
     public Drivetrain() throws InvalidConfigException {
         ModuleConstants[] moduleConstants = {
@@ -312,6 +323,21 @@ public final class Drivetrain extends ManagedSubsystemBase {
         lastModuleSetpoints = swerveModuleStates;
     }
 
+    /**
+     * Checks if all the drive and turn motors are connected
+     * (encoders only matter at the start)
+     * @return  true if all modules are connected, false if at least one module is not connected
+     */
+    public boolean isConnected() {
+        for (SwerveModule module : modules) {
+            if (!module.isConnected()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Override
     public void periodicManaged() {
         driveInternal();
@@ -319,6 +345,32 @@ public final class Drivetrain extends ManagedSubsystemBase {
         for (SwerveModule module : modules) {
             module.periodic();
         }
+
+        lostDrivetrainAlert.set(!isConnected());
+        boolean lost = lostDrivetrainDebouncer.calculate(!isConnected());
+        if (lost && !prevLostDrivetrain) {
+            Elastic.sendNotification(new Notification(
+                    NotificationLevel.ERROR,
+                    "Drivetrain lost!",
+                    "One or more swerve modules have lost connection to motors.",
+                    10000));
+        } else if (!lost && prevLostDrivetrain) {
+            Elastic.sendNotification(new Notification(
+                    NotificationLevel.INFO,
+                    "Drivetrain connection restored",
+                    "All swerve modules have regained connection to motors.",
+                    0 /* no dismiss */));
+            regainedDrivetrainStickyFault = true;
+        }
+        prevLostDrivetrain = lost;
+    }
+
+    public boolean hasRegainedDrivetrainConnectionStickyFault() {
+        return regainedDrivetrainStickyFault;
+    }
+
+    public void clearRegainedDrivetrainConnectionStickyFault() {
+        regainedDrivetrainStickyFault = false;
     }
 
     @Override
@@ -360,7 +412,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
     @AutoLogLevel(level = Level.SYSID)
     public double sysIdOnlyGetDriveMotorVolts() {
         return SimpleMath.average(Arrays.stream(modules)
-                        .mapToDouble(SwerveModule::getDriveMotorVoltsSysIdOnly)
+                        .mapToDouble(SwerveModule::getDriveMotorVoltage)
                         .toArray())
                 .orElseThrow();
     }
@@ -390,7 +442,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
     @AutoLogLevel(level = Level.SYSID)
     public double sysIdOnlyGetTurnMotorVolts() {
         return SimpleMath.average(Arrays.stream(modules)
-                        .mapToDouble(SwerveModule::getTurnMotorVoltsSysIdOnly)
+                        .mapToDouble(SwerveModule::getTurnMotorVoltage)
                         .toArray())
                 .orElseThrow();
     }

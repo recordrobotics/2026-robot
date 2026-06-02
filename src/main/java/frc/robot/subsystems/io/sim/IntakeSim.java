@@ -87,6 +87,7 @@ public class IntakeSim extends IntakeReal {
     private AtomicInteger rollerFuelCount = new AtomicInteger(0);
 
     private double lastIntakeDamagedTime = 0.0;
+    private boolean intakeDamageStopped = true;
 
     public IntakeSim(double periodicDt, AbstractDriveTrainSimulation drivetrainSim) {
         this.periodicDt = periodicDt;
@@ -172,9 +173,11 @@ public class IntakeSim extends IntakeReal {
         Logger.recordOutput("Intake/SimCount", rollerFuelCount.get());
 
         if (Timer.getTimestamp() - lastIntakeDamagedTime < 0.1) {
+            intakeDamageStopped = false;
             Logger.recordOutput("Intake/Damaged", true);
             RobotContainer.getControl().vibrate(RumbleType.kBothRumble, 1);
-        } else {
+        } else if (!intakeDamageStopped) {
+            intakeDamageStopped = true;
             Logger.recordOutput("Intake/Damaged", false);
             RobotContainer.getControl().vibrate(RumbleType.kBothRumble, 0);
         }

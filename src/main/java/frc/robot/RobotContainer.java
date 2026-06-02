@@ -5,7 +5,9 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 // WPILib imports
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -129,6 +131,8 @@ public final class RobotContainer {
 
     private static AbstractControl defaultControl;
     private static AbstractControl testControl;
+
+    private static double lastDrivetrainNoReconnectStickyFaultTime = 0;
 
     private RobotContainer() {
         initialize();
@@ -498,6 +502,20 @@ public final class RobotContainer {
             shootModeAlert.set(true);
         } else {
             shootModeAlert.set(false);
+        }
+
+        if (drivetrain.hasRegainedDrivetrainConnectionStickyFault()) {
+            AbstractControl control = getControl();
+            // vibrate for first 3 seconds or while no user input
+            if (Timer.getTimestamp() - lastDrivetrainNoReconnectStickyFaultTime < 3 || !control.hasUserInput()) {
+                control.vibrate(RumbleType.kBothRumble, 1.0);
+            } else {
+                // clear sticky fault after 3 seconds and once user starts giving input
+                control.vibrate(RumbleType.kBothRumble, 0.0);
+                drivetrain.clearRegainedDrivetrainConnectionStickyFault();
+            }
+        } else {
+            lastDrivetrainNoReconnectStickyFaultTime = Timer.getTimestamp();
         }
     }
 

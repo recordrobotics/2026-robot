@@ -305,4 +305,22 @@ public class TestControlBridge implements AbstractControl {
     public boolean isIntakeRelativePressed() {
         return false; // TODO
     }
+
+    @Override
+    public boolean hasUserInput() {
+        // Check if any button is pressed or any axis is non-zero
+        for (Integer state : buttonStates.values()) {
+            if (state != 0) {
+                return true;
+            }
+        }
+
+        for (Double value : axisStates.values()) {
+            if (value != 0.0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

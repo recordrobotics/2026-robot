@@ -190,6 +190,12 @@ public class JoystickControls implements AbstractControl {
     }
 
     @Override
+    public boolean hasUserInput() {
+        // ignores speed level
+        return AbstractControl.hasUserInput(joystick, 3);
+    }
+
+    @Override
     public String toDisplayName() {
         return "Joystick";
     }
