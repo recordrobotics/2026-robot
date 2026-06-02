@@ -407,7 +407,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             actualWheelTargetVelocityMps = wheelTargetVelocityMps;
 
             if (!isForceDisabled()) {
-                if (disableWheelToggle.get() || RobotContainer.isInDefenseMode()) {
+                if (disableWheelToggle.get()) {
                     io.setWheelControl(wheelRequest.withVelocity(0));
                 } else if (!isForceDisabled() && !(SysIdManager.getProvider() instanceof SysIdWheel)) {
                     io.setWheelControl(wheelRequest.withVelocity(actualWheelTargetVelocityMps));

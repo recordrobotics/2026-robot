@@ -125,7 +125,7 @@ public final class RobotContainer {
     private static final LoggedNetworkBoolean encoderResetButton =
             new LoggedNetworkBoolean("Autonomous/EncoderReset", false);
     private static final LoggedNetworkBoolean shootTuningButton = new LoggedNetworkBoolean("ShootTuning", false);
-    private static final LoggedNetworkBoolean defenseModeButton = new LoggedNetworkBoolean("DefenseMode", false);
+
     private static AbstractControl defaultControl;
     private static AbstractControl testControl;
 
@@ -274,10 +274,6 @@ public final class RobotContainer {
         }
     }
 
-    public static boolean isInDefenseMode() {
-        return defenseModeButton.get();
-    }
-
     private static boolean shouldBeShooting() {
 
         MatchTimeData matchData = DriverStationUtils.getMatchTimeData();
@@ -289,10 +285,6 @@ public final class RobotContainer {
         Logger.recordOutput("HubActive", matchData.currentHubActive());
 
         if (shootModeChooser.get() == null) return false;
-
-        if (isInDefenseMode()) {
-            return false;
-        }
 
         switch (shootModeChooser.get()) {
             case FORCE:
@@ -327,8 +319,7 @@ public final class RobotContainer {
     }
 
     private static void configureTriggers() {
-        new Trigger(() -> getControl().isIntakeInvertPressed()
-                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
+        new Trigger(() -> getControl().isIntakeInvertPressed())
                 .onTrue(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
@@ -346,8 +337,7 @@ public final class RobotContainer {
                         intake,
                         climber));
 
-        new Trigger(() -> getControl().isIntakePressed()
-                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
+        new Trigger(() -> getControl().isIntakePressed())
                 .onTrue(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
@@ -365,8 +355,7 @@ public final class RobotContainer {
                         intake,
                         climber));
 
-        new Trigger(() -> getControl().isIntakeUpPressed()
-                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
+        new Trigger(() -> getControl().isIntakeUpPressed())
                 .onTrue(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
@@ -384,8 +373,7 @@ public final class RobotContainer {
                         intake,
                         climber));
 
-        new Trigger(() -> getControl().isReverseIntakePressed()
-                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
+        new Trigger(() -> getControl().isReverseIntakePressed())
                 .onTrue(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
@@ -403,8 +391,7 @@ public final class RobotContainer {
                         intake,
                         climber));
 
-        new Trigger(() -> getControl().isDefenseModePressed()
-                        && (!isInDefenseMode() || intake.getTargetState() != IntakeState.STARTING))
+        new Trigger(() -> getControl().isDefenseModePressed())
                 .onTrue(Commands.runOnce(
                         () -> {
                             intake.setState(Intake.IntakeState.STARTING);
