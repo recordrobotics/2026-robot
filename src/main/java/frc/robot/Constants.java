@@ -160,15 +160,12 @@ public final class Constants {
     public static final class Vision {
 
         public static final String TURRET_NAME = "limelight-trt";
-        public static final String HOPPER_BACK_NAME = "limelight-bk";
         public static final String LEFT_BACK_NAME = "left-back";
         public static final String RIGHT_FRONT_NAME = "limelight-fr";
         public static final String RIGHT_BACK_NAME = "right-back";
         public static final String INTAKE_LEFT_NAME = "intake-left";
         public static final String INTAKE_RIGHT_NAME = "intake-right";
 
-        public static final Transform3d ROBOT_TO_CAMERA_HOPPER_BACK = new Transform3d(
-                new Translation3d(0.311558, 0.330204, 0.246383), new Rotation3d(0, Units.degreesToRadians(-21), 0));
         public static final Transform3d ROBOT_TO_CAMERA_LEFT_BACK = new Transform3d(
                 new Translation3d(0.169875, 0.336431, 0.326706),
                 new Rotation3d(
@@ -202,11 +199,6 @@ public final class Constants {
                         Degrees.of(0),
                         Degrees.of(0),
                         Degrees.of(180.0 - 9.0))); // TODO: pitch down 25 deg, object detection sim breaks with pitch rn
-
-        public static final Distance CORAL_ID_DISTANCE = Inches.of(8);
-        public static final Time CORAL_TIMEOUT = Seconds.of(0.5);
-
-        public static final int CORAL_ID = 1;
 
         public enum VisionSimulationMode {
             /**
@@ -281,7 +273,7 @@ public final class Constants {
 
     public static final class Assists {
 
-        public static final Distance GROUND_ASSIST_MAX_CORAL_DISTANCE = Meters.of(4);
+        public static final Distance GROUND_ASSIST_MAX_DISTANCE = Meters.of(4);
         public static final Angle GROUND_ASSIST_MAX_ANGLE_ERROR = Degrees.of(60);
         public static final double GROUND_ASSIST_ROTATION_P = 5.0;
         public static final double GROUND_ASSIST_TRANSLATION_P = 5.0;

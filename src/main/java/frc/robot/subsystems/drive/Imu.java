@@ -21,6 +21,8 @@ public final class Imu extends ManagedSubsystemBase {
 
     private static final double PERIODIC = RobotContainer.ROBOT_PERIODIC;
 
+    private static final double FAULT_YAW_CHANGE_THRESHOLD = 360.0;
+
     private final ImuIO io;
     private final ImuIOInputsAutoLogged inputs = new ImuIOInputsAutoLogged();
 
@@ -56,8 +58,6 @@ public final class Imu extends ManagedSubsystemBase {
 
         io.reset();
         io.resetDisplacement(); // Technically not necessary but whatever
-
-        faultAlert.set(false);
     }
 
     public boolean isConnected() {
@@ -73,27 +73,27 @@ public final class Imu extends ManagedSubsystemBase {
     }
 
     public Rotation2d getPitch() {
-        if (pigeonFault) return Rotation2d.kZero;
+        if (pigeonFault || !inputs.connected) return Rotation2d.kZero;
         return inputs.pitch;
     }
 
     public Rotation2d getRoll() {
-        if (pigeonFault) return Rotation2d.kZero;
+        if (pigeonFault || !inputs.connected) return Rotation2d.kZero;
         return inputs.roll;
     }
 
     public AngularVelocity getRollRate() {
-        if (pigeonFault) return DegreesPerSecond.of(0);
+        if (pigeonFault || !inputs.connected) return DegreesPerSecond.of(0);
         return inputs.rollRate;
     }
 
     public AngularVelocity getPitchRate() {
-        if (pigeonFault) return DegreesPerSecond.of(0);
+        if (pigeonFault || !inputs.connected) return DegreesPerSecond.of(0);
         return inputs.pitchRate;
     }
 
     public AngularVelocity getYawRate() {
-        if (pigeonFault) return DegreesPerSecond.of(0);
+        if (pigeonFault || !inputs.connected) return DegreesPerSecond.of(0);
         return inputs.yawRate;
     }
 
@@ -114,7 +114,7 @@ public final class Imu extends ManagedSubsystemBase {
         lastAccelY = accelY;
 
         double yaw = inputs.yaw.getDegrees();
-        if (lastYaw.isPresent() && Math.abs(lastYaw.getAsDouble() - yaw) >= 360.0) {
+        if (lastYaw.isPresent() && Math.abs(lastYaw.getAsDouble() - yaw) > FAULT_YAW_CHANGE_THRESHOLD) {
             pigeonFault = true;
         }
         lastYaw = OptionalDouble.of(yaw);
