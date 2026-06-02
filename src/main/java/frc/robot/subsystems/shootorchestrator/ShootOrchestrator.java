@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -30,6 +31,7 @@ import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.PositionedSubsystem.PositionStatus;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.field.FieldUtils;
+import frc.robot.utils.wrappers.SafeAlert;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import org.littletonrobotics.junction.Logger;
@@ -99,6 +101,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     private double timeAtBallHit = 0;
     private double shooterFeedforward = 0;
+
+    private SafeAlert shootOverrideAlert = new SafeAlert("Shooting override enabled!", AlertType.kWarning);
+    private SafeAlert feedModeAlert = new SafeAlert("feed mode alert", AlertType.kWarning);
 
     public record ShotTarget(Translation3d position, ShotCalculator shotCalculator) {}
 
@@ -388,6 +393,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     @Override
     public void periodicManaged() {
+        updateAlerts();
         setAutomatedTarget();
 
         switch (Optional.ofNullable(feedForwardSourceChooser.get()).orElse(FeedForwardSource.NONE)) {
@@ -429,6 +435,20 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 "ShootOrchestrator/Target",
                 target.isPresent() ? new Pose3d(target.get().position, Rotation3d.kZero) : Pose3d.kZero);
         Logger.recordOutput("ShootOrchestrator/ShootingEnabled", shootingEnabled);
+    }
+
+    private void updateAlerts() {
+        shootOverrideAlert.set(shootOverride.get());
+
+        if (feedMode == null) {
+            feedModeAlert.setText("Feed mode is <UNKNOWN>");
+            feedModeAlert.set(true);
+        } else if (feedMode != FeedMode.AUTO) {
+            feedModeAlert.setText("Feed mode is " + feedMode.name());
+            feedModeAlert.set(true);
+        } else {
+            feedModeAlert.set(false);
+        }
     }
 
     private record ShotCalculationResult(Vector<N3> shotVector, ShotCalculation shotCalculation) {}

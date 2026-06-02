@@ -115,6 +115,7 @@ public final class RobotContainer {
             1; // hub allows 1 second for fuel to score after deactivation (maybe 3 but 1 safer)
 
     private static SafeAlert noEncoderResetAlert;
+    private static SafeAlert shootModeAlert;
 
     private static final LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
     private static final LoggedDashboardChooser<AbstractControl> driveMode = new LoggedDashboardChooser<>("Drive Mode");
@@ -139,6 +140,7 @@ public final class RobotContainer {
         RobotController.setBrownoutVoltage(5.75);
 
         noEncoderResetAlert = new SafeAlert("Encoders not reset!", AlertType.kError);
+        shootModeAlert = new SafeAlert("shoot mode alert", AlertType.kWarning);
 
         EnumSet.allOf(ShootMode.class).forEach(v -> shootModeChooser.addOption(v.name(), v));
         shootModeChooser.addDefaultOption(ShootMode.AUTO.name(), ShootMode.AUTO);
@@ -486,6 +488,17 @@ public final class RobotContainer {
     public static void robotPeriodic() {
         allStatusSignalsToRefresh.refreshAll();
         PositionedSubsystem.PositionedSubsystemManager.getInstance().update();
+
+        ShootMode currentShootMode = shootModeChooser.get();
+        if (currentShootMode == null) {
+            shootModeAlert.setText("Shoot mode is <UNKNOWN>");
+            shootModeAlert.set(true);
+        } else if (currentShootMode != ShootMode.AUTO) {
+            shootModeAlert.setText("Shoot mode is " + currentShootMode.name());
+            shootModeAlert.set(true);
+        } else {
+            shootModeAlert.set(false);
+        }
     }
 
     public static void simulationPeriodic() {
