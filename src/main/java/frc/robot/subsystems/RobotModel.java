@@ -519,7 +519,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         private static final double SHOOT_BPS = 5.4;
         private static final double GRAVITY_BPS = 5.4;
 
-        private static FuelNode[] ROBOT_FUEL_NODES;
+        private static FuelNode[] ROBOT_FUEL_NODES = new FuelNode[0];
 
         private final ManagedFuelNode[] fuelNodes;
 
@@ -769,8 +769,6 @@ public final class RobotModel extends ManagedSubsystemBase {
                             ImmutableIntArray.of(41, 21, 42, 45, 44, 35),
                             AnimationType.CURVED)
                 };
-            } else {
-                ROBOT_FUEL_NODES = new FuelNode[0];
             }
 
             fuelNodes =

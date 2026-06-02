@@ -44,6 +44,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
 
     private static final double ARM_POSITION_TOLERANCE = Units.degreesToRotations(5);
     private static final double ARM_POSITION_TOLERANCE_WHEEL_START = Units.degreesToRotations(20);
+
     private static final double ARM_VELOCITY_TOLERANCE = Units.degreesToRotations(50);
     private static final double WHEEL_VELOCITY_TOLERANCE_MPS = 2.0; // TODO
 
