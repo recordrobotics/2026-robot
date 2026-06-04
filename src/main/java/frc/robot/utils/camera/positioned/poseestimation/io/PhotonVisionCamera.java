@@ -145,6 +145,11 @@ public class PhotonVisionCamera extends PoseEstimationCamera {
         // todo
     }
 
+    @Override
+    public void recordMatchReplay() {
+        // not supported
+    }
+
     /**
      * Makes pose estimates from the camera.
      * @return A list of camera pose estimates.

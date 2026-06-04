@@ -57,6 +57,11 @@ public class PhotonVisionCamera extends ObjectDetectionCamera {
         camera.setPipelineIndex(pipeline);
     }
 
+    @Override
+    public void recordMatchReplay() {
+        // not supported
+    }
+
     /**
      * Makes object detections from the camera.
      * @return A list of object detection results.

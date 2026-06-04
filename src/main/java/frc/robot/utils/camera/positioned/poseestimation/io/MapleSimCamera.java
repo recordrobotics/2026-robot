@@ -64,6 +64,11 @@ public class MapleSimCamera extends PoseEstimationCamera {
         // noop
     }
 
+    @Override
+    public void recordMatchReplay() {
+        // not supported
+    }
+
     /**
      * Checks if the camera is connected.
      * <p>In simulation, the camera is always connected.

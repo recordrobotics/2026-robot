@@ -253,6 +253,10 @@ public final class PoseSensorFusion extends ManagedSubsystemBase {
         logValues();
     }
 
+    public void recordMatchReplay() {
+        cameras.stream().forEach(GenericCamera::recordMatchReplay);
+    }
+
     /**
      * Logs values to the logger
      */

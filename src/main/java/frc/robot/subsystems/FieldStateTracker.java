@@ -557,6 +557,10 @@ public class FieldStateTracker extends ManagedSubsystemBase {
         cameras.stream().forEach(GenericCamera::logValues);
     }
 
+    public void recordMatchReplay() {
+        cameras.stream().forEach(GenericCamera::recordMatchReplay);
+    }
+
     public Field2d getField() {
         return field;
     }

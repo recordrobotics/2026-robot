@@ -111,6 +111,12 @@ public abstract class GenericCamera {
     public abstract void periodic();
 
     /**
+     * Called after a match with the FMS connected ends to record a match replay if the camera supports it.
+     * Can also be called manually during driver practice
+     */
+    public abstract void recordMatchReplay();
+
+    /**
      * Gets the prefix used for logging camera values.
      * @return The prefix used for logging.
      */

@@ -127,6 +127,8 @@ public final class RobotContainer {
             new LoggedNetworkBoolean("Autonomous/ResetLocationButton", false);
     private static final LoggedNetworkBoolean encoderResetButton =
             new LoggedNetworkBoolean("Autonomous/EncoderReset", false);
+    private static final LoggedNetworkBoolean recordMatchReplayButton =
+            new LoggedNetworkBoolean("RecordMatchReplay", false);
     private static final LoggedNetworkBoolean shootTuningButton = new LoggedNetworkBoolean("ShootTuning", false);
 
     private static AbstractControl defaultControl;
@@ -254,8 +256,16 @@ public final class RobotContainer {
         DriverStationUtils.teleopInit();
     }
 
+    public static void recordMatchReplay() {
+        poseSensorFusion.recordMatchReplay();
+        fieldStateTracker.recordMatchReplay();
+    }
+
     public static void disabledInit() {
-        /* nothing to do */
+        // trigger recording of match replay if time left is <= 1 seconds and not autonomous
+        if (DriverStation.isFMSAttached() && DriverStation.getMatchTime() <= 1 && !DriverStation.isAutonomous()) {
+            recordMatchReplay();
+        }
     }
 
     public static void autonomousInit() {
@@ -470,6 +480,13 @@ public final class RobotContainer {
                 .onTrue(Commands.runOnce(() -> {
                             encoderResetButton.set(false);
                             resetEncoders();
+                        })
+                        .ignoringDisable(true));
+
+        new Trigger(recordMatchReplayButton)
+                .onTrue(Commands.runOnce(() -> {
+                            recordMatchReplayButton.set(false);
+                            recordMatchReplay();
                         })
                         .ignoringDisable(true));
 

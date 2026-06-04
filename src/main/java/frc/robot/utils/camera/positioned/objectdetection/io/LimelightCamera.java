@@ -1,9 +1,12 @@
 package frc.robot.utils.camera.positioned.objectdetection.io;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import com.google.common.collect.ImmutableSortedMap;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.DoubleArrayEntry;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.utils.camera.PhysicalCamera;
 import frc.robot.utils.camera.positioned.objectdetection.ObjectDetectionCamera;
@@ -74,6 +77,23 @@ public class LimelightCamera extends ObjectDetectionCamera {
      */
     public void setPipeline(int pipeline) {
         LimelightHelpers.setPipelineIndex(getName(), pipeline);
+    }
+
+    public void configureRewind(boolean enabled) {
+        LimelightHelpers.setRewindEnabled(getName(), enabled);
+    }
+
+    @Override
+    public void recordMatchReplay() {
+        recordReplay(Seconds.of(165));
+    }
+
+    /**
+     * Triggers a rewind capture (only LL4)
+     * @param duration The duration of the capture to record, up to 165 seconds.
+     */
+    public void recordReplay(Time duration) {
+        LimelightHelpers.triggerRewindCapture(getName(), duration.in(Seconds));
     }
 
     /**

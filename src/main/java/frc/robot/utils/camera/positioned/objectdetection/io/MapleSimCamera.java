@@ -82,6 +82,11 @@ public class MapleSimCamera extends ObjectDetectionCamera {
         return true;
     }
 
+    @Override
+    public void recordMatchReplay() {
+        // not supported
+    }
+
     /**
      * Sets the detection class map.
      * @param detectionClassMap The detection class map.

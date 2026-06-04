@@ -1,6 +1,7 @@
 package frc.robot.utils.camera.positioned.poseestimation.io;
 
 import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -10,6 +11,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
@@ -153,6 +155,23 @@ public class LimelightCamera extends PoseEstimationCamera {
 
     public void setThrottle(int framesToSkip) {
         throttle = framesToSkip;
+    }
+
+    public void configureRewind(boolean enabled) {
+        LimelightHelpers.setRewindEnabled(getName(), enabled);
+    }
+
+    @Override
+    public void recordMatchReplay() {
+        recordReplay(Seconds.of(165));
+    }
+
+    /**
+     * Triggers a rewind capture (only LL4)
+     * @param duration The duration of the capture to record, up to 165 seconds.
+     */
+    public void recordReplay(Time duration) {
+        LimelightHelpers.triggerRewindCapture(getName(), duration.in(Seconds));
     }
 
     /**
