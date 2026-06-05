@@ -117,11 +117,11 @@
       },
       "prevControl": {
         "x": 7.766440354164087,
-        "y": 0.6495744507058774
+        "y": 0.6495744507058775
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "BCDotOutpost"
+      "linkedName": null
     }
   ],
   "rotationTargets": [

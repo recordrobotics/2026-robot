@@ -15,12 +15,6 @@
           "data": {
             "pathName": "TrenchOutpostBump"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "BCDot"
-          }
         }
       ]
     }
