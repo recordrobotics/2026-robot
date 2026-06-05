@@ -15,12 +15,6 @@
           "data": {
             "pathName": "TrenchOutpost"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "BCDot"
-          }
         }
       ]
     }
