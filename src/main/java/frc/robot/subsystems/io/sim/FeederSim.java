@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.DIOSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.RobotModel;
 import frc.robot.subsystems.RobotModel.FuelManager.LineSegment;
 import frc.robot.subsystems.io.real.FeederReal;
 
@@ -57,7 +58,7 @@ public class FeederSim extends FeederReal {
         double feederVoltage = feeder.getSimState().getMotorVoltage();
 
         feederSimModel.setInputVoltage(
-                (RobotContainer.model.fuelManager.isFuelInFeeder() ? SHOOT_VOLTAGE_MULTIPLIER : 1.0) * feederVoltage);
+                (RobotModel.getFuelManager().isFuelInFeeder() ? SHOOT_VOLTAGE_MULTIPLIER : 1.0) * feederVoltage);
         feederSimModel.update(periodicDt);
 
         feeder.getSimState()
@@ -69,8 +70,8 @@ public class FeederSim extends FeederReal {
                 .setRotorAcceleration(Constants.Feeder.GEAR_RATIO
                         * Units.radiansToRotations(feederSimModel.getAngularAccelerationRadPerSecSq()));
 
-        bottomBeambreakSim.setValue(!RobotContainer.model.fuelManager.hasFuelIntersecting(bottomBeambreakLine));
-        topBeambreakSim.setValue(!RobotContainer.model.fuelManager.hasFuelIntersecting(topBeambreakLine));
+        bottomBeambreakSim.setValue(!RobotModel.getFuelManager().hasFuelIntersecting(bottomBeambreakLine));
+        topBeambreakSim.setValue(!RobotModel.getFuelManager().hasFuelIntersecting(topBeambreakLine));
     }
 
     public boolean isOuttaking() {

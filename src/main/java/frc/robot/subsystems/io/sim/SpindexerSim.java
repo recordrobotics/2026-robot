@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.RobotModel;
 import frc.robot.subsystems.io.real.SpindexerReal;
 
 public class SpindexerSim extends SpindexerReal {
@@ -46,8 +47,8 @@ public class SpindexerSim extends SpindexerReal {
 
         double spindexerVoltage = spindexer.getSimState().getMotorVoltage();
 
-        spindexerSimModel.setInputVoltage(
-                spindexerVoltage * calculateVoltageMultiplier(RobotContainer.model.fuelManager.getFuelCount()));
+        spindexerSimModel.setInputVoltage(spindexerVoltage
+                * calculateVoltageMultiplier(RobotModel.getFuelManager().getFuelCount()));
         spindexerSimModel.update(periodicDt);
 
         spindexer

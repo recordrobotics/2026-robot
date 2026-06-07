@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.PowerDistributionPanel;
+import frc.robot.subsystems.RobotModel;
 import frc.robot.utils.AutoLogLevelManager;
 import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.LocalADStarAK;
@@ -284,7 +285,7 @@ public final class Robot extends LoggedRobot {
         if (Constants.RobotState.getMode() == Constants.RobotState.Mode.SIM) {
             // Reset simulation field
             SimulatedArena.getInstance().resetFieldForAuto();
-            RobotContainer.model.fuelManager.preloadFuel();
+            RobotModel.getFuelManager().preloadFuel();
             ImprovedMapleMatch.getInstance().autonomousInit();
             OpponentRobot.randomizeRobots();
         }

@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.RobotModel;
 import frc.robot.subsystems.io.real.ShooterReal;
 import frc.robot.utils.SimpleMath;
 import java.util.Arrays;
@@ -129,7 +130,7 @@ public class ShooterSim extends ShooterReal {
         hoodSimModel.update(periodicDt);
 
         flywheelSimModel.setInputVoltage(
-                (RobotContainer.model.fuelManager.isShootingFuel() ? FLYWHEEL_SHOOT_VOLTAGE_MULTIPLIER : 1.0)
+                (RobotModel.getFuelManager().isShootingFuel() ? FLYWHEEL_SHOOT_VOLTAGE_MULTIPLIER : 1.0)
                         * flywheelVoltage);
         flywheelSimModel.update(periodicDt);
 

@@ -48,23 +48,27 @@ public final class RobotModel extends ManagedSubsystemBase {
         void updatePoses(Pose3d[] poses, int i);
     }
 
+    private static FuelManager fuelManager;
+
     public final IntakeModel intakeModel = new IntakeModel();
     public final ShooterModel shooterModel = new ShooterModel();
     public final ClimberModel climberModel = new ClimberModel();
-
-    public final FuelManager fuelManager;
 
     @AutoLogLevel(level = Level.REAL)
     public Pose3d[] mechanismPoses =
             new Pose3d[intakeModel.getPoseCount() + shooterModel.getPoseCount() + climberModel.getPoseCount()];
 
     public RobotModel() {
-        if (Constants.RobotState.getMode() == Mode.SIM) {
-            fuelManager = new FuelManager();
-        } else {
-            fuelManager = null;
-        }
         periodicManaged();
+    }
+
+    public static FuelManager getFuelManager() {
+        if (fuelManager == null && Constants.RobotState.getMode() != Mode.REAL) {
+            fuelManager = new FuelManager();
+            fuelManager
+                    .init(); // separate from constructor to avoid infinite recursion with ManagedFuelNode constructor
+        }
+        return fuelManager;
     }
 
     @Override
@@ -444,9 +448,13 @@ public final class RobotModel extends ManagedSubsystemBase {
                 this.node = node;
                 this.occupyingObject = null;
 
-                int nodeIndex = Arrays.asList(ROBOT_FUEL_NODES).indexOf(node) + 1;
-                this.intakePreviousNodes = findPreviousNodes(nodeIndex, ROBOT_FUEL_NODES, FuelNode::intakeNextNodes);
-                this.outtakePreviousNodes = findPreviousNodes(nodeIndex, ROBOT_FUEL_NODES, FuelNode::outtakeNextNodes);
+                int nodeIndex = Arrays.asList(RobotModel.getFuelManager().ROBOT_FUEL_NODES)
+                                .indexOf(node)
+                        + 1;
+                this.intakePreviousNodes = findPreviousNodes(
+                        nodeIndex, RobotModel.getFuelManager().ROBOT_FUEL_NODES, FuelNode::intakeNextNodes);
+                this.outtakePreviousNodes = findPreviousNodes(
+                        nodeIndex, RobotModel.getFuelManager().ROBOT_FUEL_NODES, FuelNode::outtakeNextNodes);
 
                 this.allForwardNodes = ImmutableIntArray.builder()
                         .addAll(node.intakeNextNodes)
@@ -519,9 +527,9 @@ public final class RobotModel extends ManagedSubsystemBase {
         private static final double SHOOT_BPS = 5.4;
         private static final double GRAVITY_BPS = 5.4;
 
-        private static FuelNode[] ROBOT_FUEL_NODES = new FuelNode[0];
+        private final FuelNode[] ROBOT_FUEL_NODES;
 
-        private final ManagedFuelNode[] fuelNodes;
+        private ManagedFuelNode[] fuelNodes;
 
         private final List<FuelObject> fuelObjects = new ArrayList<>();
         private final List<FuelObject> fuelObjectsToRemove = new ArrayList<>();
@@ -530,6 +538,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         private boolean shootingFuel = false;
         private boolean fuelInFeeder = false;
 
+        @SuppressWarnings("java:S109") /* sim-only constant */
         public FuelManager() {
             if (Constants.RobotState.getMode() == Mode.SIM) {
                 ROBOT_FUEL_NODES = new FuelNode[] {
@@ -769,8 +778,12 @@ public final class RobotModel extends ManagedSubsystemBase {
                             ImmutableIntArray.of(41, 21, 42, 45, 44, 35),
                             AnimationType.CURVED)
                 };
+            } else {
+                ROBOT_FUEL_NODES = new FuelNode[0];
             }
+        }
 
+        public void init() {
             fuelNodes =
                     Arrays.stream(ROBOT_FUEL_NODES).map(ManagedFuelNode::new).toArray(ManagedFuelNode[]::new);
         }
@@ -788,7 +801,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         }
 
         public static int getNodeCount() {
-            return ROBOT_FUEL_NODES.length;
+            return RobotModel.getFuelManager().ROBOT_FUEL_NODES.length;
         }
 
         public final void clearFuel() {

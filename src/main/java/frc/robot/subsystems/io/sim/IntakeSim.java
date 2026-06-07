@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.RobotModel;
 import frc.robot.subsystems.RobotModel.FuelManager;
 import frc.robot.subsystems.io.real.IntakeReal;
 import frc.robot.utils.ConsoleLogger;
@@ -111,7 +112,7 @@ public class IntakeSim extends IntakeReal {
             boolean passed = wheel.getVelocity().getValueAsDouble() > 0.2;
             if (passed) {
                 try {
-                    RobotContainer.model.fuelManager.intakeFuel(gm.getPose3d(), fuel -> {
+                    RobotModel.getFuelManager().intakeFuel(gm.getPose3d(), fuel -> {
                         if (new Translation2d(
                                                 fuel.getPose().getX(),
                                                 fuel.getPose().getZ())
@@ -237,7 +238,7 @@ public class IntakeSim extends IntakeReal {
             if (wheel.getVelocity().getValueAsDouble() < Constants.Intake.WHEEL_EJECT_VELOCITY_MPS + 2.0) {
                 double timeSinceLastEject = Timer.getTimestamp() - lastEjectTime;
                 if (timeSinceLastEject > 1.0 / EJECT_BPS) {
-                    RobotContainer.model.fuelManager.ejectFuel().ifPresent(fuel -> {
+                    RobotModel.getFuelManager().ejectFuel().ifPresent(fuel -> {
                         rollerFuelCount.incrementAndGet();
                         fuel.rotateAround(
                                 () -> ROLLER_ORIGIN,
@@ -250,8 +251,9 @@ public class IntakeSim extends IntakeReal {
                                 () -> -wheelSimModel.getAngularVelocityRadPerSec(),
                                 () -> {
                                     rollerFuelCount.decrementAndGet();
-                                    RobotContainer.model.fuelManager.toProjectile(
-                                            fuel, RobotContainer.drivetrain.getSwerveDriveSimulation(), null);
+                                    RobotModel.getFuelManager()
+                                            .toProjectile(
+                                                    fuel, RobotContainer.drivetrain.getSwerveDriveSimulation(), null);
                                 });
                     });
                     lastEjectTime = Timer.getTimestamp();
@@ -261,7 +263,7 @@ public class IntakeSim extends IntakeReal {
             intakeSimulation.stopIntake();
         }
 
-        intakeSimulation.setGamePiecesCount(RobotContainer.model.fuelManager.getFuelCount());
+        intakeSimulation.setGamePiecesCount(RobotModel.getFuelManager().getFuelCount());
     }
 
     private static double calculateVoltageMultiplier(int fuelCount) {
