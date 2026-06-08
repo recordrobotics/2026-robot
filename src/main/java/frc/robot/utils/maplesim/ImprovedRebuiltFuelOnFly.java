@@ -5,11 +5,14 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N3;
 import java.lang.reflect.Field;
 import java.util.WeakHashMap;
 import org.ironmaple.simulation.SimulatedArena;
@@ -39,6 +42,8 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
     private static final Field initialHeightField;
     private static final Field initialVerticalSpeedMPSField;
     private static final Field gamePieceRotationField;
+
+    private Vector<N3> spinAxis = Translation3d.kZero.toVector();
 
     private RK4State currentRK4State;
 
@@ -90,23 +95,23 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
             throw new RuntimeException(e);
         }
 
+        spinAxis = gamePieceRotation.getAxis();
+
         currentRK4State = new RK4State(
                 initialPosition.getX(),
                 initialPosition.getY(),
                 initialHeight,
+                gamePieceRotation.getAngle(),
                 initialLaunchingVelocityMPS.getX(),
                 initialLaunchingVelocityMPS.getY(),
                 initialVerticalSpeedMPS,
-                0.0,
-                0.0,
                 0.0);
         instances.put(this, this);
     }
 
-    public void setSpin(double omegaX, double omegaY, double omegaZ) {
-        currentRK4State.omegaX = omegaX;
-        currentRK4State.omegaY = omegaY;
-        currentRK4State.omegaZ = omegaZ;
+    public void setSpin(Vector<N3> spinAxis, double spinRadiansPerSecond) {
+        this.spinAxis = spinAxis;
+        currentRK4State.omega = spinRadiansPerSecond;
     }
 
     @Override
@@ -114,46 +119,45 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
         return new Translation3d(currentRK4State.x, currentRK4State.y, currentRK4State.z);
     }
 
+    @Override
+    public Pose3d getPose3d() {
+        return new Pose3d(
+                currentRK4State.x,
+                currentRK4State.y,
+                currentRK4State.z,
+                new Rotation3d(spinAxis, currentRK4State.theta));
+    }
+
     private static final class RK4State {
         double x, y, z;
+        double theta;
         double vx, vy, vz;
-        double omegaX, omegaY, omegaZ;
+        double omega;
 
         public RK4State() {
-            this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+            this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         }
 
-        public RK4State(
-                double x,
-                double y,
-                double z,
-                double vx,
-                double vy,
-                double vz,
-                double omegaX,
-                double omegaY,
-                double omegaZ) {
+        public RK4State(double x, double y, double z, double theta, double vx, double vy, double vz, double omega) {
             this.x = x;
             this.y = y;
             this.z = z;
+            this.theta = theta;
             this.vx = vx;
             this.vy = vy;
             this.vz = vz;
-            this.omegaX = omegaX;
-            this.omegaY = omegaY;
-            this.omegaZ = omegaZ;
+            this.omega = omega;
         }
 
         public void updateWith(RK4State other, double dt, RK4State derivative) {
             this.x = other.x + dt * derivative.x;
             this.y = other.y + dt * derivative.y;
             this.z = other.z + dt * derivative.z;
+            this.theta = other.theta + dt * derivative.theta;
             this.vx = other.vx + dt * derivative.vx;
             this.vy = other.vy + dt * derivative.vy;
             this.vz = other.vz + dt * derivative.vz;
-            this.omegaX = other.omegaX + dt * derivative.omegaX;
-            this.omegaY = other.omegaY + dt * derivative.omegaY;
-            this.omegaZ = other.omegaZ + dt * derivative.omegaZ;
+            this.omega = other.omega + dt * derivative.omega;
         }
 
         public void updateFromRK4(RK4State k1, RK4State k2, RK4State k3, RK4State k4, double dt) {
@@ -162,16 +166,15 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
             this.x += sixthDt * (k1.x + 2.0 * k2.x + 2.0 * k3.x + k4.x);
             this.y += sixthDt * (k1.y + 2.0 * k2.y + 2.0 * k3.y + k4.y);
             this.z += sixthDt * (k1.z + 2.0 * k2.z + 2.0 * k3.z + k4.z);
+            this.theta += sixthDt * (k1.theta + 2.0 * k2.theta + 2.0 * k3.theta + k4.theta);
             this.vx += sixthDt * (k1.vx + 2.0 * k2.vx + 2.0 * k3.vx + k4.vx);
             this.vy += sixthDt * (k1.vy + 2.0 * k2.vy + 2.0 * k3.vy + k4.vy);
             this.vz += sixthDt * (k1.vz + 2.0 * k2.vz + 2.0 * k3.vz + k4.vz);
-            this.omegaX += sixthDt * (k1.omegaX + 2.0 * k2.omegaX + 2.0 * k3.omegaX + k4.omegaX);
-            this.omegaY += sixthDt * (k1.omegaY + 2.0 * k2.omegaY + 2.0 * k3.omegaY + k4.omegaY);
-            this.omegaZ += sixthDt * (k1.omegaZ + 2.0 * k2.omegaZ + 2.0 * k3.omegaZ + k4.omegaZ);
+            this.omega += sixthDt * (k1.omega + 2.0 * k2.omega + 2.0 * k3.omega + k4.omega);
         }
     }
 
-    private static void evaluateRK4VectorField(RK4State state, RK4State derivative) {
+    private static void evaluateRK4VectorField(RK4State state, RK4State derivative, Vector<N3> spinAxis) {
         double speedSq = state.vx * state.vx + state.vy * state.vy + state.vz * state.vz;
 
         double dragFx = 0.0;
@@ -188,10 +191,15 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
             dragFz = dragFactor * state.vz;
         }
 
+        // 3D angular velocity vector
+        double omegaX = state.omega * spinAxis.get(0);
+        double omegaY = state.omega * spinAxis.get(1);
+        double omegaZ = state.omega * spinAxis.get(2);
+
         // Cross product of omega and v
-        double magnusFx = MAGNUS_K * (state.omegaY * state.vz - state.omegaZ * state.vy);
-        double magnusFy = MAGNUS_K * (state.omegaZ * state.vx - state.omegaX * state.vz);
-        double magnusFz = MAGNUS_K * (state.omegaX * state.vy - state.omegaY * state.vx);
+        double magnusFx = MAGNUS_K * (omegaY * state.vz - omegaZ * state.vy);
+        double magnusFy = MAGNUS_K * (omegaZ * state.vx - omegaX * state.vz);
+        double magnusFz = MAGNUS_K * (omegaX * state.vy - omegaY * state.vx);
 
         // Only forces acting on ball are drag, magnus, and gravity (z axis)
         // Divide by mass b/c F=ma, and a = F/m
@@ -205,6 +213,7 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
         derivative.x = state.vx;
         derivative.y = state.vy;
         derivative.z = state.vz;
+        derivative.theta = state.omega;
 
         // Velocity derivatives are the accelerations from forces (calculated)
         derivative.vx = ax;
@@ -212,9 +221,7 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
         derivative.vz = az;
 
         // don't simulate spin decay (measured to not be significant during tracking)
-        derivative.omegaX = 0.0;
-        derivative.omegaY = 0.0;
-        derivative.omegaZ = 0.0;
+        derivative.omega = 0.0;
     }
 
     private static final RK4State k1 = new RK4State();
@@ -223,23 +230,23 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
     private static final RK4State k4 = new RK4State();
     private static final RK4State temp = new RK4State();
 
-    private static void rk4Step(RK4State state, double dt) {
+    private static void rk4Step(RK4State state, double dt, Vector<N3> spinAxis) {
         double halfDt = 0.5 * dt;
 
-        evaluateRK4VectorField(state, k1);
+        evaluateRK4VectorField(state, k1, spinAxis);
         temp.updateWith(state, halfDt, k1);
-        evaluateRK4VectorField(temp, k2);
+        evaluateRK4VectorField(temp, k2, spinAxis);
         temp.updateWith(state, halfDt, k2);
-        evaluateRK4VectorField(temp, k3);
+        evaluateRK4VectorField(temp, k3, spinAxis);
         temp.updateWith(state, dt, k3);
-        evaluateRK4VectorField(temp, k4);
+        evaluateRK4VectorField(temp, k4, spinAxis);
 
         state.updateFromRK4(k1, k2, k3, k4, dt);
     }
 
     public void update(int subTickNum) {
         // update rk4 state with sub tick dt
-        rk4Step(currentRK4State, SimulatedArena.getSimulationDt().in(Seconds));
+        rk4Step(currentRK4State, SimulatedArena.getSimulationDt().in(Seconds), spinAxis);
     }
 
     public static void updateAll(int subTickNum) {
