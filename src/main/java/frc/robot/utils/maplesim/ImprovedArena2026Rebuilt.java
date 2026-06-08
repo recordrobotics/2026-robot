@@ -20,6 +20,11 @@ public class ImprovedArena2026Rebuilt extends Arena2026Rebuilt {
     // Intercept game pieces to wrap them around the ImprovedRebuiltFuelOnField class
     @Override
     public synchronized void addGamePiece(GamePieceOnFieldSimulation gamePiece) {
+        if (gamePiece instanceof ImprovedRebuiltFuelOnField) {
+            super.addGamePiece(gamePiece);
+            return;
+        }
+
         Pose2d initialPose = gamePiece.getPoseOnField();
         Translation2d initialVelocityMPS = GeometryConvertor.toWpilibTranslation2d(gamePiece.getLinearVelocity());
 
@@ -30,6 +35,11 @@ public class ImprovedArena2026Rebuilt extends Arena2026Rebuilt {
 
     @Override
     public synchronized void addGamePieceProjectile(GamePieceProjectile gamePieceProjectile) {
+        if (gamePieceProjectile instanceof ImprovedRebuiltFuelOnFly) {
+            super.addGamePieceProjectile(gamePieceProjectile);
+            return;
+        }
+
         Pose3d initialPose = gamePieceProjectile.getPose3d();
         Translation3d initialVelocityMPS = gamePieceProjectile.getVelocity3dMPS();
 

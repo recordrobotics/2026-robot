@@ -253,7 +253,11 @@ public class IntakeSim extends IntakeReal {
                                     rollerFuelCount.decrementAndGet();
                                     RobotModel.getFuelManager()
                                             .toProjectile(
-                                                    fuel, RobotContainer.drivetrain.getSwerveDriveSimulation(), null);
+                                                    fuel,
+                                                    RobotContainer.drivetrain.getSwerveDriveSimulation(),
+                                                    null,
+                                                    Translation3d.kZero.toVector(),
+                                                    0);
                                 });
                     });
                     lastEjectTime = Timer.getTimestamp();
