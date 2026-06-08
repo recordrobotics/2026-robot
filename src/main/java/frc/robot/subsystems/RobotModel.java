@@ -4,12 +4,14 @@ import static edu.wpi.first.units.Units.*;
 
 import com.google.common.primitives.ImmutableIntArray;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -24,6 +26,7 @@ import frc.robot.utils.ConsoleLogger;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.SimpleMath;
 import frc.robot.utils.field.FieldIntersection;
+import frc.robot.utils.maplesim.ImprovedRebuiltFuelOnFly;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,8 +41,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
-import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 import org.littletonrobotics.junction.Logger;
 
 /** Represents the physical model of the robot, including mechanisms and their positions */
@@ -1136,8 +1137,22 @@ public final class RobotModel extends ManagedSubsystemBase {
             return Optional.empty();
         }
 
+        /**
+         * Based on linear regression model
+         * @param angleDegrees - angle between flywheel velocity and horizontal plane in degrees
+         * @param flywheelVelocityMps - flywheel velocity in meters per second
+         * @return predicted spin in radians per second
+         */
+        private static double predictSpin(double angleDegrees, double flywheelVelocityMps) {
+            return -0.022793068422 * angleDegrees + 0.756032434768 * flywheelVelocityMps + 4.351964356280;
+        }
+
         public void toProjectile(
-                FuelObject fuel, AbstractDriveTrainSimulation drivetrainSim, Translation3d velocityOverride) {
+                FuelObject fuel,
+                AbstractDriveTrainSimulation drivetrainSim,
+                Translation3d velocityOverride,
+                Vector<N3> spinAxis,
+                double spinMagnitude) {
             remove(fuel);
             Pose3d robotPose = RobotContainer.model.getRobot();
 
@@ -1157,16 +1172,18 @@ public final class RobotModel extends ManagedSubsystemBase {
             final Translation3d velocity =
                     shooterVelocity.plus(robotRelativeVelocity.rotateBy(robotPose.getRotation()));
 
-            SimulatedArena.getInstance()
-                    .addGamePieceProjectile(new GamePieceProjectile(
-                                    RebuiltFuelOnField.REBUILT_FUEL_INFO,
-                                    fuelFieldPose.getTranslation().toTranslation2d(),
-                                    velocity.toTranslation2d(),
-                                    fuelFieldPose.getZ(),
-                                    velocity.getZ(),
-                                    fuelFieldPose.getRotation())
-                            .withTouchGroundHeight(FUEL_TOUCH_GROUND_HEIGHT)
-                            .enableBecomesGamePieceOnFieldAfterTouchGround());
+            ImprovedRebuiltFuelOnFly projectile = (ImprovedRebuiltFuelOnFly) new ImprovedRebuiltFuelOnFly(
+                            fuelFieldPose.getTranslation().toTranslation2d(),
+                            velocity.toTranslation2d(),
+                            fuelFieldPose.getZ(),
+                            velocity.getZ(),
+                            fuelFieldPose.getRotation())
+                    .withTouchGroundHeight(FUEL_TOUCH_GROUND_HEIGHT)
+                    .enableBecomesGamePieceOnFieldAfterTouchGround();
+
+            projectile.setSpin(spinAxis, spinMagnitude);
+
+            SimulatedArena.getInstance().addGamePieceProjectile(projectile);
         }
 
         public boolean hasFuelIntersecting(LineSegment lineSegment) {
@@ -1272,6 +1289,11 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                             * 2,
                                                     () -> {
                                                         shootingFuel = false;
+                                                        double flywheelVelocityMps =
+                                                                RobotContainer.shooter.getFlywheelVelocityMps();
+                                                        double hoodAngleDegrees = Units.radiansToDegrees(
+                                                                RobotContainer.shooter.getHoodAngle());
+
                                                         toProjectile(
                                                                 fuel,
                                                                 RobotContainer.drivetrain.getSwerveDriveSimulation(),
@@ -1281,9 +1303,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                                                         .map(
                                                                                                 t -> t.shotCalculator()
                                                                                                         .flywheelToFuelVelocity(
-                                                                                                                RobotContainer
-                                                                                                                        .shooter
-                                                                                                                        .getFlywheelVelocityMps()))
+                                                                                                                flywheelVelocityMps))
                                                                                         .orElse(0.0),
                                                                                 0,
                                                                                 0)
@@ -1296,7 +1316,22 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                                                                         .HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS,
                                                                                         Units.rotationsToRadians(
                                                                                                 RobotContainer.turret
-                                                                                                        .getPositionRotations()))));
+                                                                                                        .getPositionRotations()))),
+                                                                new Translation3d(0, -1, 0)
+                                                                        .rotateBy(
+                                                                                new Rotation3d(
+                                                                                        Rotation2d.fromRotations(
+                                                                                                        RobotContainer
+                                                                                                                .turret
+                                                                                                                .getPositionRotations())
+                                                                                                .plus(
+                                                                                                        RobotContainer
+                                                                                                                .model
+                                                                                                                .getRobot()
+                                                                                                                .toPose2d()
+                                                                                                                .getRotation())))
+                                                                        .toVector(),
+                                                                predictSpin(hoodAngleDegrees, flywheelVelocityMps));
                                                     });
                                         });
                             });
