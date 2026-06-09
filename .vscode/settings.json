@@ -97,6 +97,7 @@
     "ignore": false
   },
   "cSpell.allowCompoundWords": true,
+  "git.autoStash": true,
   "sonarlint.rules": {
     "java:S2925": {
       "level": "off"
