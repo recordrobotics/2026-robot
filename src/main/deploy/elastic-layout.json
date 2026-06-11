@@ -591,6 +591,19 @@
               "period": 0.06,
               "data_type": "boolean"
             }
+          },
+          {
+            "title": "Replay",
+            "x": 96.0,
+            "y": 640.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "RecordMatchReplay",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
           }
         ]
       }
