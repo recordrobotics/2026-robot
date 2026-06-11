@@ -119,7 +119,7 @@
             "x": 224.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 300.0,
+            "height": 384.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -165,7 +165,7 @@
                 }
               },
               {
-                "title": "ForceUnconstrainedWhenDisabled",
+                "title": "Uncon_w/Dsbld",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
@@ -173,6 +173,19 @@
                 "type": "Toggle Switch",
                 "properties": {
                   "topic": "Camera/left-back/ForceUnconstrainedWhenDisabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "Unthrottled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "Camera/left-back/ForceUnthrottled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -184,7 +197,7 @@
             "x": 352.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 300.0,
+            "height": 384.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -230,7 +243,7 @@
                 }
               },
               {
-                "title": "ForceUnconstrainedWhenDisabled",
+                "title": "Uncon_w/Dsbld",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
@@ -238,6 +251,19 @@
                 "type": "Toggle Switch",
                 "properties": {
                   "topic": "Camera/right-back/ForceUnconstrainedWhenDisabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "Unthrottled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "Camera/right-back/ForceUnthrottled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -249,7 +275,7 @@
             "x": 480.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 300.0,
+            "height": 384.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -295,7 +321,7 @@
                 }
               },
               {
-                "title": "ForceUnconstrainedWhenDisabled",
+                "title": "Uncon_w/Dsbld",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
@@ -303,6 +329,19 @@
                 "type": "Toggle Switch",
                 "properties": {
                   "topic": "Camera/limelight-fr/ForceUnconstrainedWhenDisabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "Unthrottled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "Camera/limelight-fr/ForceUnthrottled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
@@ -314,7 +353,7 @@
             "x": 608.0,
             "y": 384.0,
             "width": 128.0,
-            "height": 300.0,
+            "height": 384.0,
             "type": "List Layout",
             "properties": {
               "label_position": "TOP"
@@ -360,7 +399,7 @@
                 }
               },
               {
-                "title": "ForceUnconstrainedWhenDisabled",
+                "title": "Uncon_w/Dsbld",
                 "x": 0.0,
                 "y": 0.0,
                 "width": 128.0,
@@ -368,6 +407,19 @@
                 "type": "Toggle Switch",
                 "properties": {
                   "topic": "Camera/limelight-trt/ForceUnconstrainedWhenDisabled",
+                  "period": 0.06,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "Unthrottled",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 128.0,
+                "height": 128.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "Camera/limelight-trt/ForceUnthrottled",
                   "period": 0.06,
                   "data_type": "boolean"
                 }
