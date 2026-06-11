@@ -562,5 +562,6 @@ public abstract class PoseEstimationCamera extends PositionedCamera<PoseEstimati
         useRotation = useRotationToggle.get();
         forceUnconstrained = forceUnconstrainedToggle.get();
         forceUnconstrainedWhenDisabled = forceUnconstrainedWhenDisabledToggle.get();
+        forceUnthrottled = forceUnthrottledToggle.get();
     }
 }
