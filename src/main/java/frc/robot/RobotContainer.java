@@ -259,6 +259,11 @@ public final class RobotContainer {
     public static void recordMatchReplay() {
         poseSensorFusion.recordMatchReplay();
         fieldStateTracker.recordMatchReplay();
+
+        Elastic.sendNotification(new Notification(
+                NotificationLevel.INFO,
+                "Match Replay Recorded!",
+                "The last 2:45 minutes have been recorded on all supported cameras (LL4)."));
     }
 
     public static void disabledInit() {
