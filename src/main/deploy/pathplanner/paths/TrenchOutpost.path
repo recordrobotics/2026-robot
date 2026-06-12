@@ -12,7 +12,7 @@
         "y": 0.5845399806000735
       },
       "isLocked": false,
-      "linkedName": "DepotTrench"
+      "linkedName": "RightTrench"
     },
     {
       "anchor": {
@@ -190,7 +190,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.4942028985507328,
+      "waypointRelativePos": 0.7340862422997946,
       "rotationDegrees": 0.0
     },
     {
@@ -211,10 +211,6 @@
     },
     {
       "waypointRelativePos": 5.896748310810814,
-      "rotationDegrees": 0.0
-    },
-    {
-      "waypointRelativePos": 5.930434782608692,
       "rotationDegrees": 0.0
     },
     {
