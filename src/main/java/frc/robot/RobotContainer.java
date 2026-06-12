@@ -361,7 +361,7 @@ public final class RobotContainer {
                 .onFalse(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
-                            intake.setState(Intake.IntakeState.DOWN);
+                            intake.setState(Intake.IntakeState.OUT);
                         },
                         intake,
                         climber));
