@@ -224,4 +224,22 @@ public class JoystickKidControls implements AbstractControl {
     public String toDisplayName() {
         return "JoystickKid";
     }
+
+    @Override
+    public boolean isDefenseModePressed() {
+        // TODO
+        throw new UnsupportedOperationException("Unimplemented method 'isDefenseModePressed'");
+    }
+
+    @Override
+    public boolean isIntakeRelativePressed() {
+        // TODO
+        throw new UnsupportedOperationException("Unimplemented method 'isIntakeRelativePressed'");
+    }
+
+    @Override
+    public boolean hasUserInput() {
+        // TODO
+        throw new UnsupportedOperationException("Unimplemented method 'hasUserInput'");
+    }
 }
