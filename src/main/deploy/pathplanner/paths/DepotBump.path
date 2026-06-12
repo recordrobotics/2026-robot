@@ -12,7 +12,7 @@
         "y": 5.568231098430813
       },
       "isLocked": false,
-      "linkedName": "DepotBumpStart"
+      "linkedName": "LeftBumpStart"
     },
     {
       "anchor": {
@@ -100,7 +100,7 @@
         "y": 5.568231098430813
       },
       "prevControl": {
-        "x": 2.63754262464554,
+        "x": 2.637542624645531,
         "y": 5.564710320865386
       },
       "nextControl": {
