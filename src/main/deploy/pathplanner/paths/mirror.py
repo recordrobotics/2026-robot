@@ -10,6 +10,9 @@ def transform(obj):
                 obj[key] = 2 * MIRROR_LINE - value
             elif key in ("rotation", "rotationDegrees") and isinstance(value, (int, float)):
                 obj[key] = -value + 0  # avoid -0.0
+            elif key == "linkedName":
+                if obj[key]:
+                    obj[key] = obj[key].replace("Left", "TeMp123").replace("Right", "Left").replace("TeMp123", "Right")
             else:
                 transform(value)
     elif isinstance(obj, list):
