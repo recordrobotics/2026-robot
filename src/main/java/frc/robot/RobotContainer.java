@@ -263,7 +263,8 @@ public final class RobotContainer {
         Elastic.sendNotification(new Notification(
                 NotificationLevel.INFO,
                 "Match Replay Recorded!",
-                "The last 2:45 minutes have been recorded on all supported cameras (LL4)."));
+                "The last 2:45 minutes have been recorded on all supported cameras (LL4).",
+                10000));
     }
 
     public static void disabledInit() {
