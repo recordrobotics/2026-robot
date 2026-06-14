@@ -287,11 +287,11 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
             setState(targetState); // refresh state
         }
 
-        if (targetState == IntakeState.STARTING) {
-            setArmControl(); // refresh arm control
-        }
-
-        setWheelControl();
+        if (!isForceDisabled()
+                && !runExtendHoming
+                && !(SysIdManager.getProvider() instanceof SysIdArm)
+                && !(SysIdManager.getProvider() instanceof Turret.SysId)) setArmControl();
+        if (!(SysIdManager.getProvider() instanceof SysIdWheel)) setWheelControl();
 
         Logger.recordOutput("Intake/EncoderResetDelta", encodersResetDelta);
     }
@@ -339,7 +339,7 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
                 && !(SysIdManager.getProvider() instanceof SysIdArm)
                 && !(SysIdManager.getProvider() instanceof Turret.SysId)) setArmControl();
 
-        setWheelControl();
+        if (!(SysIdManager.getProvider() instanceof SysIdWheel)) setWheelControl();
     }
 
     @Override
@@ -354,7 +354,9 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     }
 
     private void setArmControl() {
-        if (runExtendHoming && positionStatus == PositionStatus.UNKNOWN) {
+        if (isForceDisabled()) {
+            io.setArmControl(armVoltageRequest.withOutput(0.0));
+        } else if (runExtendHoming && positionStatus == PositionStatus.UNKNOWN) {
             io.setArmControl(armVoltageRequest.withOutput(RESET_VOLTAGE).withIgnoreSoftwareLimits(true));
         } else {
             double feedforward = 0;
