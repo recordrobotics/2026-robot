@@ -530,7 +530,7 @@ public final class Constants {
         public static final double ARM_UP_POSITION_RADIANS = ARM_MAX_POSITION_RADIANS;
         public static final double ARM_EJECT_POSITION_RADIANS =
                 Units.degreesToRadians(13.4); // A bit up to stop balls wedging against the ground
-        public static final double ARM_DOWN_FF = -0.5;
+        public static final double ARM_DOWN_FF = -1.0;
         public static final double ARM_UP_FF = 10;
         public static final double ARM_UP_HOLD_FF = 6.7;
 

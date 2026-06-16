@@ -432,12 +432,13 @@ public final class Intake extends KillableSubsystem implements PoweredSubsystem,
     }
 
     private double getArmStartPosition() {
-        if (overrideKnown || Math.abs(encodersResetDelta) < ENCODERS_RESET_DELTA_THRESHOLD) {
-            return Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
-        } else {
-            return Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS)
-                    - encodersResetDelta; // hardstop is at down position, delta is relative to that
-        }
+        // if (overrideKnown || Math.abs(encodersResetDelta) < ENCODERS_RESET_DELTA_THRESHOLD) {
+        //     return Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
+        // } else {
+        //     return Units.radiansToRotations(Constants.Intake.ARM_DOWN_POSITION_RADIANS)
+        //             - encodersResetDelta; // hardstop is at down position, delta is relative to that
+        // }
+        return Units.radiansToRotations(Constants.Intake.ARM_STARTING_POSITION_RADIANS);
     }
 
     private boolean armAtGoal() {

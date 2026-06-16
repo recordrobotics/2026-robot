@@ -258,7 +258,7 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         }
     }
 
-    @AutoLogLevel(level = AutoLogLevel.Level.SYSID)
+    @AutoLogLevel(level = AutoLogLevel.Level.REAL)
     public double getPositionRotations() {
         return inputs.positionRotations + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS;
     }
