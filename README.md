@@ -98,10 +98,18 @@ Run this command to set up a git hook that will format your code with spotless b
 Before starting make sure to setup git with these recommended settings and aliases:
 
 - `git config --global pull.rebase true`
+  - This ensures your local commits will be rebased on top of any incoming changes when pulling
 - `git config --global alias.origin 'reset --hard origin/$(git branch --show-current)'`
+  - This is an alias which allows you to use `git origin` to reset your current branch to origin
 - `git config --global alias.fpush 'push --force-with-lease --force-if-includes'`
-
-This ensures your local commits will be rebased on top of any incoming changes when pulling, and provides useful aliases for safe force pushing and resetting current branch to origin.
+  - This is an alias which allows you to use `git fpush` for safe force pushing
+- `git config --global alias.reb '!f() { git checkout main && git pull && git checkout "$1" && git pull && git rebase --onto main "$(git merge-base main "$1")" "$1"; }; f'`
+  - This is an alias which allows you to use `git reb [branch name]` which rebases this branch on to main. Run from anywhere, it will automatically take you to the branch and pull them. Remember to fpush the branch afterwards.
+- `git config --global alias.reball '!git for-each-ref --format="%(refname:short)" refs/heads/ | xargs -n1 git reb'`
+  - This is an alias which allows you to use `git reball` to rebase all branches to main. This uses reb, so add it too. Run from anywhere, it will automatically take you to the branches and pull them. Remember to fpush all branches afterwards
+- `git config --global alias.logline "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"`
+  - This is an alias which which allows you to use `git logline` to show a log of past commits to the current branch with useful information. Press q to quit
 
 -------------------------------------------------
+
 [Record Robotics](https://www.recordrobotics.org/)
