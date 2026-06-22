@@ -94,7 +94,7 @@ public class PhotonVisionCamera extends ObjectDetectionCamera {
             }
 
             result.getTargets().forEach(target -> {
-                List<TargetCorner> corners = target.getDetectedCorners().stream()
+                List<TargetCorner> corners = target.getMinAreaRectCorners().stream()
                         .map(corner -> new TargetCorner(corner.x, corner.y))
                         .toList();
 
