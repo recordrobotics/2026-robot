@@ -20,6 +20,13 @@ public class ImprovedMapleMatch {
     private static final String RED_ACTIVE_KEY = "MapleSim/MatchData/Breakdown/Red Alliance/Improved Active";
     private static final String BLUE_ACTIVE_KEY = "MapleSim/MatchData/Breakdown/Blue Alliance/Improved Active";
 
+    // Since maplesim counts scoring from the entrance of fuel into the funnel, account for the time it takes to get
+    // from the funnel to the counter.
+    private static final double HUB_FUNNEL_TO_COUNTER_TIME_SECONDS = 1.0;
+    // Since maplesim counts scoring from the entrance of fuel into the funnel, subtract the time it takes to get from
+    // the funnel to the counter from the 3 second active time.
+    private static final double COUNTER_ACTIVE_AFTER_SHIFT_SECONDS = 3.0 - HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+
     private static ImprovedMapleMatch instance;
 
     public static ImprovedMapleMatch getInstance() {
@@ -39,11 +46,16 @@ public class ImprovedMapleMatch {
     private boolean redActive = false;
     private boolean blueActive = false;
 
+    private boolean redCounterActive = false;
+    private boolean blueCounterActive = false;
+
     private double shiftEndTime = 0;
     private boolean nextShiftRedActive = false;
     private boolean nextShiftBlueActive = false;
 
     private double nextThrowInTimestamp = Timer.getTimestamp();
+
+    private double disabledTimestamp = 0;
 
     public ImprovedMapleMatch() {
         sendActiveState();
@@ -64,12 +76,20 @@ public class ImprovedMapleMatch {
     public void periodic() {
         updateActiveStates();
 
+        updateHubCounters();
+        sendActiveState();
+        sendScore();
+
+        throwFuelBackIntoField();
+    }
+
+    private void updateHubCounters() {
         double redFuel = SmartDashboard.getNumber("MapleSim/MatchData/Breakdown/Red Alliance/TotalFuelInHub", 0);
         double blueFuel = SmartDashboard.getNumber(
                 "MapleSim/MatchData/Breakdown/blue Alliance/TotalFuelInHub", 0); // maplesim typo
 
         if (redFuel > oldRedFuel) {
-            if (redActive) {
+            if (redCounterActive) {
                 redFuelWhileActive += redFuel - oldRedFuel;
             }
             oldRedFuel = redFuel;
@@ -78,21 +98,23 @@ public class ImprovedMapleMatch {
         }
 
         if (blueFuel > oldBlueFuel) {
-            if (blueActive) {
+            if (blueCounterActive) {
                 blueFuelWhileActive += blueFuel - oldBlueFuel;
             }
             oldBlueFuel = blueFuel;
         } else if (blueFuel < oldBlueFuel) {
             oldBlueFuel = blueFuel;
         }
+    }
 
+    private void throwFuelBackIntoField() {
         // Make sure balls get rolled back
         // Check if ball is OOB
         GamePieceOnFieldSimulation[] fuelPoses =
                 SimulatedArena.getInstance().gamePiecesOnField().toArray(GamePieceOnFieldSimulation[]::new);
 
         if (Timer.getTimestamp() - nextThrowInTimestamp > 0) {
-            GamePieceOnFieldSimulation fuel = fuelPoses[new Random().nextInt(0, fuelPoses.length - 1)];
+            GamePieceOnFieldSimulation fuel = fuelPoses[RANDOM.nextInt(0, fuelPoses.length - 1)];
             if (!SimpleMath.isInField(fuel.getPoseOnField())) {
 
                 // x is up and down
@@ -126,9 +148,9 @@ public class ImprovedMapleMatch {
                     newYVelocity = -3.0 - randomAdd;
                 }
 
-                SimulatedArena.getInstance().removeGamePiece(fuel); // delete ball
+                SimulatedArena.getInstance().removeGamePiece(fuel); // delete fuel
 
-                SimulatedArena.getInstance() // spawn ball
+                SimulatedArena.getInstance() // spawn fuel
                         .addGamePieceProjectile(new GamePieceProjectile(
                                         RebuiltFuelOnField.REBUILT_FUEL_INFO,
                                         new Translation2d(newX, newY), // start pos (x, y)
@@ -142,8 +164,6 @@ public class ImprovedMapleMatch {
                 nextThrowInTimestamp = Timer.getTimestamp() + Math.random() * 1.5 + 0.5;
             }
         }
-        sendActiveState();
-        sendScore();
     }
 
     public void autonomousInit() {
@@ -157,6 +177,8 @@ public class ImprovedMapleMatch {
         DriverStationSim.notifyNewData();
         redActive = true;
         blueActive = true;
+        redCounterActive = true;
+        blueCounterActive = true;
         sendActiveState();
         sendScore();
     }
@@ -176,10 +198,16 @@ public class ImprovedMapleMatch {
         DriverStationSim.notifyNewData();
     }
 
+    public void disabledInit() {
+        disabledTimestamp = Timer.getTimestamp();
+    }
+
     public void updateActiveStates() {
         if (!hasTeleopStarted) {
             redActive = true;
             blueActive = true;
+            redCounterActive = true;
+            blueCounterActive = true;
         } else if (DriverStation.isTeleopEnabled()) {
             double matchTime = Math.floor(DriverStation.getMatchTime());
 
@@ -196,6 +224,14 @@ public class ImprovedMapleMatch {
                 // Shift 1
                 redActive = !redInactiveFirst;
                 blueActive = redInactiveFirst;
+
+                redCounterActive = redActive
+                        || matchTime > 130 - COUNTER_ACTIVE_AFTER_SHIFT_SECONDS
+                        || matchTime < 105 + HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+                blueCounterActive = blueActive
+                        || matchTime > 130 - COUNTER_ACTIVE_AFTER_SHIFT_SECONDS
+                        || matchTime < 105 + HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+
                 if (matchTime >= 105 + 3) {
                     nextShiftRedActive = redInactiveFirst;
                     nextShiftBlueActive = !redInactiveFirst;
@@ -205,6 +241,14 @@ public class ImprovedMapleMatch {
                 // Shift 2
                 redActive = redInactiveFirst;
                 blueActive = !redInactiveFirst;
+
+                redCounterActive = redActive
+                        || matchTime > 105 - COUNTER_ACTIVE_AFTER_SHIFT_SECONDS
+                        || matchTime < 80 + HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+                blueCounterActive = blueActive
+                        || matchTime > 105 - COUNTER_ACTIVE_AFTER_SHIFT_SECONDS
+                        || matchTime < 80 + HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+
                 if (matchTime >= 80 + 3) {
                     nextShiftRedActive = !redInactiveFirst;
                     nextShiftBlueActive = redInactiveFirst;
@@ -214,6 +258,14 @@ public class ImprovedMapleMatch {
                 // Shift 3
                 redActive = !redInactiveFirst;
                 blueActive = redInactiveFirst;
+
+                redCounterActive = redActive
+                        || matchTime > 80 - COUNTER_ACTIVE_AFTER_SHIFT_SECONDS
+                        || matchTime < 55 + HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+                blueCounterActive = blueActive
+                        || matchTime > 80 - COUNTER_ACTIVE_AFTER_SHIFT_SECONDS
+                        || matchTime < 55 + HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+
                 if (matchTime >= 55 + 3) {
                     nextShiftRedActive = redInactiveFirst;
                     nextShiftBlueActive = !redInactiveFirst;
@@ -223,6 +275,14 @@ public class ImprovedMapleMatch {
                 // Shift 4
                 redActive = redInactiveFirst;
                 blueActive = !redInactiveFirst;
+
+                redCounterActive = redActive
+                        || matchTime > 55 - COUNTER_ACTIVE_AFTER_SHIFT_SECONDS
+                        || matchTime < 30 + HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+                blueCounterActive = blueActive
+                        || matchTime > 55 - COUNTER_ACTIVE_AFTER_SHIFT_SECONDS
+                        || matchTime < 30 + HUB_FUNNEL_TO_COUNTER_TIME_SECONDS;
+
                 if (matchTime >= 30 + 3) {
                     nextShiftRedActive = true;
                     nextShiftBlueActive = true;
@@ -232,6 +292,10 @@ public class ImprovedMapleMatch {
                 // End game, hub always active.
                 redActive = true;
                 blueActive = true;
+
+                redCounterActive = true;
+                blueCounterActive = true;
+
                 if (matchTime >= 3) {
                     nextShiftRedActive = false;
                     nextShiftBlueActive = false;
@@ -241,6 +305,10 @@ public class ImprovedMapleMatch {
         } else {
             redActive = false;
             blueActive = false;
+
+            double timeSinceDisabled = Timer.getTimestamp() - disabledTimestamp;
+            redCounterActive = timeSinceDisabled < COUNTER_ACTIVE_AFTER_SHIFT_SECONDS;
+            blueCounterActive = timeSinceDisabled < COUNTER_ACTIVE_AFTER_SHIFT_SECONDS;
         }
     }
 

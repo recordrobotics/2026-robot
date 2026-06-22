@@ -261,6 +261,10 @@ public final class Robot extends LoggedRobot {
             SignalLogger.stop();
         }
 
+        if (Constants.RobotState.getMode() == Constants.RobotState.Mode.SIM) {
+            ImprovedMapleMatch.getInstance().disabledInit();
+        }
+
         RobotContainer.disabledInit();
     }
 
