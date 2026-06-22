@@ -525,8 +525,8 @@
           },
           {
             "title": "Filter Tags",
-            "x": 0.0,
-            "y": 640.0,
+            "x": 128.0,
+            "y": 512.0,
             "width": 96.0,
             "height": 128.0,
             "type": "Toggle Switch",
@@ -538,9 +538,9 @@
           },
           {
             "title": "Prioritize Turret",
-            "x": 128.0,
+            "x": 0.0,
             "y": 512.0,
-            "width": 96.0,
+            "width": 128.0,
             "height": 128.0,
             "type": "Toggle Switch",
             "properties": {
@@ -580,23 +580,10 @@
             }
           },
           {
-            "title": "Defense Mode",
-            "x": 0.0,
-            "y": 512.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Toggle Switch",
-            "properties": {
-              "topic": "DefenseMode",
-              "period": 0.06,
-              "data_type": "boolean"
-            }
-          },
-          {
             "title": "Replay",
-            "x": 96.0,
+            "x": 0.0,
             "y": 640.0,
-            "width": 128.0,
+            "width": 224.0,
             "height": 128.0,
             "type": "Toggle Button",
             "properties": {
