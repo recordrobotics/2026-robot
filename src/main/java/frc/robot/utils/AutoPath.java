@@ -7,7 +7,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -88,45 +87,6 @@ public final class AutoPath {
         NamedCommands.registerCommand(
                 "IntakeOff",
                 Commands.runOnce(() -> RobotContainer.intake.setState(IntakeState.OUT), RobotContainer.intake));
-        NamedCommands.registerCommand(
-                "Hopper",
-                Commands.run(
-                                () -> AutoControlModifier.getDefault()
-                                        .drive(new ChassisSpeeds(0, 0, 10), new double[4], new double[4]),
-                                RobotContainer.drivetrain)
-                        .withTimeout(0.35)
-                        .andThen(
-                                Commands.run(
-                                                () -> AutoControlModifier.getDefault()
-                                                        .drive(
-                                                                new ChassisSpeeds(0, 0, -10),
-                                                                new double[4],
-                                                                new double[4]),
-                                                RobotContainer.drivetrain)
-                                        .withTimeout(0.5),
-                                Commands.run(
-                                                () -> AutoControlModifier.getDefault()
-                                                        .drive(
-                                                                new ChassisSpeeds(
-                                                                        0,
-                                                                        0,
-                                                                        spinController.calculate(
-                                                                                RobotContainer.poseSensorFusion
-                                                                                        .getEstimatedPosition()
-                                                                                        .getRotation()
-                                                                                        .getRadians(),
-                                                                                DriverStationUtils.getCurrentAlliance()
-                                                                                                == Alliance.Red
-                                                                                        ? Math.PI
-                                                                                        : 0)),
-                                                                new double[4],
-                                                                new double[4]),
-                                                RobotContainer.drivetrain)
-                                        .until(() -> spinController.atGoal()),
-                                Commands.runOnce(
-                                        () -> AutoControlModifier.getDefault()
-                                                .drive(new ChassisSpeeds(0, 0, 0), new double[4], new double[4]),
-                                        RobotContainer.drivetrain)));
         NamedCommands.registerCommand(
                 "IntakeDepot",
                 Commands.run(() -> RobotContainer.intake.setState(IntakeState.INTAKE), RobotContainer.intake)
