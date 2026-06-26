@@ -13,7 +13,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "TrenchOutpostBump"
+            "pathName": "LeftTrenchWithDepot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Mixer"
           }
         }
       ]

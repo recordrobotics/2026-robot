@@ -13,13 +13,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "TrenchDDEPO"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Mixer"
+            "pathName": "RightTrench"
           }
         }
       ]
