@@ -119,7 +119,8 @@ public final class Constants {
     public enum FieldStartingLocation {
         LeftTrench(new Pose2d(4.408, 7.408, Rotation2d.kZero)),
         Center(new Pose2d(3.418, 4.080, Rotation2d.fromDegrees(34.439))),
-        RightTrench(new Pose2d(4.414, 0.630, Rotation2d.kZero));
+        RightTrench(new Pose2d(4.414, 0.630, Rotation2d.kZero)),
+        LeftBump(new Pose2d(3.431, 5.568, Rotation2d.kZero));
 
         private final Pose2d transformRed;
         private final Pose2d transformBlue;
