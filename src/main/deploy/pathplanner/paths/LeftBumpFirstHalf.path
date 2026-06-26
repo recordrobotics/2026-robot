@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.430941512125534,
-        "y": 5.568231098430813
+        "x": 3.431,
+        "y": 5.568
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.430941512125534,
-        "y": 5.568231098430813
+        "x": 4.430999999999999,
+        "y": 5.568
       },
       "isLocked": false,
       "linkedName": "LeftBumpStart"
@@ -96,12 +96,12 @@
     },
     {
       "anchor": {
-        "x": 2.1419358974417135,
-        "y": 5.81411538460957
+        "x": 2.915,
+        "y": 5.641
       },
       "prevControl": {
-        "x": 1.8919606904204276,
-        "y": 5.810594607044143
+        "x": 2.665,
+        "y": 5.641
       },
       "nextControl": null,
       "isLocked": false,
@@ -116,10 +116,6 @@
     {
       "waypointRelativePos": 4.827292110874216,
       "rotationDegrees": 135.19308062644205
-    },
-    {
-      "waypointRelativePos": 6,
-      "rotationDegrees": 44.85298339506636
     }
   ],
   "constraintZones": [],
