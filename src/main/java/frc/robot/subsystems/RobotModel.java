@@ -540,7 +540,7 @@ public final class RobotModel extends ManagedSubsystemBase {
         private static final int[] INTAKE_NODES = new int[] {22, 23, 24, 25};
         private static final Random RANDOM = new Random();
         private static final double FUEL_TOUCH_GROUND_HEIGHT = Inches.of(3).in(Meters);
-        private static final double SHOOT_BPS = 5.4;
+        private static final double SHOOT_BPS = Double.parseDouble(System.getProperty("shootbps", "5.4"));
         private static final double GRAVITY_BPS = 5.4;
 
         private final FuelNode[] ROBOT_FUEL_NODES;
