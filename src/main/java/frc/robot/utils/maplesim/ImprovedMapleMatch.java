@@ -17,8 +17,6 @@ import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 public class ImprovedMapleMatch {
 
     private static final Random RANDOM = new Random();
-    private static final String RED_ACTIVE_KEY = "MapleSim/MatchData/Breakdown/Red Alliance/Improved Active";
-    private static final String BLUE_ACTIVE_KEY = "MapleSim/MatchData/Breakdown/Blue Alliance/Improved Active";
 
     // Since maplesim counts scoring from the entrance of fuel into the funnel, account for the time it takes to get
     // from the funnel to the counter.
@@ -69,8 +67,14 @@ public class ImprovedMapleMatch {
                 && timeLeftInShift < 3
                 && (timeLeftInShift % 0.5 < 0.25); // Flash in the last 3 seconds of a shift
 
-        SmartDashboard.putBoolean(RED_ACTIVE_KEY, redActive && (!flash || nextShiftRedActive));
-        SmartDashboard.putBoolean(BLUE_ACTIVE_KEY, blueActive && (!flash || nextShiftBlueActive));
+        SmartDashboard.putBoolean("MapleSim/MatchData/Breakdown/Red Alliance/Improved Active", redActive);
+        SmartDashboard.putBoolean("MapleSim/MatchData/Breakdown/Blue Alliance/Improved Active", blueActive);
+        SmartDashboard.putBoolean(
+                "MapleSim/MatchData/Breakdown/Red Alliance/Improved Hub Led",
+                redActive && (!flash || nextShiftRedActive));
+        SmartDashboard.putBoolean(
+                "MapleSim/MatchData/Breakdown/Blue Alliance/Improved Hub Led",
+                blueActive && (!flash || nextShiftBlueActive));
     }
 
     public void periodic() {
@@ -300,6 +304,10 @@ public class ImprovedMapleMatch {
                     nextShiftRedActive = false;
                     nextShiftBlueActive = false;
                     shiftEndTime = Timer.getTimestamp() + 3.1;
+                } else if (matchTime < 0) {
+                    // Not a practice match
+                    nextShiftRedActive = true;
+                    nextShiftBlueActive = true;
                 }
             }
         } else {
