@@ -33,6 +33,7 @@ import java.util.Random;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
 import org.ironmaple.simulation.gamepieces.GamePieceProjectile;
@@ -47,6 +48,8 @@ public final class RobotModel extends ManagedSubsystemBase {
 
         void updatePoses(Pose3d[] poses, int i);
     }
+
+    public record Pose3dObject(Pose3d pose, int identity) {}
 
     private static FuelManager fuelManager;
 
@@ -105,6 +108,19 @@ public final class RobotModel extends ManagedSubsystemBase {
             return arenaFuelPoses.toArray(Pose3d[]::new);
         } else {
             return new Pose3d[0];
+        }
+    }
+
+    @AutoLogLevel(level = Level.SIM)
+    public Pose3dObject[] getFuelObjects() {
+        if (Constants.RobotState.getMode() != Constants.RobotState.Mode.REAL) {
+            List<Pose3dObject> arenaFuelObjects = SimulatedArena.getInstance().getGamePiecesByType("Fuel").stream()
+                    .map(fuelObject -> new Pose3dObject(fuelObject.getPose3d(), System.identityHashCode(fuelObject)))
+                    .collect(Collectors.toList());
+            arenaFuelObjects.addAll(fuelManager.getFuelObjects());
+            return arenaFuelObjects.toArray(Pose3dObject[]::new);
+        } else {
+            return new Pose3dObject[0];
         }
     }
 
@@ -1160,6 +1176,17 @@ public final class RobotModel extends ManagedSubsystemBase {
             return Collections.unmodifiableList(fuelObjects.stream()
                     .map(fuelObject -> robotPose.plus(
                             new Transform3d(fuelObject.pose.getTranslation(), fuelObject.pose.getRotation())))
+                    .toList());
+        }
+
+        public List<Pose3dObject> getFuelObjects() {
+            Pose3d robotPose = RobotContainer.model.getRobot();
+
+            return Collections.unmodifiableList(fuelObjects.stream()
+                    .map(fuelObject -> new Pose3dObject(
+                            robotPose.plus(
+                                    new Transform3d(fuelObject.pose.getTranslation(), fuelObject.pose.getRotation())),
+                            System.identityHashCode(fuelObject)))
                     .toList());
         }
 
