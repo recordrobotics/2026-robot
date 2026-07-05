@@ -12,6 +12,19 @@
         0.103226
     ],
     "cameras": [],
+    "rsl": [
+        "Robot_Signal_Light_(RSL)_(Werma)"
+    ],
+    "bumper": {
+        "name": [
+            "foam",
+            "wood_1",
+            "wood_2",
+            "wood_3",
+            "wood_4"
+        ],
+        "redColor": "#9e1616ff"
+    },
     "components": [
         {
             "zeroedRotations": [

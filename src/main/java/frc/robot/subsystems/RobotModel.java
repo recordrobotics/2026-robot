@@ -11,6 +11,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.Game.IGamePosition;
@@ -85,6 +87,23 @@ public final class RobotModel extends ManagedSubsystemBase {
             Logger.recordOutput("IGamePositions", IGamePosition.aggregatePositions());
             FieldIntersection.logAllInstances();
         }
+
+        // RSL state is set by FPGA and therefore is not simulated by default
+        // Only override it in simulation, replay mode should use the logged value
+        // from the real robot.
+        if (Constants.RobotState.getMode() == Mode.SIM) {
+            NetworkTableInstance.getDefault()
+                    .getEntry("/AdvantageKit/SystemStats/RSLState")
+                    .setBoolean(getSimulatedRSLState());
+        }
+    }
+
+    private boolean getSimulatedRSLState() {
+        if (!DriverStation.isEnabled()) {
+            return true;
+        }
+
+        return (Timer.getTimestamp() / 0.2) % 2 < 1; // toggle every 0.2 seconds
     }
 
     private void updatePoses(MechanismModel... mechanismModels) {
