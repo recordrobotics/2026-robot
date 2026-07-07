@@ -135,6 +135,19 @@ This command adds an entry in the [`.gitattributes`](.gitattributes) file and up
 Run this command to set up a git hook that will format your code with spotless before you push: `./gradlew spotlessInstallGitPrePushHook`.
 This is a per-repository hook and needs to be run on every clone.
 
+### Push fails in VSCode UI but works from terminal with `git push`
+
+This usually means the `JAVA_HOME` environment variable is not set when VSCode calls the pre-push hook which in turn runs `./gradlew` with the wrong Java.
+
+To fix add the following line in [`.git/hooks/pre-push`](.git/hooks/pre-push)
+
+```diff
+ ##### SPOTLESS HOOK START #####
++export JAVA_HOME='C:\Users\Public\wpilib\2026\jdk'
+ SPOTLESS_EXECUTOR=<path_to_repo>/gradlew.bat
+ if ! $SPOTLESS_EXECUTOR spotlessCheck ; then
+```
+
 ## Git Config
 
 Before starting make sure to setup git with these recommended settings and aliases:
