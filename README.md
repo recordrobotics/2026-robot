@@ -89,9 +89,51 @@ An example keybinding is provided in [`.vscode/keybindings.json`](.vscode/keybin
 
 -----------------------------------------------
 
+## Git LFS
+
+This repository uses [Git Large File Storage](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-git-large-file-storage) to store large files like the robot model assets for AdvantageScope.
+
+### Setting up Git LFS
+
+First, make sure Git LFS is installed by downloading it from https://git-lfs.com/
+
+Then run this command
+```bash
+git lfs install
+```
+
+**Note:** if the command exits with the error:
+
+```
+Hook already exists: pre-push
+```
+
+rerun the command with the `--force` argument and re-add the spotless pre-push hook with `./gradlew spotlessInstallGitPrePushHook`.
+
+```bash
+git lfs install --force
+./gradlew spotlessInstallGitPrePushHook
+```
+
+### Storing files using Git LFS
+
+The types of files that are stored using Git LFS are determined by the [`.gitattributes`](.gitattributes) file.
+
+The Git LFS extension automatically handles downloads and uploads behind the scenes and appears the same as a normal file in the commits.
+
+To add a new file type to Git LFS storage run
+
+```bash
+git lfs track "*.glb" # replace with target type
+```
+
+This command adds an entry in the [`.gitattributes`](.gitattributes) file and updates the metadata for existing files matching the new filter. This means you will need to commit both the [`.gitattributes`](.gitattributes) and matching file changes.
+
+
 ## Spotless Pre-Push Hook
 
-Run this command to set up a git hook that will format your code with spotless before you push: `./gradlew spotlessInstallGitPrePushHook`
+Run this command to set up a git hook that will format your code with spotless before you push: `./gradlew spotlessInstallGitPrePushHook`.
+This is a per-repository hook and needs to be run on every clone.
 
 ## Git Config
 
