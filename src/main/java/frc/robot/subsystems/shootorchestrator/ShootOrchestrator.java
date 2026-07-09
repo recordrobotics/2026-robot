@@ -102,6 +102,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private double timeAtBallHit = 0;
     private double shooterFeedforward = 0;
 
+    private boolean lastOnTarget = false;
+
     private SafeAlert shootOverrideAlert = new SafeAlert("Shooting override enabled!", AlertType.kWarning);
     private SafeAlert feedModeAlert = new SafeAlert("feed mode alert", AlertType.kWarning);
 
@@ -118,6 +120,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     public void setEnableShooting(boolean enable) {
         this.shootingEnabled = enable;
+    }
+
+    public boolean isShootingEnabled() {
+        return shootingEnabled;
     }
 
     public void setFixedMode(boolean fixed) {
@@ -427,6 +433,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
             boolean onTarget = isOnTarget(shotTarget, shotResult.shotCalculation(), isBlocked);
             Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
+            lastOnTarget = onTarget;
 
             updateFeeders(onTarget);
         }
@@ -449,6 +456,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         } else {
             feedModeAlert.set(false);
         }
+    }
+
+    public boolean isOnTarget() {
+        return lastOnTarget;
     }
 
     private record ShotCalculationResult(Vector<N3> shotVector, ShotCalculation shotCalculation) {}

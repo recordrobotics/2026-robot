@@ -35,6 +35,7 @@ import frc.robot.subsystems.io.sim.IntakeSim;
 import frc.robot.subsystems.io.sim.ShooterSim;
 import frc.robot.subsystems.io.sim.SpindexerSim;
 import frc.robot.subsystems.io.sim.TurretSim;
+import frc.robot.subsystems.led.LedManager;
 import frc.robot.subsystems.shootorchestrator.ShootOrchestrator;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.CommandUtils;
@@ -106,6 +107,7 @@ public final class RobotContainer {
     public static FieldStateTracker fieldStateTracker;
     public static ShootOrchestrator shootOrchestrator;
     public static VisionSystemSim visionSim;
+    public static LedManager ledManager;
 
     public static TalonFXOrchestra orchestra;
 
@@ -218,6 +220,7 @@ public final class RobotContainer {
         shootOrchestrator = new ShootOrchestrator();
 
         model = new RobotModel();
+        ledManager = new LedManager();
 
         // Sets up auto path
         AutoPath.initialize();

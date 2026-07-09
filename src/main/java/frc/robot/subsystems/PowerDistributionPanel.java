@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.PDPSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.utils.camera.PhysicalCamera;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,7 +89,7 @@ public final class PowerDistributionPanel extends SubsystemBase {
     }
 
     public Current getLEDsCurrent() {
-        return Amps.of(2.0);
+        return RobotContainer.ledManager.getCurrentDraw();
     }
 
     public Current getMiniPDPCurrent() {
