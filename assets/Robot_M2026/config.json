@@ -25,6 +25,13 @@
         ],
         "redColor": "#9e1616ff"
     },
+    "led": {
+        "name": [
+            "led_strip"
+        ],
+        "count": 30.303030303,
+        "aspectRatio": 1.65
+    },
     "components": [
         {
             "zeroedRotations": [
