@@ -26,29 +26,29 @@ public final class PowerDistributionPanel extends SubsystemBase {
     private final HashMap<Integer, Supplier<Current>> simCurrentSuppliers;
     private final Set<Supplier<Current>> simMiniPdpDeviceCurrentSuppliers;
 
-    public PowerDistributionPanel() {
+    public PowerDistributionPanel(SimulatedBattery batterySource) {
         if (RobotBase.isSimulation()) {
             pdpSim = new PDPSim(1);
             simCurrentSuppliers = new HashMap<>();
             simMiniPdpDeviceCurrentSuppliers = new HashSet<>();
 
-            SimulatedBattery.addElectricalAppliances(this::getMiniPDPCurrent);
+            batterySource.addElectricalAppliances(this::getMiniPDPCurrent);
 
             // RoboRIO
             registerSimDevice(20, RobotController::getMeasureInputCurrent);
-            SimulatedBattery.addElectricalAppliances(RobotController::getMeasureInputCurrent);
+            batterySource.addElectricalAppliances(RobotController::getMeasureInputCurrent);
 
             // Radio
             registerSimDevice(21, () -> RADIO_CURRENT);
-            SimulatedBattery.addElectricalAppliances(() -> RADIO_CURRENT);
+            batterySource.addElectricalAppliances(() -> RADIO_CURRENT);
 
             // VRM
             registerSimDevice(22, this::getVRMCurrent);
-            SimulatedBattery.addElectricalAppliances(this::getVRMCurrent);
+            batterySource.addElectricalAppliances(this::getVRMCurrent);
 
             // VRM (LEDs)
             registerSimDevice(23, this::getLEDsCurrent);
-            SimulatedBattery.addElectricalAppliances(this::getLEDsCurrent);
+            batterySource.addElectricalAppliances(this::getLEDsCurrent);
 
             // OPI
             for (int i = 0; i < 3; i++) { // 3 OPIs

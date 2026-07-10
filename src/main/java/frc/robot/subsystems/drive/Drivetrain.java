@@ -52,6 +52,7 @@ import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.littletonrobotics.junction.Logger;
 
 /** Represents a swerve drive style drivetrain. */
@@ -115,7 +116,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
             Constants.Swerve.BACK_RIGHT_WHEEL_LOCATION);
 
     // Create and configure a drivetrain simulation configuration
-    private final DriveTrainSimulationConfig driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
+    private final DriveTrainSimulationConfig driveTrainSimulationConfig = DriveTrainSimulationConfig.Default(
+                    SimulatedBattery.ROBORIO_BATTERY)
             // Specify gyro type (for realistic gyro drifting and error simulation)
             // .withGyro(() -> new GyroSimulation(0.5, 0.05)) // navX-Micro
             .withGyro(COTS.ofPigeon2())
@@ -129,8 +131,8 @@ public final class Drivetrain extends ManagedSubsystemBase {
                     Volts.of(Constants.Swerve.KRAKEN_TURN_KS), // Steer static voltage
                     Meters.of(Constants.Swerve.WHEEL_DIAMETER / 2), // Wheel radius
                     KilogramSquareMeters.of(0.03),
-                    COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof // Use the COF for Neoprene Tread
-                    ))
+                    COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof, // Use the COF for Neoprene Tread
+                    SimulatedBattery.ROBORIO_BATTERY))
             // Configures the track length and track width (spacing between swerve modules)
             .withTrackLengthTrackWidth(
                     Meters.of(Constants.Frame.ROBOT_WHEEL_DISTANCE_LENGTH),

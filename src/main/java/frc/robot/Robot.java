@@ -182,8 +182,13 @@ public final class Robot extends LoggedRobot {
         if (Constants.RobotState.getMode() == Constants.RobotState.Mode.SIM) {
             // Reset simulation field
             SimulatedArena.getInstance().resetFieldForAuto();
+
             // Create opponent robots
-            // OpponentRobot.create(5);
+            for (int i = 0; i < OpponentRobot.NUM_ROBOTS; i++) {
+                OpponentRobot.create();
+            }
+            OpponentRobot.setAllOpponentAlliance();
+            OpponentRobot.enableAll();
         }
 
         // MAKE SURE FIRST CALL TO ELASTIC IS NOT IN TELEOP OR AUTO INIT!!
@@ -291,7 +296,9 @@ public final class Robot extends LoggedRobot {
             SimulatedArena.getInstance().resetFieldForAuto();
             RobotModel.getFuelManager().preloadFuel();
             ImprovedMapleMatch.getInstance().autonomousInit();
-            OpponentRobot.randomizeRobots();
+
+            OpponentRobot.setAllOpponentAlliance();
+            OpponentRobot.enableAll();
         }
 
         RobotContainer.model.intakeModel.resetHopperExtension();

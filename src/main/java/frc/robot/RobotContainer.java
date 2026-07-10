@@ -54,6 +54,7 @@ import frc.robot.utils.field.FieldUtils;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
+import frc.robot.utils.maplesim.SimulatedBatteryFactory;
 import frc.robot.utils.wrappers.SafeAlert;
 import java.util.EnumSet;
 import java.util.Objects;
@@ -111,8 +112,6 @@ public final class RobotContainer {
 
     public static TalonFXOrchestra orchestra;
 
-    private static final double ACTUAL_RESTING_BATTERY_VOLTAGE = 12.68;
-
     private static final double HUB_SCORE_REGISTER_TIME =
             1.25; // takes 1.25 seconds from fuel crossing top of poly to scored
     private static final double HUB_SCORE_TIME =
@@ -160,7 +159,7 @@ public final class RobotContainer {
 
         orchestra = new TalonFXOrchestra();
 
-        pdp = new PowerDistributionPanel();
+        pdp = new PowerDistributionPanel(SimulatedBattery.ROBORIO_BATTERY);
 
         try {
             drivetrain = new Drivetrain();
@@ -250,8 +249,7 @@ public final class RobotContainer {
 
             // Register all powered subsystems with the simulation battery
             registerPoweredSubsystems(intake, turret, shooter, spindexer, feeder, climber);
-            SimulatedBattery.setVoltage(ACTUAL_RESTING_BATTERY_VOLTAGE);
-            SimulatedBattery.setDischargeRate(0.02 / 378.45);
+            SimulatedBatteryFactory.modify(SimulatedBattery.ROBORIO_BATTERY);
         }
     }
 
@@ -481,7 +479,8 @@ public final class RobotContainer {
                             poseSensorFusion.setToPose(getStartingLocation().getPose());
                             if (Constants.RobotState.getMode() == Mode.SIM) {
                                 // reset voltage
-                                SimulatedBattery.setVoltage(ACTUAL_RESTING_BATTERY_VOLTAGE);
+                                SimulatedBattery.ROBORIO_BATTERY.setVoltage(
+                                        SimulatedBatteryFactory.ACTUAL_RESTING_BATTERY_VOLTAGE);
                             }
                         })
                         .ignoringDisable(true));
@@ -553,7 +552,7 @@ public final class RobotContainer {
 
     public static void registerPoweredSubsystems(PoweredSubsystem... subsystems) {
         for (PoweredSubsystem subsystem : subsystems) {
-            SimulatedBattery.addElectricalAppliances(subsystem::getCurrentDraw);
+            SimulatedBattery.ROBORIO_BATTERY.addElectricalAppliances(subsystem::getCurrentDraw);
         }
     }
 

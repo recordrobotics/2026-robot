@@ -2,18 +2,32 @@ package frc.robot.utils.maplesim;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.pathfinding.LocalADStar;
+import com.pathplanner.lib.pathfinding.Pathfinder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
+import frc.robot.RobotContainer;
+import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.ManagedSubsystemBase;
-import java.util.ArrayList;
+import frc.robot.utils.libraries.bumpsim.RobotBumpSim;
+import java.lang.reflect.Field;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -24,38 +38,44 @@ import org.ironmaple.simulation.drivesims.SelfControlledSwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.littletonrobotics.junction.Logger;
 
 public class OpponentRobot extends ManagedSubsystemBase {
 
+    public static final int NUM_ROBOTS = Integer.parseInt(System.getProperty("opponent.robots", "0"));
+
     private static final Set<OpponentRobot> allOpponentRobots = new HashSet<>();
 
-    public record OpponentRobotState(Pose2d pose, int allianceStation) {}
-
     public static void logPoses() {
-        List<OpponentRobotState> states = new ArrayList<>(allOpponentRobots.size());
         for (OpponentRobot robot : allOpponentRobots) {
-            robot.getPose().ifPresent(pose -> states.add(new OpponentRobotState(pose, robot.getAllianceStation())));
+            String prefix = "OpponentRobot/" + robot.robotId + "/";
+            robot.getPose().ifPresent(pose -> Logger.recordOutput(prefix + "Pose", pose));
+            Logger.recordOutput(prefix + "AllianceStation", robot.allianceStation);
         }
-
-        Logger.recordOutput("OpponentRobot/States", states.toArray(new OpponentRobotState[0]));
     }
 
-    @SuppressWarnings("EnumOrdinal") /* raw JNI api enum */
-    public static void randomizeRobots() {
-        int realStation = DriverStation.getRawAllianceStation().ordinal();
-        List<Integer> possibleStations = new ArrayList<>();
-        for (int i = 1; i <= 6; i++) {
-            if (i != realStation) {
-                possibleStations.add(i);
-            }
-        }
-
-        possibleStations.sort((a, b) -> (int) (Math.random() * 3 - 1)); // Shuffle the possible stations
+    public static void setAllOpponentAlliance() {
+        int station = DriverStationUtils.getCurrentAlliance() == Alliance.Red ? 4 : 1;
 
         for (OpponentRobot robot : allOpponentRobots) {
-            int station = possibleStations.remove(0);
+            if (DriverStation.getRawAllianceStation().ordinal() == station) {
+                station++;
+                if (station > 6) {
+                    station = 1;
+                }
+            }
+
             robot.setAllianceStation(station);
+            station++;
+            if (station > 6) {
+                station = 1;
+            }
+        }
+    }
+
+    public static void enableAll() {
+        for (OpponentRobot robot : allOpponentRobots) {
             robot.enable();
         }
     }
@@ -76,8 +96,12 @@ public class OpponentRobot extends ManagedSubsystemBase {
     private static Pose2d nextStartingPose = new Pose2d(-10, -10, Rotation2d.kZero);
     private static final Lock nextStartingPoseLock = new ReentrantLock(true);
 
+    // Each robot has its own battery source
+    private SimulatedBattery batterySource = SimulatedBatteryFactory.create();
+
     // Create and configure a drivetrain simulation configuration
-    private final DriveTrainSimulationConfig driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
+    private final DriveTrainSimulationConfig driveTrainSimulationConfig = DriveTrainSimulationConfig.Default(
+                    batterySource)
             // Specify gyro type (for realistic gyro drifting and error simulation)
             .withGyro(COTS.ofPigeon2())
             // Specify swerve module (for realistic swerve dynamics)
@@ -90,8 +114,8 @@ public class OpponentRobot extends ManagedSubsystemBase {
                     Volts.of(Constants.Swerve.KRAKEN_TURN_KS), // Steer static voltage
                     Meters.of(Constants.Swerve.WHEEL_DIAMETER / 2), // Wheel radius
                     KilogramSquareMeters.of(0.03),
-                    COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof // Use the COF for Neoprene Tread
-                    ))
+                    COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof, // Use the COF for Neoprene Tread
+                    batterySource))
             // Configures the track length and track width (spacing between swerve modules)
             .withTrackLengthTrackWidth(
                     Meters.of(Constants.Frame.ROBOT_WHEEL_DISTANCE_LENGTH),
@@ -102,12 +126,42 @@ public class OpponentRobot extends ManagedSubsystemBase {
                     Meters.of(Constants.Frame.FRAME_WITH_BUMPER_WIDTH))
             .withRobotMass(Kilograms.of(Constants.Frame.ROBOT_MASS_KG));
 
+    // Create the constraints to use while pathfinding
+    private final PathConstraints constraints =
+            new PathConstraints(3.0, 4.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+
     private final SelfControlledSwerveDriveSimulation driveSimulation;
     private final Pose2d startingPose;
 
+    private final RobotBumpSim robotBumpSim = new RobotBumpSim(new Translation2d[] {
+        Constants.Swerve.FRONT_LEFT_WHEEL_LOCATION,
+        Constants.Swerve.FRONT_RIGHT_WHEEL_LOCATION,
+        Constants.Swerve.BACK_LEFT_WHEEL_LOCATION,
+        Constants.Swerve.BACK_RIGHT_WHEEL_LOCATION
+    });
+
+    private final Pathfinder pathfinder;
+    private final CustomPathfindingCommand pathfindingCommand;
+    private Field pathfindingTargetPoseField = null;
+
+    private ChassisSpeeds pathfindingChassisSpeeds = new ChassisSpeeds(0, 0, 0);
+
     private boolean enabled = false;
     private int allianceStation = 1;
+    private int robotId = 0;
     private Behavior behavior = Behavior.DEFENSE;
+
+    private PIDController xPid = new PIDController(4.0, 0.0, 0.15);
+    private PIDController yPid = new PIDController(4.0, 0.0, 0.15);
+    private PIDController rPid = new PIDController(4.0, 0.0, 0.3);
+    private PIDController rPidGridOrient = new PIDController(4.0, 0.0, 0.3);
+
+    private Translation2d lastTargetPosition = Translation2d.kZero;
+
+    private Pose3d lastSimPose3d = new Pose3d();
+
+    private Timer pinTimer = new Timer();
+    private Timer repelTimer = new Timer();
 
     public static OpponentRobot create() {
         if (Constants.RobotState.getMode() != Mode.SIM) {
@@ -124,34 +178,63 @@ public class OpponentRobot extends ManagedSubsystemBase {
             nextStartingPoseLock.unlock();
         }
 
-        OpponentRobot robot = new OpponentRobot(startingPose);
+        OpponentRobot robot = new OpponentRobot(startingPose, allOpponentRobots.size());
         allOpponentRobots.add(robot);
         return robot;
     }
 
-    private OpponentRobot(Pose2d startingPose) {
+    private OpponentRobot(Pose2d startingPose, int id) {
         if (Constants.RobotState.getMode() != Mode.SIM) {
             throw new IllegalStateException("OpponentRobot should only be instantiated in simulation mode!");
         }
 
         this.startingPose = startingPose;
+        this.robotId = id;
+
+        rPid.enableContinuousInput(-Math.PI / 4, Math.PI / 4);
+        rPidGridOrient.enableContinuousInput(-Math.PI / 4, Math.PI / 4);
 
         driveSimulation = new SelfControlledSwerveDriveSimulation(
                 new SwerveDriveSimulation(driveTrainSimulationConfig, startingPose));
 
+        pathfinder = new LocalADStar();
+
+        pathfindingCommand = new CustomPathfindingCommand(
+                Pose2d.kZero,
+                constraints,
+                3.0,
+                driveSimulation::getActualPoseInSimulationWorld,
+                driveSimulation::getActualSpeedsRobotRelative,
+                (c, f) -> pathfindingChassisSpeeds = c,
+                new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.15), new PIDConstants(4.0, 0.0, 0.3)),
+                Constants.Swerve.PP_DEFAULT_CONFIG,
+                pathfinder);
+
+        try {
+            pathfindingTargetPoseField = pathfindingCommand.getClass().getDeclaredField("targetPose");
+            pathfindingTargetPoseField.setAccessible(true);
+        } catch (NoSuchFieldException | SecurityException e) {
+            e.printStackTrace();
+        }
+
+        pinTimer.start();
+        repelTimer.start();
+
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation.getDriveTrainSimulation());
     }
 
-    public Optional<Pose2d> getPose() {
+    public Optional<Pose3d> getPose() {
         if (!enabled) {
             return Optional.empty();
         }
 
-        return Optional.of(driveSimulation.getActualPoseInSimulationWorld());
+        return Optional.of(lastSimPose3d);
     }
 
     public void enable() {
         driveSimulation.setSimulationWorldPose(ALLIANCE_START_POSITIONS[allianceStation - 1]);
+        lastSimPose3d = new Pose3d(driveSimulation.getActualPoseInSimulationWorld());
+        batterySource.setVoltage(SimulatedBatteryFactory.ACTUAL_RESTING_BATTERY_VOLTAGE);
         enabled = true;
     }
 
@@ -186,5 +269,87 @@ public class OpponentRobot extends ManagedSubsystemBase {
 
     public Behavior getBehavior() {
         return behavior;
+    }
+
+    @Override
+    public void periodicManaged() {
+        if (enabled && RobotState.isEnabled()) {
+            switch (behavior) {
+                case DEFENSE:
+                    runDefense(RobotContainer.model.getRobot());
+                    break;
+            }
+        } else {
+            driveSimulation.runChassisSpeeds(new ChassisSpeeds(0, 0, 0), Translation2d.kZero, false, true);
+        }
+
+        Pose2d simPose = driveSimulation.getActualPoseInSimulationWorld();
+
+        ChassisSpeeds fieldRelativeSpeeds = driveSimulation.getActualSpeedsFieldRelative();
+        lastSimPose3d =
+                robotBumpSim.update(simPose, fieldRelativeSpeeds, SimulatedArena.getSimulationSubTicksIn1Period());
+        if (robotBumpSim.isOnRamp()) {
+            driveSimulation.setSimulationWorldPose(robotBumpSim.getSimWorldPose(simPose));
+        }
+    }
+
+    private void runDefense(Pose3d targetPose) {
+        Pose2d current = driveSimulation.getActualPoseInSimulationWorld();
+        Pose2d target = targetPose.toPose2d();
+
+        if (lastTargetPosition.getDistance(target.getTranslation()) > 1.0) {
+            lastTargetPosition = target.getTranslation();
+
+            if (pathfindingTargetPoseField != null) {
+                try {
+                    pathfindingTargetPoseField.set(pathfindingCommand, target);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            pathfindingCommand.initialize();
+        }
+
+        pathfindingCommand.execute();
+
+        ChassisSpeeds pidSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                xPid.calculate(current.getX(), target.getX()),
+                yPid.calculate(current.getY(), target.getY()),
+                rPid.calculate(
+                        current.getRotation().getRadians(), target.getRotation().getRadians()),
+                current.getRotation());
+
+        double targetDistance = target.getTranslation().getDistance(current.getTranslation());
+
+        boolean isRepelling = !repelTimer.hasElapsed(2.0);
+        if (isRepelling) {
+            pidSpeeds = new ChassisSpeeds(
+                    -10.0 / pidSpeeds.vxMetersPerSecond,
+                    -10.0 / pidSpeeds.vyMetersPerSecond,
+                    pidSpeeds.omegaRadiansPerSecond);
+        } else if (targetDistance > 1.35) {
+            pinTimer.restart();
+        } else if (pinTimer.hasElapsed(4.5)) {
+            repelTimer.restart();
+        }
+
+        ChassisSpeeds speeds;
+        if (targetDistance < 1.5
+                || (isRepelling && targetDistance < 3.0 /* at this point just start moving towards them */)) {
+            speeds = pidSpeeds;
+        } else {
+            speeds = pathfindingChassisSpeeds;
+
+            // little boost ;)
+            speeds.vxMetersPerSecond *= 1.5;
+            speeds.vyMetersPerSecond *= 1.5;
+
+            // grid orient when pathfinding to avoid issues with trench
+            speeds.omegaRadiansPerSecond =
+                    rPidGridOrient.calculate(current.getRotation().getRadians(), 0);
+        }
+
+        driveSimulation.runChassisSpeeds(speeds, Translation2d.kZero, false, true);
     }
 }

@@ -47,7 +47,7 @@ public class SwerveModuleSim extends SwerveModuleReal {
                     (encoderVelocity.in(RotationsPerSecond) - lastVelocity.in(RotationsPerSecond))
                             / SimulatedArena.getSimulationDt().in(Seconds));
             lastVelocity = encoderVelocity;
-            talonFXSimState.setSupplyVoltage(SimulatedBattery.getBatteryVoltage());
+            talonFXSimState.setSupplyVoltage(SimulatedBattery.ROBORIO_BATTERY.getBatteryVoltage());
 
             return talonFXSimState.getMotorVoltageMeasure();
         }
