@@ -29,7 +29,7 @@ public class CustomPathfindingCommand extends Command {
 
     private final Timer timer = new Timer();
     private final PathPlannerPath targetPath;
-    private Pose2d targetPose;
+    public Pose2d targetPose;
     private Pose2d originalTargetPose;
     private GoalEndState goalEndState;
     private final PathConstraints constraints;

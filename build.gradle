@@ -205,6 +205,21 @@ task simulateWithVerbose(type: JavaExec) {
     environment 'HALSIM_EXTENSIONS', "${project.buildDir}/jni/release/halsim_ds_socket.dll;"
 }
 
+task simulateWithOpponents(type: JavaExec) {
+    mainClass = 'frc.robot.Main' // Replace with your main class
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = []
+    systemProperty 'java.library.path', "${project.buildDir}/jni/release"
+    environment 'HALSIM_EXTENSIONS', "${project.buildDir}/jni/release/halsim_ds_socket.dll;"
+    systemProperty 'opponent.red1', 'defense'
+    systemProperty 'opponent.red2', 'defense'
+    systemProperty 'opponent.red3', 'defense'
+    systemProperty 'opponent.blue1', 'defense'
+    systemProperty 'opponent.blue2', 'defense'
+    systemProperty 'opponent.blue3', 'defense'
+    systemProperty 'shootbps', '15.4'
+}
+
 checkstyle {
     toolVersion = "11.0.0"
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")

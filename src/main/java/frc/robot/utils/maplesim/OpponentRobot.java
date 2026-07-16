@@ -7,6 +7,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.LocalADStar;
 import com.pathplanner.lib.pathfinding.Pathfinder;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -23,11 +24,11 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
-import frc.robot.utils.DriverStationUtils;
 import frc.robot.utils.ManagedSubsystemBase;
 import frc.robot.utils.libraries.bumpsim.RobotBumpSim;
-import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -43,45 +44,83 @@ import org.littletonrobotics.junction.Logger;
 
 public class OpponentRobot extends ManagedSubsystemBase {
 
-    public static final int NUM_ROBOTS = Integer.parseInt(System.getProperty("opponent.robots", "0"));
-
     private static final Set<OpponentRobot> allOpponentRobots = new HashSet<>();
 
     public static void logPoses() {
         for (OpponentRobot robot : allOpponentRobots) {
             String prefix = "OpponentRobot/" + robot.robotId + "/";
-            robot.getPose().ifPresent(pose -> Logger.recordOutput(prefix + "Pose", pose));
-            Logger.recordOutput(prefix + "AllianceStation", robot.allianceStation);
+            if (robot.isEnabled()) {
+                Logger.recordOutput(prefix + "Pose", robot.getPose());
+                Logger.recordOutput(prefix + "AllianceStation", robot.allianceStation);
+            }
+
+            Logger.recordOutput(prefix + "Enabled", robot.isEnabled());
         }
     }
 
-    public static void setAllOpponentAlliance() {
-        int station = DriverStationUtils.getCurrentAlliance() == Alliance.Red ? 4 : 1;
-
-        for (OpponentRobot robot : allOpponentRobots) {
-            if (DriverStation.getRawAllianceStation().ordinal() == station) {
-                station++;
-                if (station > 6) {
-                    station = 1;
-                }
-            }
-
-            robot.setAllianceStation(station);
-            station++;
-            if (station > 6) {
-                station = 1;
+    public static void createDefaultOpponents() {
+        for (int i = 0; i < 6; i++) {
+            String key = "opponent." + (i < 3 ? "red" : "blue") + (i % 3 + 1);
+            String robotData = System.getProperty(key, "");
+            Optional<Behavior> behavior = Behavior.fromPropertyName(robotData);
+            if (behavior.isPresent()) {
+                OpponentRobot robot = OpponentRobot.create();
+                robot.setAllianceStation(i + 1);
+                robot.setBehavior(behavior.get());
             }
         }
     }
 
-    public static void enableAll() {
+    public static void resetAndEnableAllOthers() {
+        int station = DriverStation.getRawAllianceStation().ordinal();
+
         for (OpponentRobot robot : allOpponentRobots) {
-            robot.enable();
+            if (robot.getAllianceStation() != station) {
+                robot.resetAndEnable();
+            } else {
+                robot.disable();
+            }
         }
+    }
+
+    public static List<Pair<Translation2d, Translation2d>> getAllOpponentRobotBoundingBoxes(OpponentRobot self) {
+        List<Pair<Translation2d, Translation2d>> boundingBoxes = new ArrayList<>();
+        for (OpponentRobot robot : allOpponentRobots) {
+            if (robot != self && robot.isEnabled()) {
+                Pose3d pose = robot.getPose();
+                Translation2d min = new Translation2d(
+                        pose.getX() - Constants.Frame.FRAME_WITH_BUMPER_LENGTH / 2,
+                        pose.getY() - Constants.Frame.FRAME_WITH_BUMPER_WIDTH / 2);
+                Translation2d max = new Translation2d(
+                        pose.getX() + Constants.Frame.FRAME_WITH_BUMPER_LENGTH / 2,
+                        pose.getY() + Constants.Frame.FRAME_WITH_BUMPER_WIDTH / 2);
+                boundingBoxes.add(new Pair<>(min, max));
+            }
+        }
+        return boundingBoxes;
     }
 
     public enum Behavior {
-        DEFENSE
+        DEFENSE("defense");
+
+        private final String propertyName;
+
+        private Behavior(String propertyName) {
+            this.propertyName = propertyName;
+        }
+
+        public String getPropertyName() {
+            return propertyName;
+        }
+
+        public static Optional<Behavior> fromPropertyName(String propertyName) {
+            for (Behavior behavior : values()) {
+                if (behavior.getPropertyName().equalsIgnoreCase(propertyName)) {
+                    return Optional.of(behavior);
+                }
+            }
+            return Optional.empty();
+        }
     }
 
     private static final Pose2d[] ALLIANCE_START_POSITIONS = new Pose2d[] {
@@ -93,7 +132,7 @@ public class OpponentRobot extends ManagedSubsystemBase {
         Constants.FieldStartingLocation.TrenchOutpost.getPose(Alliance.Blue)
     };
 
-    private static Pose2d nextStartingPose = new Pose2d(-10, -10, Rotation2d.kZero);
+    private static Pose2d nextStartingPose = new Pose2d(-30, -30, Rotation2d.kZero);
     private static final Lock nextStartingPoseLock = new ReentrantLock(true);
 
     // Each robot has its own battery source
@@ -142,7 +181,6 @@ public class OpponentRobot extends ManagedSubsystemBase {
 
     private final Pathfinder pathfinder;
     private final CustomPathfindingCommand pathfindingCommand;
-    private Field pathfindingTargetPoseField = null;
 
     private ChassisSpeeds pathfindingChassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
@@ -210,28 +248,17 @@ public class OpponentRobot extends ManagedSubsystemBase {
                 Constants.Swerve.PP_DEFAULT_CONFIG,
                 pathfinder);
 
-        try {
-            pathfindingTargetPoseField = pathfindingCommand.getClass().getDeclaredField("targetPose");
-            pathfindingTargetPoseField.setAccessible(true);
-        } catch (NoSuchFieldException | SecurityException e) {
-            e.printStackTrace();
-        }
-
         pinTimer.start();
         repelTimer.start();
 
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation.getDriveTrainSimulation());
     }
 
-    public Optional<Pose3d> getPose() {
-        if (!enabled) {
-            return Optional.empty();
-        }
-
-        return Optional.of(lastSimPose3d);
+    public Pose3d getPose() {
+        return lastSimPose3d;
     }
 
-    public void enable() {
+    public void resetAndEnable() {
         driveSimulation.setSimulationWorldPose(ALLIANCE_START_POSITIONS[allianceStation - 1]);
         lastSimPose3d = new Pose3d(driveSimulation.getActualPoseInSimulationWorld());
         batterySource.setVoltage(SimulatedBatteryFactory.ACTUAL_RESTING_BATTERY_VOLTAGE);
@@ -294,20 +321,16 @@ public class OpponentRobot extends ManagedSubsystemBase {
     }
 
     private void runDefense(Pose3d targetPose) {
+
         Pose2d current = driveSimulation.getActualPoseInSimulationWorld();
         Pose2d target = targetPose.toPose2d();
+
+        pathfinder.setDynamicObstacles(getAllOpponentRobotBoundingBoxes(this), current.getTranslation());
 
         if (lastTargetPosition.getDistance(target.getTranslation()) > 1.0) {
             lastTargetPosition = target.getTranslation();
 
-            if (pathfindingTargetPoseField != null) {
-                try {
-                    pathfindingTargetPoseField.set(pathfindingCommand, target);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-
+            pathfindingCommand.targetPose = target;
             pathfindingCommand.initialize();
         }
 

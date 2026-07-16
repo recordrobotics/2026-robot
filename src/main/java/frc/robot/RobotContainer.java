@@ -54,6 +54,7 @@ import frc.robot.utils.field.FieldUtils;
 import frc.robot.utils.libraries.Elastic;
 import frc.robot.utils.libraries.Elastic.Notification;
 import frc.robot.utils.libraries.Elastic.NotificationLevel;
+import frc.robot.utils.maplesim.OpponentRobot;
 import frc.robot.utils.maplesim.SimulatedBatteryFactory;
 import frc.robot.utils.wrappers.SafeAlert;
 import java.util.EnumSet;
@@ -481,6 +482,8 @@ public final class RobotContainer {
                                 // reset voltage
                                 SimulatedBattery.ROBORIO_BATTERY.setVoltage(
                                         SimulatedBatteryFactory.ACTUAL_RESTING_BATTERY_VOLTAGE);
+                                // reset opponent robots
+                                OpponentRobot.resetAndEnableAllOthers();
                             }
                         })
                         .ignoringDisable(true));
