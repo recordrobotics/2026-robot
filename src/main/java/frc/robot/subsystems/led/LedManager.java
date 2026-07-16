@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.Constants;
+import frc.robot.Constants.RobotState.Mode;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.led.patterns.ChasePattern;
 import frc.robot.utils.AutoLogLevel;
@@ -34,7 +36,7 @@ public class LedManager extends ManagedSubsystemBase implements PoweredSubsystem
     private final AddressableLED led;
     private final AddressableLEDBuffer buffer;
 
-    @AutoLogLevel(level = Level.REAL)
+    @AutoLogLevel(level = Level.SIM)
     private final String[] hexStrings = new String[LED_COUNT];
 
     private final LEDPattern chasePatternPingPong = withBPS(new ChasePattern(
@@ -105,8 +107,11 @@ public class LedManager extends ManagedSubsystemBase implements PoweredSubsystem
         }
 
         led.setData(buffer);
-        for (int i = 0; i < buffer.getLength(); i++) {
-            hexStrings[i] = String.format("#%02X%02X%02X", buffer.getRed(i), buffer.getGreen(i), buffer.getBlue(i));
+
+        if (Constants.RobotState.getMode() == Mode.SIM) {
+            for (int i = 0; i < buffer.getLength(); i++) {
+                hexStrings[i] = String.format("#%02X%02X%02X", buffer.getRed(i), buffer.getGreen(i), buffer.getBlue(i));
+            }
         }
     }
 
