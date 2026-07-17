@@ -165,6 +165,12 @@ Before starting make sure to setup git with these recommended settings and alias
 - `git config --global alias.logline "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"`
   - This is an alias which which allows you to use `git logline` to show a log of past commits to the current branch with useful information. Press q to quit
 
+-----------------------------------------------
+
+## AdvantageKit Replay and ReplayWatch
+
+The code supports deterministic replay of logs using the Replay feature of AdvantageKit.
+
 -------------------------------------------------
 
 [Record Robotics](https://www.recordrobotics.org/)
