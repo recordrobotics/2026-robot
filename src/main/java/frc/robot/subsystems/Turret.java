@@ -47,14 +47,25 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     private static final Voltage SYSID_STEP_VOLTAGE = Volts.of(1.0);
     private static final Time SYSID_TIMEOUT = Seconds.of(1.0);
 
-    private static final double RESET_VOLTAGE = 0.3;
+    private static double RESET_VOLTAGE = 0.5;
     private static final double RESET_VELOCITY_THRESHOLD = 0.001;
     private static final double RESET_VELOCITY_THRESHOLD_TIME = 0.1;
+
+    private static double MAGNET_LOOKAHEAD_TIME_SECONDS = 0.05;
+
+    private static final LoggedNetworkNumber magnetLookaheadTime =
+            new LoggedNetworkNumber("TURRET_MAGNET_LOOKAHEAD_TIME", 0.05);
 
     private static final LoggedNetworkNumber ffMul = new LoggedNetworkNumber("TURRET_FFMUL", 0.72);
     private static final LoggedNetworkNumber ffSpringLow = new LoggedNetworkNumber("TURRET_FFSPRING_LOW", 1.11);
     private static final LoggedNetworkNumber ffSpringHigh = new LoggedNetworkNumber("TURRET_FFSPRING_HIGH", 1.11);
     private static final LoggedNetworkNumber lookaheadTime = new LoggedNetworkNumber("TURRET_LOOKAHEAD", 0.1);
+    private static final LoggedNetworkNumber resetVoltage = new LoggedNetworkNumber("RESET_VOLTAGE", 0.5);
+
+    private static final LoggedNetworkNumber iS = new LoggedNetworkNumber("kS", 0.3);
+    private static final LoggedNetworkNumber iV = new LoggedNetworkNumber("kV", 2.1);
+    private static final LoggedNetworkNumber iA = new LoggedNetworkNumber("kA", 0.25);
+    private static final LoggedNetworkNumber iVP = new LoggedNetworkNumber("kVP", 0.2);
 
     private final TurretIO io;
     private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
@@ -139,6 +150,14 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         Logger.processInputs("Turret", inputs);
 
         disconnectedAlert.set(!inputs.connected);
+
+        MAGNET_LOOKAHEAD_TIME_SECONDS = magnetLookaheadTime.get();
+        RESET_VOLTAGE = resetVoltage.get();
+
+        Constants.Turret.KS = iS.get();
+        Constants.Turret.KV = iV.get();
+        Constants.Turret.KA = iA.get();
+        Constants.Turret.KVP = iVP.get();
 
         Constants.Turret.FF_MUL = ffMul.get();
         Constants.Turret.TURRET_SPRING_LOW_VOLTS = ffSpringLow.get();
@@ -236,24 +255,24 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
 
     public void checkMagnet() {
         LimitSwitchStates limitSwitchStates = inputs.limitSwitchStates;
-        boolean isCcw = inputs.voltage < 0.1;
+        boolean isCcw = inputs.voltage > 0;
         if (limitSwitchStates.frontLeft()) {
-            io.setPositionRotations(
-                    isCcw
+            io.setPositionRotations((isCcw
                             ? Constants.Turret.FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CCW
-                            : Constants.Turret.FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW);
+                            : Constants.Turret.FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW)
+                    + inputs.velocityRotationsPerSecond * MAGNET_LOOKAHEAD_TIME_SECONDS);
             positionStatus = PositionStatus.KNOWN;
         } else if (limitSwitchStates.backLeft()) {
-            io.setPositionRotations(
-                    isCcw
+            io.setPositionRotations((isCcw
                             ? Constants.Turret.BACK_LEFT_MAGNET_MOTOR_ROTATIONS_CCW
-                            : Constants.Turret.BACK_LEFT_MAGNET_MOTOR_ROTATIONS_CW);
+                            : Constants.Turret.BACK_LEFT_MAGNET_MOTOR_ROTATIONS_CW)
+                    + inputs.velocityRotationsPerSecond * MAGNET_LOOKAHEAD_TIME_SECONDS);
             positionStatus = PositionStatus.KNOWN;
         } else if (limitSwitchStates.backRight()) {
-            io.setPositionRotations(
-                    isCcw
+            io.setPositionRotations((isCcw
                             ? Constants.Turret.BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CCW
-                            : Constants.Turret.BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CW);
+                            : Constants.Turret.BACK_RIGHT_MAGNET_MOTOR_ROTATIONS_CW)
+                    + inputs.velocityRotationsPerSecond * MAGNET_LOOKAHEAD_TIME_SECONDS);
             positionStatus = PositionStatus.KNOWN;
         }
     }

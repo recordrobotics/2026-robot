@@ -553,11 +553,11 @@ public final class Constants {
     public static final class Turret {
         public static final double KP = 50;
         public static final double KD = 3.811;
-        public static final double KS = 0.3;
-        public static final double KV = 2.1;
+        public static double KS = 0.3;
+        public static double KV = 2.1;
         public static final double KA_MM = 0.01;
-        public static final double KA = 0.25;
-        public static final double KVP = 0.2;
+        public static double KA = 0.25;
+        public static double KVP = 0.2;
         public static double FF_MUL = 0.72;
         public static double LOOKAHEAD_TIME = 0.1;
 
@@ -575,7 +575,7 @@ public final class Constants {
         public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.6921 - ROTATION_LIMIT_INSET_ROTATIONS;
         public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS = -0.56665 + ROTATION_LIMIT_INSET_ROTATIONS;
 
-        public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW = -0.044678;
+        public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW = -0.044678 + 0.003;
         public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CCW = -0.060547;
 
         public static final double BACK_LEFT_MAGNET_MOTOR_ROTATIONS_CW = 0.206299;
