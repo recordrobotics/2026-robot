@@ -134,11 +134,11 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
         double vx, vy, vz;
         double omega;
 
-        public RK4State() {
+        private RK4State() {
             this(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         }
 
-        public RK4State(double x, double y, double z, double theta, double vx, double vy, double vz, double omega) {
+        private RK4State(double x, double y, double z, double theta, double vx, double vy, double vz, double omega) {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -149,7 +149,7 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
             this.omega = omega;
         }
 
-        public void updateWith(RK4State other, double dt, RK4State derivative) {
+        private void updateWith(RK4State other, double dt, RK4State derivative) {
             this.x = other.x + dt * derivative.x;
             this.y = other.y + dt * derivative.y;
             this.z = other.z + dt * derivative.z;
@@ -160,7 +160,7 @@ public class ImprovedRebuiltFuelOnFly extends RebuiltFuelOnFly {
             this.omega = other.omega + dt * derivative.omega;
         }
 
-        public void updateFromRK4(RK4State k1, RK4State k2, RK4State k3, RK4State k4, double dt) {
+        private void updateFromRK4(RK4State k1, RK4State k2, RK4State k3, RK4State k4, double dt) {
             double sixthDt = dt / 6.0;
 
             this.x += sixthDt * (k1.x + 2.0 * k2.x + 2.0 * k3.x + k4.x);
