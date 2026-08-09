@@ -60,9 +60,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             new LoggedNetworkNumber("SHOOT_VELOCITY", 0);
     private static final LoggedNetworkBoolean shootOverride = new LoggedNetworkBoolean("SHOOT_OVERRIDE", false);
     private static final LoggedNetworkNumber shootAngleOffset = new LoggedNetworkNumber("SHOOT_ANGLE_OFFSET", 0);
-    private static final LoggedNetworkBoolean limitBallHeight =
-            new LoggedNetworkBoolean("Shooter/LimitBallHeight", false);
-    private static final LoggedNetworkNumber ballHeightLimit = new LoggedNetworkNumber("Shooter/BallHeightLimit", 0.0);
+    // private static final LoggedNetworkBoolean limitBallHeight =
+    //      new LoggedNetworkBoolean("Shooter/LimitBallHeight", false);
+    // private static final LoggedNetworkNumber ballHeightLimit = new LoggedNetworkNumber("Shooter/BallHeightLimit",
+    // 0.0);
 
     private static final LoggedDashboardChooser<FeedForwardSource> feedForwardSourceChooser =
             new LoggedDashboardChooser<>("FeedForwardSource");
@@ -479,15 +480,16 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
     private record ShotCalculationResult(Vector<N3> shotVector, ShotCalculation shotCalculation) {}
 
-    /**
-     * Calculate the required ball velocity in meters per second based on the hood angle and target
-     * height.
-     *
-     * @param angleDegrees the hood angle in degrees
-     * @param height the target height in meters
-     * @return the required ball velocity in meters per second
-     */
-    private static double calculateBallVelocityForHeight(double angleDegrees, double height) {
-        return 7;
-    }
+    // /**
+    //  * Calculate the required ball velocity in meters per second based on the hood angle and target
+    //  * height.
+    //  *
+    //  * @param angleDegrees the hood angle in degrees
+    //  * @param height the target height in meters
+    //  * @return the required ball velocity in meters per second
+    //  */
+
+    // private static double calculateBallVelocityForHeight(double angleDegrees, double height) {
+    //     return 7;
+    // }
 }
