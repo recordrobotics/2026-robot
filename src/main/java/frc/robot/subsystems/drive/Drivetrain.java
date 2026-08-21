@@ -281,6 +281,7 @@ public final class Drivetrain extends ManagedSubsystemBase {
         lastModifiersAppliedCount = applyCount;
 
         ChassisSpeeds nonDiscreteSpeeds = drivetrainControl.toChassisSpeeds(); // Converts the control to ChassisSpeeds
+        Logger.recordOutput("Drivetrain/NonDiscreteSpeeds", nonDiscreteSpeeds);
         double[] robotRelativeForcesXNewtons = drivetrainControl.robotRelativeForcesXNewtons();
         double[] robotRelativeForcesYNewtons = drivetrainControl.robotRelativeForcesYNewtons();
 
@@ -289,8 +290,28 @@ public final class Drivetrain extends ManagedSubsystemBase {
         previousSetpoint = setpointGenerator.generateSetpoint(
                 previousSetpoint, // The previous setpoint
                 nonDiscreteSpeeds, // The desired target speeds
-                RobotContainer.ROBOT_PERIODIC // The loop time of the robot code, in seconds
-                );
+                null, // constraints TODO maybe we do want constraints?
+                RobotContainer.ROBOT_PERIODIC, // The loop time of the robot code, in seconds
+                24);
+        Logger.recordOutput(
+                "Drivetrain/SetpointGeneratorInputMagnitude",
+                Math.hypot(nonDiscreteSpeeds.vxMetersPerSecond, nonDiscreteSpeeds.vyMetersPerSecond));
+        Logger.recordOutput(
+                "Drivetrain/SetpointGeneratorOutputMagnitudeBasedOnChassisSpeeds",
+                Math.hypot(
+                        previousSetpoint.robotRelativeSpeeds().vxMetersPerSecond,
+                        previousSetpoint.robotRelativeSpeeds().vyMetersPerSecond));
+        Logger.recordOutput(
+                "Drivetrain/SetpointGeneratorOutputAverageModuleSpeed",
+                Arrays.stream(previousSetpoint.moduleStates())
+                        .mapToDouble(state -> state.speedMetersPerSecond)
+                        .average()
+                        .orElse(0.0));
+        Logger.recordOutput(
+                "Drivetrain/ActualSpeed",
+                Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond));
+        // Logger.recordOutput("Drivetrain/PreviousSetpoint", previousSetpoint);
+        // Logger.recordOutput("Drivetrain/PreviousSetpoint/ModuleStates", previousSetpoint.moduleStates());
 
         double[] setpointFFX = previousSetpoint.feedforwards().robotRelativeForcesXNewtons();
         double[] setpointFFY = previousSetpoint.feedforwards().robotRelativeForcesYNewtons();
