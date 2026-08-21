@@ -413,7 +413,7 @@ public final class Constants {
                 Constants.Frame.ROBOT_MASS_KG,
                 Constants.Frame.ROBOT_MOI,
                 new ModuleConfig(
-                        AVERAGE_WHEEL_DIAMETER_M / 2,
+                        AVERAGE_WHEEL_RADIUS_M,
                         MAX_MODULE_SPEED,
                         COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
                         DCMotor.getKrakenX60(1),
