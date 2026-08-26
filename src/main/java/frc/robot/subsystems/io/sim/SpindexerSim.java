@@ -37,8 +37,8 @@ public class SpindexerSim extends SpindexerReal {
         RobotContainer.pdp.registerSimDevice(11, spindexer.getSimState()::getSupplyCurrentMeasure);
     }
 
-    public boolean isOuttaking() {
-        return spindexer.getVelocity().getValueAsDouble() >= Constants.Spindexer.SPINDEX_VELOCITY_RPS / 2.0;
+    public double getOuttakingMultiplier() { // TODO rename in main
+        return spindexer.getVelocity().getValueAsDouble() / Constants.Spindexer.SPINDEX_VELOCITY_RPS;
     }
 
     @Override

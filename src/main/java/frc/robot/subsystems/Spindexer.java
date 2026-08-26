@@ -27,10 +27,14 @@ import frc.robot.utils.SysIdManager;
 import frc.robot.utils.SysIdManager.SysIdProvider;
 import frc.robot.utils.wrappers.SafeAlert;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public final class Spindexer extends KillableSubsystem implements PoweredSubsystem {
 
     private static final double VELOCITY_TOLERANCE_RPS = 15.0; // TODO
+
+    private static final LoggedNetworkNumber tuningSpindexerVelocity =
+            new LoggedNetworkNumber("TUNING_SPINDEXER_VELOCITY", Constants.Spindexer.SPINDEX_VELOCITY_RPS);
 
     private final SpindexerIO io;
     private final SpindexerIOInputsAutoLogged inputs = new SpindexerIOInputsAutoLogged();
@@ -100,7 +104,7 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
 
         targetVelocityRps = switch (targetState) {
             case OFF -> 0.0;
-            case ON -> Constants.Spindexer.SPINDEX_VELOCITY_RPS;
+            case ON -> tuningSpindexerVelocity.get();
             case UNSTUCK -> Constants.Spindexer.UNSTUCK_VELOCITY_RPS;
         };
 
