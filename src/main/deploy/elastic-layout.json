@@ -890,6 +890,23 @@
               "show_pointer": true,
               "show_ticks": true
             }
+          },
+          {
+            "title": "TUNING_SPINDEXER_VELOCITY",
+            "x": 160.0,
+            "y": 480.0,
+            "width": 960.0,
+            "height": 128.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "TUNING_SPINDEXER_VELOCITY",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 40.0,
+              "divisions": 5,
+              "update_continuously": true
+            }
           }
         ]
       }
