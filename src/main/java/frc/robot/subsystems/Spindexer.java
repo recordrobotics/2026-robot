@@ -100,7 +100,7 @@ public final class Spindexer extends KillableSubsystem implements PoweredSubsyst
 
         targetVelocityRps = switch (targetState) {
             case OFF -> 0.0;
-            case ON -> Constants.Spindexer.INTAKE_VELOCITY_RPS;
+            case ON -> Constants.Spindexer.SPINDEX_VELOCITY_RPS;
             case UNSTUCK -> Constants.Spindexer.UNSTUCK_VELOCITY_RPS;
         };
 

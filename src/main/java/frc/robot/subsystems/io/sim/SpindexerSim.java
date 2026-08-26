@@ -38,7 +38,7 @@ public class SpindexerSim extends SpindexerReal {
     }
 
     public boolean isOuttaking() {
-        return spindexer.getVelocity().getValueAsDouble() >= Constants.Spindexer.INTAKE_VELOCITY_RPS / 2.0;
+        return spindexer.getVelocity().getValueAsDouble() >= Constants.Spindexer.SPINDEX_VELOCITY_RPS / 2.0;
     }
 
     @Override
