@@ -116,8 +116,8 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
         config.CurrentLimits.StatorCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.Turret.ROTATION_MAX_POSITION_MOTOR_ROTATIONS;
-        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.Turret.ROTATION_MIN_POSITION_MOTOR_ROTATIONS;
+        config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.Turret.ROTATION_MAX_POSITION_ROTATIONS;
+        config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.Turret.ROTATION_MIN_POSITION_ROTATIONS;
         config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
@@ -315,9 +315,9 @@ public final class Turret extends KillableSubsystem implements PoweredSubsystem,
     public static double getClosestTurretPosition(double currentPos, double targetHeading) {
 
         double minRange = Units.rotationsToRadians(
-                Constants.Turret.ROTATION_MIN_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+                Constants.Turret.ROTATION_MIN_POSITION_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
         double maxRange = Units.rotationsToRadians(
-                Constants.Turret.ROTATION_MAX_POSITION_MOTOR_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
+                Constants.Turret.ROTATION_MAX_POSITION_ROTATIONS + MOTOR_TO_PHYSICAL_OFFSET_ROTATIONS);
 
         // bring target close to current revolution
         double baseTarget = targetHeading + SimpleMath.PI2 * Math.round((currentPos - targetHeading) / SimpleMath.PI2);
