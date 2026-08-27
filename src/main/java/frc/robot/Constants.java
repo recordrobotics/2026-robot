@@ -546,8 +546,8 @@ public final class Constants {
         public static final double GEAR_RATIO = 15.5428571429;
 
         public static final double ROTATION_LIMIT_INSET_ROTATIONS = 0.002;
-        public static final double ROTATION_MAX_POSITION_MOTOR_ROTATIONS = 0.6921 - ROTATION_LIMIT_INSET_ROTATIONS;
-        public static final double ROTATION_MIN_POSITION_MOTOR_ROTATIONS = -0.56665 + ROTATION_LIMIT_INSET_ROTATIONS;
+        public static final double ROTATION_MAX_POSITION_ROTATIONS = 0.6921 - ROTATION_LIMIT_INSET_ROTATIONS;
+        public static final double ROTATION_MIN_POSITION_ROTATIONS = -0.56665 + ROTATION_LIMIT_INSET_ROTATIONS;
 
         public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CW = -0.044678 + 0.003;
         public static final double FRONT_LEFT_MAGNET_MOTOR_ROTATIONS_CCW = -0.060547;
