@@ -198,7 +198,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
     }
 
     private void checkHoodBeyondLimit() {
-        if (getHoodAngle() < Constants.Shooter.HOOD_MIN_POSITION_RADIANS) {
+        if (getHoodAngleRadians() < Constants.Shooter.HOOD_MIN_POSITION_RADIANS) {
             positionStatus = PositionStatus.UNKNOWN;
         }
     }
@@ -214,7 +214,7 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
 
         hoodDisconnectedAlert.set(!inputs.hoodConnected);
 
-        RobotContainer.model.shooterModel.updateHood(getHoodAngle());
+        RobotContainer.model.shooterModel.updateHood(getHoodAngleRadians());
 
         checkHoodBeyondLimit();
 
@@ -272,8 +272,12 @@ public final class Shooter extends KillableSubsystem implements PoweredSubsystem
         return flywheelTargetVelocityMps;
     }
 
+    /**
+     * this is zero when the shooter whould shoot the balls straight forwards with no up or down at all (technically not possible but whatever)
+     * this is positive when the shooter aims up
+     */
     @AutoLogLevel(level = AutoLogLevel.Level.REAL)
-    public double getHoodAngle() {
+    public double getHoodAngleRadians() {
         return Units.rotationsToRadians(inputs.hoodPositionRotations);
     }
 
