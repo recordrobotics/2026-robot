@@ -250,7 +250,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                             shooterOrigin,
                             axisOfRotation,
                             0.113106,
-                            Math.PI - RobotContainer.shooter.getHoodAngle() - Math.PI / 4)
+                            Math.PI - RobotContainer.shooter.getHoodAngleRadians() - Math.PI / 4)
                     .getTranslation();
         }
 
@@ -263,7 +263,8 @@ public final class RobotModel extends ManagedSubsystemBase {
                             shooterOrigin,
                             new Rotation3d(
                                     0,
-                                    Constants.Shooter.HOOD_MAX_POSITION_RADIANS - RobotContainer.shooter.getHoodAngle(),
+                                    Constants.Shooter.HOOD_MAX_POSITION_RADIANS
+                                            - RobotContainer.shooter.getHoodAngleRadians(),
                                     0))
                     .rotateAround(
                             shooterBallStart,
@@ -1266,7 +1267,9 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                             .rotateBy(new Rotation3d(Rotation2d.fromRotations(
                                                                     RobotContainer.turret.getPositionRotations()))),
                                                     0.113106,
-                                                    () -> Math.PI - RobotContainer.shooter.getHoodAngle() - Math.PI / 4,
+                                                    () -> Math.PI
+                                                            - RobotContainer.shooter.getHoodAngleRadians()
+                                                            - Math.PI / 4,
                                                     () -> RobotContainer.shooter.getFlywheelVelocityMps()
                                                             / Constants.Shooter.FLYWHEEL_WHEEL_DIAMETER.in(Meter)
                                                             * 2,
@@ -1291,7 +1294,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                                                 new Rotation3d(
                                                                                         0,
                                                                                         -RobotContainer.shooter
-                                                                                                        .getHoodAngle()
+                                                                                                        .getHoodAngleRadians()
                                                                                                 - Constants.Shooter
                                                                                                         .HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS,
                                                                                         Units.rotationsToRadians(

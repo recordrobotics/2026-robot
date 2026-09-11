@@ -617,9 +617,12 @@ public final class Constants {
         public static final double FLYWHEEL_METERS_PER_ROTATION =
                 FLYWHEEL_WHEEL_DIAMETER.in(Meter) * Math.PI / FLYWHEEL_GEAR_RATIO;
 
-        public static final double HOOD_STARTING_POSITION_RADIANS = Units.degreesToRadians(68.906250);
+        // angles are measured such that 0 is when the ball goes exactly forwards
+        public static final double HOOD_STARTING_POSITION_RADIANS =
+                Units.degreesToRadians(68.906250); // hood is pushed all the way down, aiming as up as possible
         public static final double HOOD_MAX_POSITION_RADIANS = HOOD_STARTING_POSITION_RADIANS;
-        public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(35.871753);
+        public static final double HOOD_MIN_POSITION_RADIANS = Units.degreesToRadians(
+                35.871753); // hood is sticking out as far as possible, aiming as forward as possible
         public static final double HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS = Units.degreesToRadians(4);
 
         private Shooter() {}
