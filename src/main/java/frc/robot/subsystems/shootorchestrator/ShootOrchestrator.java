@@ -350,7 +350,11 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     }
 
     private double calculateAllowableTurretError() {
-        return Units.degreesToRadians(12); // TODO: add actual trig calc based on distance to target and radius
+        return Math.asin(Constants.Game.HUB_RADIUS_METERS
+                / RobotContainer.poseSensorFusion
+                        .getEstimatedPosition()
+                        .getTranslation()
+                        .getDistance(target.get().position.toTranslation2d()));
     }
 
     private boolean isOnTarget(ShotTarget target, ShotCalculation shotCalculation, boolean isBlocked) {
