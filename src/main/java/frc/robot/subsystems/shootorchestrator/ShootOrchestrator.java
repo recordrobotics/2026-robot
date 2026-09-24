@@ -60,6 +60,10 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             new LoggedNetworkNumber("SHOOT_VELOCITY", 0);
     private static final LoggedNetworkBoolean shootOverride = new LoggedNetworkBoolean("SHOOT_OVERRIDE", false);
     private static final LoggedNetworkNumber shootAngleOffset = new LoggedNetworkNumber("SHOOT_ANGLE_OFFSET", 0);
+    // private static final LoggedNetworkBoolean limitBallHeight =
+    //      new LoggedNetworkBoolean("Shooter/LimitBallHeight", false);
+    // private static final LoggedNetworkNumber ballHeightLimit = new LoggedNetworkNumber("Shooter/BallHeightLimit",
+    // 0.0);
 
     private static final LoggedDashboardChooser<FeedForwardSource> feedForwardSourceChooser =
             new LoggedDashboardChooser<>("FeedForwardSource");
@@ -85,6 +89,13 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             return name;
         }
     }
+
+    public double hoodAngleOverride = Constants.Shooter.HOOD_MAX_POSITION_RADIANS;
+    public Optional<Double> turretAngleOverride = Optional.empty();
+    public double shootVelocityOverride = 0;
+    public boolean overrideShootAngleVelocity = false;
+
+    Translation3d[] trajectory = new Translation3d[48];
 
     private Optional<ShooterState> shooterOverride = Optional.empty();
 
@@ -285,6 +296,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             double turretPos = Units.rotationsToRadians(RobotContainer.turret.getPositionRotations());
             return new TurretState(Math.copySign(Constants.Turret.STARTING_POSITION_RADIANS, turretPos), 0, 0);
         } else if (useFixedShooting) {
+            if (turretAngleOverride.isPresent()) {
+                RobotContainer.turret.setTarget(new TurretState(turretAngleOverride.get(), 0, 0));
+            }
             return new TurretState(FIXED_TURRET_ANGLE_RADIANS, 0, 0);
         } else {
             return new TurretState(
@@ -318,6 +332,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
                 if (useFixedShooting) {
                     hoodAngle = FIXED_HOOD_ANGLE_RADIANS;
+                } else if (turretAngleOverride.isPresent()) {
+                    RobotContainer.turret.setTarget(new TurretState(turretAngleOverride.get(), 0, 0));
                 }
 
                 return new ShooterState(
@@ -463,4 +479,17 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     }
 
     private record ShotCalculationResult(Vector<N3> shotVector, ShotCalculation shotCalculation) {}
+
+    // /**
+    //  * Calculate the required ball velocity in meters per second based on the hood angle and target
+    //  * height.
+    //  *
+    //  * @param angleDegrees the hood angle in degrees
+    //  * @param height the target height in meters
+    //  * @return the required ball velocity in meters per second
+    //  */
+
+    // private static double calculateBallVelocityForHeight(double angleDegrees, double height) {
+    //     return 7;
+    // }
 }

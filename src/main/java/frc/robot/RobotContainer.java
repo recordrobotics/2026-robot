@@ -16,8 +16,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.FieldStartingLocation;
 import frc.robot.Constants.RobotState.Mode;
-import frc.robot.commands.ShootTuning;
+import frc.robot.RobotContainer.ShootMode;
+import frc.robot.commands.JoystickTurret;
+import frc.robot.commands.KidsTurretSweep;
 // Local imports
+// Local imports
+import frc.robot.commands.ShootTuning;
 import frc.robot.commands.auto.PlannedAuto;
 import frc.robot.control.*;
 import frc.robot.subsystems.*;
@@ -76,6 +80,7 @@ public final class RobotContainer {
 
     public static final double ROBOT_PERIODIC = 0.02;
     public static final int CONTROL_JOYSTICK_PORT = 2;
+    public static final int KIDS_JOYSTICK_PORT = 1;
     public static final int CONTROL_GAMEPAD_PORT = 0;
 
     // Min time remaining in which we can auto reset encoders if not already reset during autonomous
@@ -121,6 +126,8 @@ public final class RobotContainer {
     private static SafeAlert noEncoderResetAlert;
     private static SafeAlert shootModeAlert;
 
+    private static final LoggedNetworkBoolean turretSweepEnabled =
+            new LoggedNetworkBoolean("/SmartDashboard/TurretSweep", false);
     private static final LoggedDashboardChooser<ShootMode> shootModeChooser = new LoggedDashboardChooser<>("ShootMode");
     private static final LoggedDashboardChooser<AbstractControl> driveMode = new LoggedDashboardChooser<>("Drive Mode");
     private static final LoggedDashboardChooser<FieldStartingLocation> fieldStartingLocationChooser =
@@ -137,6 +144,8 @@ public final class RobotContainer {
     private static AbstractControl testControl;
 
     private static double lastDrivetrainNoReconnectStickyFaultTime = 0;
+
+    private static final LoggedNetworkBoolean joystickTurretButton = new LoggedNetworkBoolean("JoystickTurret", false);
 
     private RobotContainer() {
         initialize();
@@ -234,6 +243,7 @@ public final class RobotContainer {
         addControls(
                 new GamepadControls(new XboxController(CONTROL_GAMEPAD_PORT)),
                 new JoystickControls(CONTROL_JOYSTICK_PORT),
+                new JoystickKidControls(CONTROL_JOYSTICK_PORT, KIDS_JOYSTICK_PORT),
                 new GamepadControls(new SwitchController(CONTROL_GAMEPAD_PORT)));
 
         configureTriggers();
@@ -342,16 +352,14 @@ public final class RobotContainer {
                 .onTrue(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
-                            intake.setState(Intake.IntakeState.RETRACTED);
-                            climber.setState(Constants.ClimberHeight.DOWN);
+                            intake.setState(Intake.IntakeState.INTAKE);
                         },
                         intake,
                         climber))
                 .onFalse(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
-                            intake.setState(Intake.IntakeState.INTAKE);
-                            climber.setState(Constants.ClimberHeight.DOWN);
+                            intake.setState(Intake.IntakeState.OUT);
                         },
                         intake,
                         climber));
@@ -498,6 +506,9 @@ public final class RobotContainer {
 
         new Trigger(shootTuningButton)
                 .onTrue(Commands.runOnce(() -> shootTuningButton.set(false)).andThen(new ShootTuning()));
+
+        new Trigger(joystickTurretButton).whileTrue(new JoystickTurret().ignoringDisable(true));
+        new Trigger(RobotContainer.turretSweepEnabled).whileTrue(KidsTurretSweep.createCommand());
     }
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.

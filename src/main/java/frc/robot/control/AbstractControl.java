@@ -38,6 +38,14 @@ public interface AbstractControl {
 
     Transform2d getRawDriverInput();
 
+    boolean getKidShoot();
+
+    boolean getKidShootPressed();
+
+    Transform2d getKidRawDriverInput();
+
+    double getKidsSpeedLevel();
+
     // Misc
     boolean isPoseResetTriggered();
 
