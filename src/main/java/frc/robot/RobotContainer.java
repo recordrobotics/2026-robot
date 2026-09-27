@@ -13,9 +13,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.FieldStartingLocation;
 import frc.robot.Constants.RobotState.Mode;
+import frc.robot.commands.KidsShoot;
 import frc.robot.commands.ShootTuning;
 // Local imports
 import frc.robot.commands.auto.PlannedAuto;
@@ -28,6 +30,7 @@ import frc.robot.subsystems.io.sim.*;
 import frc.robot.subsystems.io.stub.*;
 import frc.robot.subsystems.led.LedManager;
 import frc.robot.subsystems.shootorchestrator.ShootOrchestrator;
+import frc.robot.subsystems.shootorchestrator.ShootOrchestrator.FeedMode;
 import frc.robot.utils.AutoPath;
 import frc.robot.utils.CommandUtils;
 import frc.robot.utils.ConsoleLogger;
@@ -67,6 +70,7 @@ public final class RobotContainer {
 
     public static final double ROBOT_PERIODIC = 0.02;
     public static final int CONTROL_JOYSTICK_PORT = 2;
+    public static final int KIDS_JOYSTICK_PORT = 1;
     public static final int CONTROL_GAMEPAD_PORT = 0;
 
     // Min time remaining in which we can auto reset encoders if not already reset during autonomous
@@ -103,6 +107,8 @@ public final class RobotContainer {
     public static LedManager ledManager;
 
     public static TalonFXOrchestra orchestra;
+
+    public static KidJoystick kidControl;
 
     private static final double HUB_SCORE_REGISTER_TIME =
             1.25; // takes 1.25 seconds from fuel crossing top of poly to scored
@@ -210,6 +216,8 @@ public final class RobotContainer {
         fieldStateTracker = new FieldStateTracker();
         shootOrchestrator = new ShootOrchestrator();
 
+        kidControl = new KidJoystick(KIDS_JOYSTICK_PORT);
+
         model = new RobotModel();
         ledManager = new LedManager();
 
@@ -291,6 +299,10 @@ public final class RobotContainer {
 
     private static boolean shouldBeShooting() {
 
+        if (ShootOrchestrator.useKidsShooting.get()) {
+            return !getControl().isShooterDisableShootPressed();
+        }
+
         MatchTimeData matchData = DriverStationUtils.getMatchTimeData();
 
         SmartDashboard.putNumber("ShiftTime", Math.ceil(matchData.timeLeftInShift()));
@@ -333,16 +345,14 @@ public final class RobotContainer {
                 .onTrue(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
-                            intake.setState(Intake.IntakeState.RETRACTED);
-                            climber.setState(Constants.ClimberHeight.DOWN);
+                            intake.setState(Intake.IntakeState.INTAKE);
                         },
                         intake,
                         climber))
                 .onFalse(Commands.runOnce(
                         () -> {
                             returnToOverviewTabIfIntakeStarting();
-                            intake.setState(Intake.IntakeState.INTAKE);
-                            climber.setState(Constants.ClimberHeight.DOWN);
+                            intake.setState(Intake.IntakeState.OUT);
                         },
                         intake,
                         climber));
@@ -439,6 +449,10 @@ public final class RobotContainer {
                                 },
                                 shooter)
                         .ignoringDisable(true));
+        new Trigger(() -> kidControl.getKidShoot() && ShootOrchestrator.useKidsShooting.get()).onTrue(new KidsShoot());
+        new Trigger(() -> ShootOrchestrator.useKidsShooting.get())
+                .onTrue(new InstantCommand(() -> RobotContainer.shootOrchestrator.setFeedMode(FeedMode.DISABLED)))
+                .onFalse(new InstantCommand(() -> RobotContainer.shootOrchestrator.setFeedMode(FeedMode.AUTO)));
 
         // Kill subsystems trigger
         /*
@@ -506,6 +520,8 @@ public final class RobotContainer {
     public static void robotPeriodic() {
         allStatusSignalsToRefresh.refreshAll();
         PositionedSubsystem.PositionedSubsystemManager.getInstance().update();
+
+        kidControl.execute();
 
         ShootMode currentShootMode = shootModeChooser.get();
         if (currentShootMode == null) {
