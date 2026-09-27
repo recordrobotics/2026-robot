@@ -41,6 +41,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class ShootOrchestrator extends ManagedSubsystemBase {
 
+    public static final LoggedNetworkBoolean useKidsShooting = new LoggedNetworkBoolean("UseKidsShooting", true);
     private static final ShotCalculator hubCalculator = new HubRegressionCalculator();
     private static final ShotCalculator passingCalculator = new PassingRegressionCalculator();
 
@@ -382,7 +383,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
         return !isBlocked
                 && RobotContainer.turret.atGoal(
-                        overridden ? Units.degreesToRadians(12) : calculateAllowableTurretError())
+                        (overridden || useKidsShooting.get())
+                                ? Units.degreesToRadians(12)
+                                : calculateAllowableTurretError())
                 && shooterOnTarget
                 && !(RobotContainer.intake.isNearStartPosition()
                         || RobotContainer.intake.getTargetState() == IntakeState.STARTING)
@@ -420,40 +423,65 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             case BEAM_BREAKS -> feedforwardShooterBeambreaks();
         }
 
-        if (target.isPresent()) {
-            ShotTarget shotTarget = target.get();
-
-            Pose3d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition3d();
-            Translation3d fuelReleaseOffset = RobotContainer.model.shooterModel.getShooterFuelReleasePosition();
-            ChassisSpeeds robotRelativeSpeeds = RobotContainer.drivetrain.getChassisSpeeds();
-            ChassisSpeeds robotRelativeAcceleration = RobotContainer.drivetrain.getChassisAcceleration();
-
-            ShotCalculationResult shotResult =
-                    calculateShot(shotTarget, robotPose, robotRelativeSpeeds, fuelReleaseOffset);
-
-            Vector<N3> robotRelativeShotVector =
-                    new Vector<>(robotPose.getRotation().unaryMinus().toMatrix().times(shotResult.shotVector));
-
-            RobotContainer.turret.setTarget(calculateTurretState(
-                    shotResult.shotVector, robotRelativeShotVector, robotRelativeSpeeds, robotRelativeAcceleration));
-
-            boolean isBlocked = calculateIsHoodBlocked(
-                    robotPose, robotRelativeSpeeds, RobotContainer.model.shooterModel.getShooterHoodPosition());
-            Logger.recordOutput("ShootOrchestrator/IsBlocked", isBlocked);
-
-            RobotContainer.shooter.setTargetState(calculateShooterState(robotRelativeShotVector, isBlocked));
-
-            boolean onTarget = isOnTarget(shotResult.shotCalculation(), isBlocked);
-            Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
-            lastOnTarget = onTarget;
-
-            updateFeeders(onTarget);
-        }
-
         Logger.recordOutput(
                 "ShootOrchestrator/Target",
                 target.isPresent() ? new Pose3d(target.get().position, Rotation3d.kZero) : Pose3d.kZero);
         Logger.recordOutput("ShootOrchestrator/ShootingEnabled", shootingEnabled);
+
+        Vector<N3> fieldRelativeShotVector;
+        Vector<N3> robotRelativeShotVector;
+        Pose3d robotPose = RobotContainer.poseSensorFusion.getEstimatedPosition3d();
+        ChassisSpeeds robotRelativeSpeeds = RobotContainer.drivetrain.getChassisSpeeds();
+        ChassisSpeeds robotRelativeAcceleration = RobotContainer.drivetrain.getChassisAcceleration();
+        boolean isBlocked;
+        ShotCalculation shotCalculationResult;
+        if (useKidsShooting.get()) {
+            double yawRadians = RobotContainer.kidControl.getTurretTarget().getRadians();
+            double pitchRadians = RobotContainer.kidControl.getHoodAngleRadians();
+            double lengthMps = RobotContainer.kidControl.getFlywheelVelocityMps();
+            fieldRelativeShotVector = new Translation3d(lengthMps, 0, 0)
+                    .rotateBy(new Rotation3d(0, -pitchRadians, yawRadians))
+                    .toVector();
+            // 3D rotation compensation bcuz funny
+            robotRelativeShotVector = new Vector<>(RobotContainer.poseSensorFusion
+                    .getEstimatedPosition3d()
+                    .getRotation()
+                    .unaryMinus()
+                    .toMatrix()
+                    .times(fieldRelativeShotVector));
+
+            isBlocked = false; // never hood blocked at outreach!
+
+            ShotCalculationResult shotResult =
+                    new ShotCalculationResult(fieldRelativeShotVector, FIXED_SHOT_CALCULATION);
+            shotCalculationResult = shotResult.shotCalculation();
+        } else if (target.isPresent()) {
+            ShotTarget shotTarget = target.get();
+
+            Translation3d fuelReleaseOffset = RobotContainer.model.shooterModel.getShooterFuelReleasePosition();
+
+            ShotCalculationResult shotResult =
+                    calculateShot(shotTarget, robotPose, robotRelativeSpeeds, fuelReleaseOffset);
+            shotCalculationResult = shotResult.shotCalculation();
+
+            fieldRelativeShotVector = shotResult.shotVector;
+
+            robotRelativeShotVector =
+                    new Vector<>(robotPose.getRotation().unaryMinus().toMatrix().times(fieldRelativeShotVector));
+            isBlocked = calculateIsHoodBlocked(
+                    robotPose, robotRelativeSpeeds, RobotContainer.model.shooterModel.getShooterHoodPosition());
+        } else return;
+        Logger.recordOutput("ShootOrchestrator/IsBlocked", isBlocked);
+        RobotContainer.turret.setTarget(calculateTurretState(
+                fieldRelativeShotVector, robotRelativeShotVector, robotRelativeSpeeds, robotRelativeAcceleration));
+
+        RobotContainer.shooter.setTargetState(calculateShooterState(robotRelativeShotVector, isBlocked));
+
+        boolean onTarget = isOnTarget(shotCalculationResult, isBlocked);
+        Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
+        lastOnTarget = onTarget;
+
+        updateFeeders(onTarget);
     }
 
     private void updateAlerts() {
