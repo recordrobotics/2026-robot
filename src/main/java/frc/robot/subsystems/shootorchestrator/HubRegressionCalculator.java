@@ -1,26 +1,7 @@
 package frc.robot.subsystems.shootorchestrator;
 
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
-
 @SuppressWarnings("java:S109") /* whole class is a magic number */
 public class HubRegressionCalculator implements ShotCalculator {
-
-    private static final double FLYWHEEL_TO_FUEL_RATIO = 0.372;
-
-    public static final LoggedNetworkNumber flywheelRatio =
-            new LoggedNetworkNumber("FLYWHEEL_RATIO", FLYWHEEL_TO_FUEL_RATIO);
-
-    @Override
-    public double fuelToFlywheelVelocity(double fuelVelocityMps) {
-        double ratio = flywheelRatio.get();
-        return fuelVelocityMps / ratio;
-    }
-
-    @Override
-    public double flywheelToFuelVelocity(double flywheelVelocityMps) {
-        double ratio = flywheelRatio.get();
-        return flywheelVelocityMps * ratio;
-    }
 
     @Override
     public ShotCalculation calculateShot(double distanceToTargetMeters, double robotVelocityTowardsTargetMps) {

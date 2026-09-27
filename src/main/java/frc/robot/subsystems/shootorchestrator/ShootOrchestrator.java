@@ -64,6 +64,11 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
     private static final LoggedDashboardChooser<FeedForwardSource> feedForwardSourceChooser =
             new LoggedDashboardChooser<>("FeedForwardSource");
 
+    private static final double DEFAULT_FLYWHEEL_TO_FUEL_RATIO = 0.372;
+
+    public static final LoggedNetworkNumber flywheelToFuelRatio =
+            new LoggedNetworkNumber("FLYWHEEL_RATIO", DEFAULT_FLYWHEEL_TO_FUEL_RATIO);
+
     public enum FeedMode {
         AUTO,
         ALWAYS,
@@ -116,6 +121,16 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                 feedForwardSourceChooser.addOption(source.toString(), source);
             }
         }
+    }
+
+    public double fuelToFlywheelVelocity(double fuelVelocityMps) {
+        double ratio = ShootOrchestrator.flywheelToFuelRatio.get();
+        return fuelVelocityMps / ratio;
+    }
+
+    public double flywheelToFuelVelocity(double flywheelVelocityMps) {
+        double ratio = ShootOrchestrator.flywheelToFuelRatio.get();
+        return flywheelVelocityMps * ratio;
     }
 
     public void setEnableShooting(boolean enable) {
@@ -298,8 +313,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         return shootAngle - Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS + shootAngleOffset.get();
     }
 
-    private ShooterState calculateShooterState(
-            ShotTarget target, Vector<N3> robotRelativeShotVector, boolean isBlocked) {
+    private ShooterState calculateShooterState(Vector<N3> robotRelativeShotVector, boolean isBlocked) {
         if (shootingEnabled) {
             if (shootOverride.get()) {
                 double hoodAngle = shooterOverride.isPresent()
@@ -322,8 +336,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
 
                 return new ShooterState(
                         isBlocked ? Constants.Shooter.HOOD_MAX_POSITION_RADIANS : hoodAngle,
-                        target.shotCalculator.fuelToFlywheelVelocity(
-                                useFixedShooting ? FIXED_FUEL_VELOCITY : robotRelativeShotVector.norm()),
+                        fuelToFlywheelVelocity(useFixedShooting ? FIXED_FUEL_VELOCITY : robotRelativeShotVector.norm()),
                         shooterFeedforward);
             }
         } else {
@@ -353,7 +366,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         return Units.degreesToRadians(12); // TODO: add actual trig calc based on distance to target and radius
     }
 
-    private boolean isOnTarget(ShotTarget target, ShotCalculation shotCalculation, boolean isBlocked) {
+    private boolean isOnTarget(ShotCalculation shotCalculation, boolean isBlocked) {
         boolean overridden = shootOverride.get();
 
         boolean shooterOnTarget;
@@ -363,8 +376,8 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
             shooterOnTarget = RobotContainer.shooter.isAtTargetState(
                     shotCalculation.allowableShootAngleMinRadians(),
                     shotCalculation.allowableShootAngleMaxRadians(),
-                    target.shotCalculator.fuelToFlywheelVelocity(shotCalculation.allowableVelocityMagnitudeMinMps()),
-                    target.shotCalculator.fuelToFlywheelVelocity(shotCalculation.allowableVelocityMagnitudeMaxMps()));
+                    fuelToFlywheelVelocity(shotCalculation.allowableVelocityMagnitudeMinMps()),
+                    fuelToFlywheelVelocity(shotCalculation.allowableVelocityMagnitudeMaxMps()));
         }
 
         return !isBlocked
@@ -428,10 +441,9 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
                     robotPose, robotRelativeSpeeds, RobotContainer.model.shooterModel.getShooterHoodPosition());
             Logger.recordOutput("ShootOrchestrator/IsBlocked", isBlocked);
 
-            RobotContainer.shooter.setTargetState(
-                    calculateShooterState(shotTarget, robotRelativeShotVector, isBlocked));
+            RobotContainer.shooter.setTargetState(calculateShooterState(robotRelativeShotVector, isBlocked));
 
-            boolean onTarget = isOnTarget(shotTarget, shotResult.shotCalculation(), isBlocked);
+            boolean onTarget = isOnTarget(shotResult.shotCalculation(), isBlocked);
             Logger.recordOutput("ShootOrchestrator/OnTarget", onTarget);
             lastOnTarget = onTarget;
 

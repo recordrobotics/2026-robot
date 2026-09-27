@@ -1280,14 +1280,9 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                                 RobotContainer.drivetrain.getSwerveDriveSimulation(),
                                                                 new Translation3d(
                                                                                 RobotContainer.shootOrchestrator
-                                                                                        .getTarget()
-                                                                                        .map(
-                                                                                                t -> t.shotCalculator()
-                                                                                                        .flywheelToFuelVelocity(
-                                                                                                                RobotContainer
-                                                                                                                        .shooter
-                                                                                                                        .getFlywheelVelocityMps()))
-                                                                                        .orElse(0.0),
+                                                                                        .flywheelToFuelVelocity(
+                                                                                                RobotContainer.shooter
+                                                                                                        .getFlywheelVelocityMps()),
                                                                                 0,
                                                                                 0)
                                                                         .rotateBy(

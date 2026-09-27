@@ -4,18 +4,6 @@ package frc.robot.subsystems.shootorchestrator;
 public class PassingRegressionCalculator implements ShotCalculator {
 
     @Override
-    public double fuelToFlywheelVelocity(double fuelVelocityMps) {
-        double ratio = HubRegressionCalculator.flywheelRatio.get();
-        return fuelVelocityMps / ratio;
-    }
-
-    @Override
-    public double flywheelToFuelVelocity(double flywheelVelocityMps) {
-        double ratio = HubRegressionCalculator.flywheelRatio.get();
-        return flywheelVelocityMps * ratio;
-    }
-
-    @Override
     public ShotCalculation calculateShot(double distanceToTargetMeters, double robotVelocityTowardsTargetMps) {
         return new ShotCalculation(
                 Math.toRadians(calculateAngle(distanceToTargetMeters, robotVelocityTowardsTargetMps)),

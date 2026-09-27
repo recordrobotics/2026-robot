@@ -10,9 +10,5 @@ public interface ShotCalculator {
             double allowableVelocityMagnitudeMinMps,
             double allowableVelocityMagnitudeMaxMps) {}
 
-    double fuelToFlywheelVelocity(double fuelVelocityMps);
-
-    double flywheelToFuelVelocity(double flywheelVelocityMps);
-
     ShotCalculation calculateShot(double distanceToTargetMeters, double robotVelocityTowardsTargetMps);
 }
