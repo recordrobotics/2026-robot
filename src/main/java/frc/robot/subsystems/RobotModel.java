@@ -1299,7 +1299,7 @@ public final class RobotModel extends ManagedSubsystemBase {
                                                         double flywheelVelocityMps =
                                                                 RobotContainer.shooter.getFlywheelVelocityMps();
                                                         double hoodAngleDegrees = Units.radiansToDegrees(
-                                                                RobotContainer.shooter.getHoodAngle());
+                                                                RobotContainer.shooter.getHoodAngleRadians());
 
                                                         toProjectile(
                                                                 fuel,
