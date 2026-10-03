@@ -14,7 +14,20 @@
         "command": "./gradlew build",
         "group": "build",
         "problemMatcher": []
-      }      
+      },
+      {
+        "label": "Replay Robot Code",
+        "type": "shell",
+        "command": "./gradlew simulateJava -PisReplay",
+        "windows": {
+          "command": ".\\gradlew.bat simulateJava -PisReplay"
+        },
+          "group": "build",
+          "presentation": {
+            "panel": "dedicated",
+            "clear": true
+        }
+      }
     ]
   }
   

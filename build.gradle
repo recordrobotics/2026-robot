@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
@@ -149,8 +151,18 @@ sonar {
 }
 
 // Simulation configuration (e.g. environment variables).
-wpi.sim.addGui().defaultEnabled = false
-wpi.sim.addDriverstation().defaultEnabled = false
+if (!project.hasProperty("isReplay")) {
+    if (OperatingSystem.current().isMacOsX()) {
+        wpi.sim.addGui().defaultEnabled = true
+        wpi.sim.addDriverstation().defaultEnabled = false
+    } else {
+        wpi.sim.addGui().defaultEnabled = false
+        wpi.sim.addDriverstation().defaultEnabled = true
+    }
+} else {
+    wpi.sim.addGui().defaultEnabled = false
+    wpi.sim.addDriverstation().defaultEnabled = false
+}
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
 // in order to make them all available at runtime. Also adding the manifest so WPILib
