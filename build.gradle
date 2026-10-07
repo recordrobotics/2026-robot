@@ -1,3 +1,5 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
@@ -79,6 +81,11 @@ wpi.java.debugJni = false
 // Set this to true to enable desktop support.
 def includeDesktopSupport = true
 
+tasks.register('replay') {
+    group = 'simulation'
+    dependsOn 'simulateJava'
+}
+
 task(replayWatch, type: JavaExec) {
     mainClass = "org.littletonrobotics.junction.ReplayWatch"
     classpath = sourceSets.main.runtimeClasspath
@@ -149,8 +156,19 @@ sonar {
 }
 
 // Simulation configuration (e.g. environment variables).
-wpi.sim.addGui().defaultEnabled = false
-wpi.sim.addDriverstation().defaultEnabled = false
+def replayRequested = gradle.startParameter.taskNames.any { name ->
+    name.tokenize(':').last() in ['replay', 'replayWatch']
+}
+def isWindows = OperatingSystem.current().isWindows()
+
+// Windows: ds on, GUI off. macOS/Linux: GUI on, ds off.
+wpi.sim.addGui().defaultEnabled = !replayRequested && !isWindows
+wpi.sim.addDriverstation().defaultEnabled = !replayRequested && isWindows
+
+// Gets passed to Cosntants.RobotState
+tasks.withType(JavaExec).configureEach {
+    systemProperty 'robot.replay', replayRequested.toString()
+}
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
 // in order to make them all available at runtime. Also adding the manifest so WPILib

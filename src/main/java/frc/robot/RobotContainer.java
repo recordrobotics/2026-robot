@@ -507,6 +507,8 @@ public final class RobotContainer {
         allStatusSignalsToRefresh.refreshAll();
         PositionedSubsystem.PositionedSubsystemManager.getInstance().update();
 
+        Logger.recordOutput("AEAEAE", 0.0);
+
         ShootMode currentShootMode = shootModeChooser.get();
         if (currentShootMode == null) {
             shootModeAlert.setText("Shoot mode is <UNKNOWN>");
