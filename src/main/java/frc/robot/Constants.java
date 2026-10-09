@@ -47,6 +47,8 @@ import org.ironmaple.simulation.drivesims.COTS;
  */
 public final class Constants {
 
+    public static final int TEAM_NUMBER = 6731;
+
     public static final double GRAVITY = 9.81; // m/s^2
 
     private Constants() {}

@@ -73,7 +73,7 @@ public final class Robot extends LoggedRobot {
                 "GitDirty",
                 switch (BuildConstants.DIRTY) {
                     case 0 -> "All changes committed";
-                    case 1 -> "Uncomitted changes";
+                    case 1 -> "Uncommitted changes";
                     default -> "Unknown";
                 });
     }
@@ -147,7 +147,7 @@ public final class Robot extends LoggedRobot {
 
             // setup roborio
             RoboRioSim.setRadioLEDState(RadioLEDState.kGreen);
-            RoboRioSim.setTeamNumber(6731);
+            RoboRioSim.setTeamNumber(Constants.TEAM_NUMBER);
             RoboRioSim.setSerialNumber(BuildConstants.BUILD_DATE);
             RoboRioSim.setVInCurrent(0.436);
         }

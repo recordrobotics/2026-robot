@@ -5,6 +5,7 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.WPIUtilJNI;
+import frc.robot.Constants;
 import frc.robot.utils.ConsoleLogger;
 import java.io.File;
 import java.util.EnumSet;
@@ -13,8 +14,6 @@ import java.util.Map;
 import java.util.Set;
 
 public final class Main {
-    private static final int TEAM_NUMBER = 6731;
-
     private Main() {}
 
     @SuppressWarnings("java:S109")
@@ -44,7 +43,7 @@ public final class Main {
         System.out.println("Starting NetworkTables");
 
         try (NetworkTableInstance nt = NetworkTableInstance.create()) {
-            nt.setServerTeam(TEAM_NUMBER);
+            nt.setServerTeam(Constants.TEAM_NUMBER);
             nt.startClient4("SwerveEncoderTuning");
             nt.startDSClient();
 
