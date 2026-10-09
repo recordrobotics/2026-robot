@@ -95,11 +95,11 @@ public final class RobotModel extends ManagedSubsystemBase {
         if (Constants.RobotState.getMode() == Mode.SIM) {
             NetworkTableInstance.getDefault()
                     .getEntry("/AdvantageKit/SystemStats/RSLState")
-                    .setBoolean(getSimulatedRSLState());
+                    .setBoolean(isSimulatedRSLOn());
         }
     }
 
-    private boolean getSimulatedRSLState() {
+    private static boolean isSimulatedRSLOn() {
         if (!DriverStation.isEnabled()) {
             return true;
         }

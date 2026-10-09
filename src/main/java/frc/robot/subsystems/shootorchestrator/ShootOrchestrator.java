@@ -309,7 +309,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
-    private double shootAngleToHoodAngle(double shootAngle) {
+    private static double shootAngleToHoodAngle(double shootAngle) {
         return shootAngle - Constants.Shooter.HOOD_FUEL_EXIT_ANGLE_OFFSET_RADIANS + shootAngleOffset.get();
     }
 
@@ -344,7 +344,7 @@ public class ShootOrchestrator extends ManagedSubsystemBase {
         }
     }
 
-    private boolean calculateIsHoodBlocked(
+    private static boolean calculateIsHoodBlocked(
             Pose3d robotPose, ChassisSpeeds robotRelativeSpeeds, Translation3d hoodPosition) {
         double timeUntilHoodDown =
                 RobotContainer.shooter.getTimeUntilHoodAt(Constants.Shooter.HOOD_MAX_POSITION_RADIANS)
